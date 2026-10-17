@@ -1,0 +1,9 @@
+# The repository is published whole: keep its tooling out of search results.
+User-agent: *
+Disallow: /.
+Disallow: /bin/
+Disallow: /examples/
+Disallow: /LICENSE.md
+Disallow: /README.md
+
+Sitemap: https://fixrb.dev/sitemap.xml

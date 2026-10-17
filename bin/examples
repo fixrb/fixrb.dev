@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Runs every file under examples/, each in its own Ruby process, and fails if
+# one exits with an error. A line ending with "# => VALUE" must evaluate to an
+# object whose inspect is VALUE.
+#
+# The gems come from the environment, for instance:
+#   RUBYLIB=../matchi/lib bin/examples examples/matchi
+# For each example, the file loaded by each of its top-level requires is
+# printed, so that the version under test is visible.
+
+require "open3"
+require "rbconfig"
+
+if ENV["RUBYLIB"]
+  ENV["RUBYLIB"] = ENV["RUBYLIB"].split(File::PATH_SEPARATOR).map { |dir| File.expand_path(dir) }
+                                 .join(File::PATH_SEPARATOR)
+end
+site = File.expand_path("..", __dir__)
+roots = ARGV.empty? ? [File.join(site, "examples")] : ARGV.map { |root| File.expand_path(root) }
+Dir.chdir(site)
+
+EXPECTATION = /\A(?<code>.*\S)\s+#\s*=>\s*(?<value>.+)\z/
+REQUIRE = /^require "([^"]+)"$/
+
+# Defines the check, then evaluates the example read from standard input under
+# its own file name, so that backtraces point at the example's lines. At exit,
+# after any test framework has run, prints where each required file came from.
+RUNNER = <<~'RUBY'
+  def __example__(value, expected, line)
+    actual = value.inspect
+    abort "line #{line}: expected #{expected}, got #{actual}" unless actual == expected
+  end
+
+  at_exit do
+    ARGV.drop(1).each do |name|
+      loaded = $LOADED_FEATURES.find { |feature| feature.end_with?("/#{name}.rb") }
+      puts "required #{name} from #{loaded}"
+    end
+  end
+
+  eval($stdin.read, TOPLEVEL_BINDING, ARGV.fetch(0), 1)
+RUBY
+
+def instrument(source)
+  source.each_line(chomp: true).with_index(1).map do |line, number|
+    match = EXPECTATION.match(line)
+    match ? "__example__((#{match[:code]}), #{match[:value].dump}, #{number})" : line
+  end.join("\n")
+end
+
+paths = roots.flat_map { |root| File.file?(root) ? [root] : Dir.glob("#{root}/**/*.rb") }
+             .map { |path| path.delete_prefix("#{Dir.pwd}/") }.sort
+abort "No example found in #{roots.join(', ')}" if paths.empty?
+
+failures = paths.reject do |path|
+  source = File.read(path, encoding: "UTF-8")
+  output, status = Open3.capture2e(RbConfig.ruby, "-e", RUNNER, path, *source.scan(REQUIRE).flatten,
+                                   stdin_data: instrument(source))
+  puts "#{status.success? ? 'ok  ' : 'FAIL'} #{path}"
+  # A forked child runs the at_exit hook too: show each line once.
+  shown = status.success? ? output.lines.grep(/\Arequired /).uniq : output.lines
+  print shown.join.gsub(/^/, "     ")
+  status.success?
+end
+
+exit(failures.empty? ? 0 : 1)

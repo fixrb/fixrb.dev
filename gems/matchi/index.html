@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>matchi: framework-agnostic matchers for Ruby · Fixrb</title>
+  <meta name="description" content="Matchi: framework-agnostic matchers for Ruby, in which the expected value makes the comparison, not the object under test.">
+  <link rel="canonical" href="https://fixrb.dev/gems/matchi/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="matchi: framework-agnostic matchers for Ruby">
+  <meta property="og:description" content="Matchi: framework-agnostic matchers for Ruby, in which the expected value makes the comparison, not the object under test.">
+  <meta property="og:url" content="https://fixrb.dev/gems/matchi/">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>matchi</h1>
+          <p>Framework-agnostic matchers for Ruby.</p>
+        </hgroup>
+      </header>
+      <p>A matcher is built with an expected value, then asked whether an actual value matches. It answers <code>true</code> or <code>false</code>, and leaves negation, messages and reports to your test framework.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>5.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later</dd>
+        <dt>Dependencies</dt>
+        <dd>None</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+        <dt>Used by</dt>
+        <dd>Fix 1.0</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "matchi"</code> to your Gemfile, or run <code>gem install matchi</code>.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p>The block given to <code>match?</code> yields the actual value once, and <code>to_s</code> completes the sentence “expected … to …”.</p>
+      <pre data-example="examples/matchi/usage.rb"><code>require <span class="string">"matchi"</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">42</span>)
+matcher.match? { <span class="number">42</span> } <span class="comment"># => true</span>
+matcher.match? { <span class="number">41</span> } <span class="comment"># => false</span>
+matcher.to_s          <span class="comment"># => "eq 42"</span>
+</code></pre>
+
+      <h2 id="matchers">Matchers</h2>
+      <dl>
+        <dt><code>Be</code></dt>
+        <dd>Identity, with <code>equal?</code>.</dd>
+        <dt><code>Eq</code></dt>
+        <dd>Equivalence, with <code>eql?</code>, between values of the same class.</dd>
+        <dt><code>BeAKindOf</code></dt>
+        <dd>A kind of a module, given directly or by name.</dd>
+        <dt><code>BeAnInstanceOf</code></dt>
+        <dd>An instance of a class, given directly or by name.</dd>
+        <dt><code>BeWithin</code></dt>
+        <dd>An <code>Integer</code>, <code>Float</code>, <code>Rational</code> or <code>BigDecimal</code> within a delta of the expected number.</dd>
+        <dt><code>Match</code></dt>
+        <dd>A string or a symbol that matches a <code>Regexp</code>.</dd>
+        <dt><code>Satisfy</code></dt>
+        <dd>A value for which a block answers <code>true</code>.</dd>
+        <dt><code>Predicate</code></dt>
+        <dd>A value whose predicate answers <code>true</code>: <code>:be_empty</code> calls <code>empty?</code>.</dd>
+        <dt><code>RaiseException</code></dt>
+        <dd>A block that raises an exception of a given class, optionally with a given message.</dd>
+        <dt><code>Change</code></dt>
+        <dd>A block that changes what a public method returns, optionally <code>by</code>, <code>by_at_least</code>, <code>by_at_most</code>, <code>to</code>, or <code>from</code> and <code>to</code>.</dd>
+      </dl>
+
+      <h2 id="expected-value">The expected value decides</h2>
+      <p>When a matcher compares the expected value with the actual value, the expected value receives the call: <code>Matchi::Eq.new(a)</code> evaluates <code>a.eql?(b)</code>, never <code>b.eql?(a)</code>. An actual value that lies about its own equality cannot pass:</p>
+      <pre data-example="examples/matchi/forged.rb"><code>require <span class="string">"matchi"</span>
+
+actual = <span class="string">"bar"</span>
+
+<span class="keyword">def</span> actual.eql?(*)
+  <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+actual.eql?(<span class="string">"foo"</span>) <span class="comment"># => true</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="string">"foo"</span>)
+matcher.match? { actual } <span class="comment"># => false</span>
+</code></pre>
+      <p>Three cases rely on values produced by the object under test, and so on its honesty: <code>Predicate</code> calls one of its methods, the <code>by</code> refinements of <code>Change</code> compare and subtract the values it returns, and the message filter of <code>RaiseException</code> reads the message of the exception raised. The README says which matchers give which guarantee.</p>
+      <p>The reasons for this rule are in <a href="/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">The Fundamental Distinction Between Expected and Actual Values in Testing</a>.</p>
+
+      <h2 id="frameworks">With your test framework</h2>
+      <p>Any framework can use a matcher in a few lines. With Minitest:</p>
+      <pre data-example="examples/matchi/minitest.rb"><code>require <span class="string">"matchi"</span>
+require <span class="string">"minitest/autorun"</span>
+
+<span class="keyword">class</span> <span class="constant">TestAnswer</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  <span class="keyword">def</span> assert_matches(matcher, actual)
+    message = <span class="string">"expected #{</span>actual.inspect<span class="string">} to #{</span>matcher<span class="string">}"</span>
+    assert matcher.match? { actual }, message
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> test_answer
+    assert_matches <span class="constant">Matchi</span>::<span class="constant">BeAKindOf</span>.new(<span class="constant">Integer</span>), <span class="number">42</span>
+    assert_matches <span class="constant">Matchi</span>::<span class="constant">BeWithin</span>.new(<span class="number">0.01</span>).of(<span class="number">0.3</span>), <span class="number">0.1</span> + <span class="number">0.2</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/matchi/blob/v5.0.0/README.md">README</a>: every matcher with its arguments and errors, and the differences from RSpec.</li>
+        <li><a href="https://rubydoc.info/gems/matchi/5.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/matchi/versions/5.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/matchi/tree/v5.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

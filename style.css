@@ -1,0 +1,608 @@
+/*
+ * fixrb.dev, one stylesheet.
+ *
+ * Colours come from the logo. Edges are square and shadows have no blur:
+ * a 4px "pixel" sets borders, notches and offsets. Pixelify Sans (SIL Open
+ * Font License, see /fonts/OFL.txt) is a display face: it sets large titles,
+ * the site name, menus and gem names only, since at small sizes its C reads
+ * as an O. Everything else uses the reader's system font.
+ *
+ * The markup this relies on is described in README.md, under Markup.
+ */
+
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("/fonts/pixelify-sans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A,
+    U+201C-201E, U+2022, U+2026, U+2039-203A;
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* Logo palette */
+  --paper: #fffef8;
+  --ink: #211630;
+  --wine: #510032;
+  --bordeaux: #770036;
+  --red: #f0013d;
+  --pink: #ff496b;
+
+  /* Roles */
+  --bg: var(--paper);
+  --text: var(--ink);
+  --muted: #5b4a5e;
+  --surface: #fbf1ee;
+  --link: var(--bordeaux);
+  --accent: var(--red);
+  --frame: var(--ink);
+  --shadow: var(--bordeaux);
+  --code-bg: var(--ink);
+  --code-text: var(--paper);
+
+  /* Ruby tokens: tints of the logo's pinks and purple, at least 5:1 on
+     both code backgrounds (#211630 and #0f0916). */
+  --token-comment: #a597b3;
+  --token-keyword: #ff496b;
+  --token-constant: #ffb3c1;
+  --token-string: #c9b3ff;
+  --token-number: #ff8da2;
+  --band: var(--wine);
+  --band-text: var(--paper);
+  --foot: var(--ink);
+
+  --px: 4px;
+  --display: "Pixelify Sans", ui-monospace, monospace;
+  --body: system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --measure: 42rem;
+  --wide: 66rem;
+  --gutter: max(1rem, (100% - var(--wide)) / 2);
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1126;
+    --text: var(--paper);
+    --muted: #c9b8cc;
+    --surface: var(--ink);
+    --link: #ff7a92;
+    --accent: var(--pink);
+    --frame: #960039;
+    --shadow: var(--wine);
+    --code-bg: #0f0916;
+    --foot: #0f0916;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 1.0625rem/1.6 var(--body);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::selection {
+  background: var(--link);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: var(--px) solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Site header: a wine band with a pixel fringe below it. */
+
+body > header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-bottom: calc(2 * var(--px));
+  padding: 1rem var(--gutter);
+  background: var(--band);
+  color: var(--band-text);
+}
+
+body > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: calc(2 * var(--px));
+  background: repeating-linear-gradient(
+    90deg,
+    var(--band) 0 calc(2 * var(--px)),
+    transparent 0 calc(4 * var(--px))
+  );
+}
+
+body > header > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: inherit;
+  font: 700 1.75rem/1 var(--display);
+  text-decoration: none;
+}
+
+body > header > a:hover {
+  background: none;
+  color: inherit;
+}
+
+body > header > a img {
+  width: 2.5rem;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body > header nav a {
+  display: block;
+  padding: 0.375rem 0.75rem;
+  color: var(--band-text);
+  font: 1.125rem/1 var(--display);
+  text-decoration: none;
+}
+
+body > header nav a:hover,
+body > header nav a[aria-current="page"] {
+  background: var(--band-text);
+  color: var(--band);
+}
+
+/* Forced colours drop backgrounds: mark the current page another way. */
+@media (forced-colors: active) {
+  body > header nav a[aria-current="page"] {
+    text-decoration: underline;
+  }
+}
+
+/* Main column */
+
+main {
+  padding: 3rem var(--gutter) 5rem;
+}
+
+main :is(p, ul, ol, dl, pre, figure, hgroup, h1, h2, h3, h4) {
+  max-width: var(--measure);
+}
+
+a {
+  color: var(--link);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  background: var(--link);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+a:hover code {
+  background: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2 {
+  font-family: var(--display);
+  line-height: 1.15;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  color: var(--link);
+  font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+}
+
+h2 {
+  margin: 3.5rem 0 1rem;
+  font-size: 1.875rem;
+}
+
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.5em;
+  background: var(--accent);
+  box-shadow: var(--px) var(--px) 0 var(--shadow);
+}
+
+h3 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+hgroup p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+ul {
+  list-style: square;
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+main li + li {
+  margin-top: 0.25rem;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.375rem 1.5rem;
+}
+
+dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}
+
+@media (max-width: 34rem) {
+  dl {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  dd {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Code: a dark slab with notched pixel corners. Long lines wrap, so that
+   nothing hides behind a scroll bar, on screen or on paper. */
+
+code,
+kbd,
+samp {
+  font-family: var(--mono);
+  font-size: 0.875em;
+}
+
+:not(pre) > code {
+  padding: 0.125em 0.25em;
+  background: var(--surface);
+}
+
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 1.75rem var(--px);
+  padding: 1rem clamp(1rem, 3vw, 1.25rem);
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 var(--code-bg),
+    0 var(--px) 0 var(--code-bg),
+    calc(-1 * var(--px)) 0 0 var(--code-bg),
+    var(--px) 0 0 var(--code-bg);
+}
+
+pre code,
+pre samp,
+pre kbd {
+  font-size: inherit;
+}
+
+/* In a terminal session, what was typed. */
+pre kbd {
+  font-weight: 700;
+}
+
+/* The only classes of the site: Ruby tokens, written by bin/check --fix. */
+pre .comment {
+  color: var(--token-comment);
+}
+
+pre .keyword {
+  color: var(--token-keyword);
+}
+
+pre .constant {
+  color: var(--token-constant);
+}
+
+pre .string {
+  color: var(--token-string);
+}
+
+pre .number {
+  color: var(--token-number);
+}
+
+figure {
+  margin: 2rem 0;
+}
+
+figcaption {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+[role="note"] {
+  padding: 1rem 1.25rem;
+  border-left: calc(2 * var(--px)) solid var(--accent);
+  background: var(--surface);
+}
+
+/* Home: introduction */
+
+#intro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1.5rem 2rem;
+}
+
+#intro > img {
+  width: clamp(5rem, 4rem + 6vw, 8rem);
+}
+
+#intro > hgroup h1 {
+  margin-bottom: 0.5rem;
+}
+
+#intro > :is(p, figure, ul) {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+#intro > ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+#intro > ul li {
+  margin: 0;
+}
+
+#intro > ul a {
+  display: inline-block;
+  padding: 0.625rem 1rem;
+  /* Invisible, except in forced colours, where backgrounds are dropped. */
+  border: 2px solid transparent;
+  background: var(--link);
+  color: var(--bg);
+  font: 1.125rem/1 var(--display);
+  text-decoration: none;
+  box-shadow: var(--px) var(--px) 0 var(--frame);
+}
+
+#intro > ul a:hover {
+  background: var(--text);
+  color: var(--bg);
+}
+
+#intro > ul a:active {
+  translate: var(--px) var(--px);
+  box-shadow: none;
+}
+
+@media (min-width: 62rem) {
+  #intro {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 27rem);
+    grid-template-rows: auto auto auto 1fr;
+    align-items: start;
+    column-gap: 3rem;
+  }
+
+  #intro > :is(img, hgroup) {
+    align-self: center;
+  }
+
+  #intro > :is(p, ul) {
+    grid-column: 1 / 3;
+  }
+
+  #intro > figure {
+    grid-column: 3;
+    grid-row: 1 / -1;
+  }
+}
+
+/* Cards: the gem list and the post lists */
+
+#stack > ul,
+#others > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 2rem 1.75rem;
+  max-width: none;
+  padding: 0;
+  list-style: none;
+}
+
+#stack > ul > li,
+#others > ul > li {
+  display: flex;
+  flex-direction: column;
+  margin: 0 calc(3 * var(--px)) calc(3 * var(--px)) var(--px);
+  padding: 1.25rem 1.25rem 1rem;
+  background: var(--surface);
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 var(--frame),
+    0 var(--px) 0 var(--frame),
+    calc(-1 * var(--px)) 0 0 var(--frame),
+    var(--px) 0 0 var(--frame),
+    calc(3 * var(--px)) calc(3 * var(--px)) 0 var(--shadow);
+}
+
+#stack h4,
+#others h4 {
+  margin: 0 0 0.5rem;
+  font-family: var(--display);
+  font-size: 1.5rem;
+}
+
+#stack li p,
+#others li p {
+  margin: 0;
+}
+
+#stack li p:has(> small) {
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+li small {
+  color: var(--link);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+li > article h2,
+li > article h3 {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 1.25rem;
+}
+
+li > article h2::before {
+  content: none;
+}
+
+li > article p {
+  margin: 0.25rem 0 0;
+}
+
+li > article p:first-of-type {
+  color: var(--muted);
+}
+
+main ul:has(> li > article) {
+  padding: 0;
+  list-style: none;
+}
+
+main ul:has(> li > article) > li + li {
+  margin-top: 1.75rem;
+}
+
+/* Articles */
+
+article > header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+article > footer {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: var(--px) dashed var(--muted);
+  color: var(--muted);
+}
+
+/* Site footer */
+
+body > footer {
+  position: relative;
+  margin-top: calc(2 * var(--px));
+  padding: 2rem var(--gutter);
+  background: var(--foot);
+  color: var(--paper);
+  font-size: 0.9375rem;
+}
+
+body > footer::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 100%;
+  height: calc(2 * var(--px));
+  background: repeating-linear-gradient(
+    90deg,
+    var(--foot) 0 calc(2 * var(--px)),
+    transparent 0 calc(4 * var(--px))
+  );
+}
+
+body > footer p {
+  margin: 0 0 1rem;
+}
+
+body > footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--display);
+}
+
+body > footer li {
+  margin: 0;
+}
+
+body > footer a {
+  color: var(--paper);
+}
+
+body > footer a:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Paper: the light theme, with its dark slabs and bands kept. */
+@media print {
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

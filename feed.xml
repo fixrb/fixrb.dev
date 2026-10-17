@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <id>https://fixrb.dev/feed.xml</id>
+  <title>Fixrb blog</title>
+  <subtitle>Posts about Fix, Matchi and the design of testing libraries for Ruby.</subtitle>
+  <link href="https://fixrb.dev/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://fixrb.dev/blog/" rel="alternate" type="text/html"/>
+  <icon>https://fixrb.dev/favicon.ico</icon>
+  <author>
+    <name>Cyril Kato</name>
+  </author>
+  <updated>2026-10-17T00:00:00+00:00</updated>
+
+  <entry>
+    <id>https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119</id>
+    <title>The Three Levels of Requirements Inspired by RFC 2119</title>
+    <link href="https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html" rel="alternate" type="text/html"/>
+    <published>2024-12-30T00:00:00+00:00</published>
+    <updated>2024-12-30T00:00:00+00:00</updated>
+    <summary>Discover how Fix implements MUST, SHOULD, and MAY requirement levels for more precise specifications, and how this approach compares to RSpec’s historical evolution.</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix</id>
+    <title>Rethinking Test Architecture with Clear Specification Separation</title>
+    <link href="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html" rel="alternate" type="text/html"/>
+    <published>2024-12-29T00:00:00+00:00</published>
+    <updated>2024-12-29T00:00:00+00:00</updated>
+    <summary>Discover how Fix’s unique approach to testing in Ruby promotes clear separation between specifications and implementation, making your test suite more maintainable and reusable.</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing</id>
+    <title>The Fundamental Distinction Between Expected and Actual Values in Testing</title>
+    <link href="https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html" rel="alternate" type="text/html"/>
+    <published>2024-11-04T11:00:00+00:00</published>
+    <updated>2024-11-04T11:00:00+00:00</updated>
+    <summary>Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix</id>
+    <title>From RSpec to Fix: A Journey Towards Simpler Testing</title>
+    <link href="https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html" rel="alternate" type="text/html"/>
+    <published>2015-09-06T11:00:00+00:00</published>
+    <updated>2015-09-06T11:00:00+00:00</updated>
+    <summary>Discover how Fix brings simplicity and clarity to Ruby testing with its minimalist approach and intuitive syntax, comparing it with traditional frameworks like RSpec.</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/framework/release/2015/09/03/a-fresh-take-on-ruby-testing</id>
+    <title>A Fresh Take on Ruby Testing</title>
+    <link href="https://fixrb.dev/framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html" rel="alternate" type="text/html"/>
+    <published>2015-09-03T11:00:00+00:00</published>
+    <updated>2015-09-03T11:00:00+00:00</updated>
+    <summary>Introducing Fix 0.7, a minimalist Ruby testing framework focused on clear specifications and pure Ruby objects, built in just 148 lines of code.</summary>
+  </entry>
+</feed>

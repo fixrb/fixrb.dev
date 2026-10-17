@@ -1,0 +1,468 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Checks fixrb.dev with the Ruby standard library and git: the files of the
+# repository, the markup rules, the head and layout shared by every page,
+# internal links and anchors, code examples kept identical to their files
+# under examples/ and highlighted as Ripper reads them, and the feed.
+#
+#   bin/check         checks, and changes nothing
+#   bin/check --fix   first rewrites every <pre><code> from its example file
+#                     (or, in an archived post, from its own text) with the
+#                     highlighting expected, then checks
+
+require "cgi/escape"
+require "digest"
+require "open3"
+require "rexml/document"
+require "ripper"
+require "time"
+
+Dir.chdir(File.expand_path("..", __dir__))
+
+ORIGIN = "https://fixrb.dev"
+
+# Every file of the repository matches one of these patterns. GitHub Pages
+# publishes the whole repository, so anything else would go live unchecked.
+FILES = [
+  %r{\A(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.html\z},
+  %r{\Aexamples(?:/[a-z0-9_-]+)+\.rb\z},
+  %r{\Afonts/[a-z0-9-]+\.woff2\z},
+  %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
+  %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|
+         favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
+].freeze
+
+# Files the site cannot do without.
+REQUIRED = %w[404.html blog/index.html feed.xml index.html robots.txt sitemap.xml style.css].freeze
+
+# Files a browser could run when opened directly, which do not change: their
+# content is pinned. To change one on purpose, update its digest here.
+PINNED = {
+  "logo.svg" => "a4f9f48d3bd57cb9942379ea0227f49f056dc667c3536cfc1c85f026c713601e"
+}.freeze
+
+ATOM = "http://www.w3.org/2005/Atom"
+SITEMAP = "http://www.sitemaps.org/schemas/sitemap/0.9"
+FEED_ELEMENTS = %w[feed id title subtitle link icon author name updated entry published summary].freeze
+FEED_ATTRIBUTES = %w[xmlns xml:lang href rel type].freeze
+
+# Every page starts with these lines: the policy must come before anything
+# the browser fetches.
+HEAD = <<~HTML
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+    <meta name="referrer" content="no-referrer">
+HTML
+
+# The site header and footer, the same on every page as on index.html, but
+# for the aria-current of the page's own link.
+SHARED = {
+  "header" => %r{<body>\n  <header>\n.*?\n  </header>\n}m,
+  "footer" => %r{\n  <footer>\n.*?\n  </footer>\n</body>\n</html>\n\z}m
+}.freeze
+
+# Posts published before Fix 1.0, kept as written: their code is not run.
+ARCHIVED = %w[
+  framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html
+  framework/comparison/2015/09/06/from-rspec-to-fix.html
+  design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html
+  framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html
+  framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html
+].freeze
+
+POST = %r{\A[a-z]+(?:/[a-z]+)*/\d{4}/\d{2}/\d{2}/[a-z0-9-]+\.html\z}
+TAG = /<([a-z][a-z0-9-]*)\b([^>]*)>/i
+ATTRIBUTES = %r{\A(?:\s+[a-z][a-z0-9-]*(?:="[^"]*")?)*\s*/?\z}i
+FORBIDDEN_ELEMENTS = %w[div span script style iframe frame object embed form base].freeze
+ATTRIBUTE_NAMES = %w[
+  lang charset name content http-equiv property rel href src alt width height type sizes as crossorigin
+  title id role datetime aria-label aria-labelledby aria-current data-example
+].freeze
+REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home].freeze
+LOCAL_LINKS = %w[stylesheet icon apple-touch-icon preload].freeze
+ID_REFERENCES = %w[aria-labelledby].freeze
+
+# A <pre> holds either Ruby, as a <code> highlighted by bin/check --fix, or a
+# terminal session, as <kbd> and <samp>. The checks and --fix find blocks with
+# PRE alone, so that they always see the same ones.
+PRE = %r{<pre\b([^>]*)>(.*?)</pre>}im
+EXAMPLE = %r{\A data-example="(examples(?:/[a-z0-9_-]+)+\.rb)"\z}
+
+# The class of each Ruby token, as Ripper names it. Any other token
+# (identifiers, operators, punctuation, spaces) stays plain text.
+TOKEN_CLASSES = {
+  "comment" => %i[on_comment on_embdoc_beg on_embdoc on_embdoc_end on___end__],
+  "keyword" => %i[on_kw],
+  "constant" => %i[on_const],
+  "number" => %i[on_int on_float on_rational on_imaginary],
+  "string" => %i[on_tstring_beg on_tstring_content on_tstring_end on_label on_label_end on_symbeg on_CHAR
+                 on_regexp_beg on_regexp_end on_heredoc_beg on_heredoc_end on_qwords_beg on_words_beg
+                 on_qsymbols_beg on_symbols_beg on_words_sep on_embexpr_beg on_embexpr_end on_backtick]
+}.flat_map { |css, types| types.map { |type| [type, css] } }.to_h.freeze
+
+@errors = []
+
+def error(path, message)
+  @errors << "#{path}: #{message}"
+end
+
+def read(path)
+  File.read(path, encoding: "UTF-8")
+end
+
+# The files that will be published: those git tracks or would add, so that
+# ignored files are left out and new ones are not.
+def repository_files
+  listing, status = Open3.capture2("git", "ls-files", "-z", "--cached", "--others", "--exclude-standard")
+  abort "bin/check runs in a git working tree" unless status.success?
+  listing.split("\0").uniq.select { |path| File.exist?(path) || File.symlink?(path) }.sort
+end
+
+def check_files(files)
+  files.each do |path|
+    if File.symlink?(path)
+      error(path, "is a symbolic link")
+    elsif !File.file?(path)
+      error(path, "is not a regular file")
+    end
+    error(path, "is not a file the site expects: list it in bin/check") unless FILES.any? { |pattern| pattern.match?(path) }
+  end
+  (REQUIRED - files).each { |path| error(path, "is missing") }
+end
+
+def check_pinned
+  PINNED.each do |path, digest|
+    error(path, "has changed: update its digest in bin/check if this is intended") unless Digest::SHA256.file(path).hexdigest == digest
+  end
+  error("CNAME", "must contain fixrb.dev") if @files.include?("CNAME") && read("CNAME") != "fixrb.dev\n"
+end
+
+def url_for(path)
+  "/#{path.delete_suffix('index.html')}"
+end
+
+def file_for(url)
+  path = url.delete_prefix("/")
+  path.empty? || path.end_with?("/") ? "#{path}index.html" : path
+end
+
+def ids(html)
+  html.scan(/\sid="([^"]+)"/).flatten
+end
+
+# Inside <pre><code>, only < and & are escaped.
+def escape(text)
+  text.gsub("&", "&amp;").gsub("<", "&lt;")
+end
+
+# The text a reader sees in a block of markup.
+def text_of(markup)
+  CGI.unescapeHTML(markup.gsub(/<[^>]*>/, ""))
+end
+
+# Whether the content of a <pre> is a terminal session: <kbd> for what is
+# typed, <samp> for what the computer prints, text, and no other element.
+def terminal?(content)
+  content.match?(/<(?:kbd|samp)>/) && !content.gsub(%r{</?(?:kbd|samp)>}, "").include?("<")
+end
+
+# Whether the content of a <pre> is one block of Ruby: a <code> element, and
+# no other <pre> inside.
+def code?(content)
+  content.start_with?("<code>") && content.end_with?("</code>") && !content.match?(/<pre\b/i)
+end
+
+# Splits Ruby source into Ripper's tokens and wraps each run of tokens of the
+# same class in a <span>. A symbol's name takes the class of its colon, and a
+# comment's line break stays outside its <span>.
+def highlight(source)
+  raise ArgumentError, "code must end its lines with LF, not CRLF" if source.include?("\r")
+
+  tokens = Ripper.lex(source)
+  raise ArgumentError, "Ripper does not read this code back as it is" unless tokens.sum("") { |token| token[2] } == source
+
+  previous = nil
+  pieces = tokens.flat_map do |(_, type, text, _)|
+    css = previous == [:on_symbeg, ":"] ? "string" : TOKEN_CLASSES[type]
+    previous = [type, text]
+    css == "comment" && text.end_with?("\n") ? [[css, text.delete_suffix("\n")], [nil, "\n"]] : [[css, text]]
+  end
+
+  pieces.reject { |_, text| text.empty? }.chunk_while { |a, b| a[0] == b[0] }.map do |run|
+    css = run[0][0]
+    text = escape(run.sum("") { |_, piece| piece })
+    css ? %(<span class="#{css}">#{text}</span>) : text
+  end.join
+end
+
+def code_markup(source)
+  "<code>#{highlight(source)}</code>"
+end
+
+# A link inside the site leads to a file of the repository, which keeps it
+# from leaving the repository through .., // or \.
+def check_reference(path, html, value)
+  case value
+  when %r{\Ahttps://}, /\Amailto:/ then nil
+  when /\A#(.+)\z/
+    error(path, "no element with id #{Regexp.last_match(1)}") unless ids(html).include?(Regexp.last_match(1))
+  when %r{\A/(?!/)}
+    url, fragment = value.split("#", 2)
+    target = file_for(url)
+    return error(path, "#{value} leads nowhere") unless @files.include?(target)
+    return if fragment.nil? || ids(read(target)).include?(fragment)
+
+    error(path, "#{value}: no element with id #{fragment}")
+  else
+    error(path, "#{value} must be https:// or start with /")
+  end
+end
+
+def check_tag(path, name, attributes)
+  error(path, "<#{name}> is not allowed") if FORBIDDEN_ELEMENTS.include?(name)
+  (attributes.keys - ATTRIBUTE_NAMES).each { |key| error(path, "<#{name}> has the attribute #{key}, which is not allowed") }
+  (attributes["rel"].to_s.split - REL_VALUES).each { |rel| error(path, "<#{name}> has rel=\"#{rel}\", which is not allowed") }
+  error(path, "<img> needs alt, width and height") if name == "img" && !(%w[alt width height] - attributes.keys).empty?
+end
+
+def check_tags(path, html)
+  policies = 0
+  html.scan(TAG) do |name, source|
+    next error(path, "<#{name}>: write element names in lowercase") unless name == name.downcase
+    next error(path, "<#{name}>: write every attribute value in double quotes") unless source.match?(ATTRIBUTES)
+
+    pairs = source.scan(/\s([a-z][a-z0-9-]*)(?:="([^"]*)")?/i)
+    keys = pairs.map(&:first)
+    next error(path, "<#{name}>: write attribute names in lowercase") unless keys.all? { |key| key == key.downcase }
+    next error(path, "<#{name}>: an attribute appears twice") unless keys.uniq.size == keys.size
+
+    attributes = pairs.to_h
+    policies += 1 if attributes.key?("http-equiv") || attributes["name"].to_s.downcase == "referrer"
+    check_tag(path, name, attributes)
+
+    ID_REFERENCES.each do |key|
+      attributes[key].to_s.split.each do |id|
+        error(path, "#{key}: no element with id #{id}") unless ids(html).include?(id)
+      end
+    end
+    if attributes.key?("aria-current") && attributes["href"] != url_for(path)
+      error(path, "aria-current marks a link to another page")
+    end
+
+    local = name == "link" && !(attributes["rel"].to_s.split & LOCAL_LINKS).empty?
+    attributes.slice("href", "src").each do |key, value|
+      error(path, "#{value} must be served by the site") if (key == "src" || local) && !value.start_with?("/")
+      check_reference(path, html, value)
+    end
+  end
+  # The two policies of the shared head, and no other.
+  error(path, "declares a policy (http-equiv or referrer) outside the shared head") unless policies == 2
+end
+
+def check_head(path, html)
+  error(path, "must start with the head shared by every page, up to the referrer policy") unless html.start_with?(HEAD)
+  error(path, "needs a <title>") unless html.match?(%r{<title>[^<]+</title>})
+  error(path, "needs exactly one <h1>") unless html.scan(/<h1[\s>]/).size == 1
+  ids(html).tally.each { |id, count| error(path, "id #{id} is used #{count} times") if count > 1 }
+  return error(path, "must not be indexed") if path == "404.html" && !html.include?('<meta name="robots" content="noindex">')
+  return if path == "404.html"
+
+  canonical = ORIGIN + url_for(path)
+  description = html[/<meta name="description" content="([^"]+)">/, 1]
+  error(path, "needs a description") unless description
+  error(path, "canonical must be #{canonical}") unless html.include?(%(<link rel="canonical" href="#{canonical}">))
+  error(path, "og:url must be #{canonical}") unless html.include?(%(<meta property="og:url" content="#{canonical}">))
+  error(path, "og:description must repeat the description") unless html.include?(%(<meta property="og:description" content="#{description}">))
+  error(path, "needs og:site_name") unless html.include?(%(<meta property="og:site_name" content="Fixrb">))
+end
+
+def check_shared(path, html, home)
+  SHARED.each do |part, pattern|
+    mine = html[pattern]&.gsub(' aria-current="page"', "")
+    error(path, "its site #{part} differs from the one of index.html") unless mine && mine == home[pattern]
+  end
+end
+
+def check_code_blocks(path, html, used)
+  error(path, "a <pre> is not closed") unless html.scan(/<pre\b/i).size == html.scan(PRE).size
+  html.scan(PRE) do |attributes, content|
+    next error(path, "a <pre> contains another <pre>") if content.match?(/<pre\b/i)
+
+    unless content.start_with?("<code>")
+      error(path, "a terminal session is a <pre> holding only <kbd>, <samp> and text") unless attributes.empty? && terminal?(content)
+      next
+    end
+    next error(path, "a <pre><code> must end with </code></pre>") unless code?(content)
+
+    example = attributes[EXAMPLE, 1]
+    if example
+      next error(path, "#{example} is not a file of the repository") unless @files.include?(example)
+
+      used << example
+      source = read(example)
+    elsif attributes.empty? && ARCHIVED.include?(path)
+      source = text_of(content)
+    else
+      next error(path, "a <pre><code> needs a data-example attribute naming a file of examples/")
+    end
+    expected = code_markup(source)
+    next error(path, "#{example} differs from the page") unless text_of(content) == source
+    error(path, "a code block is not highlighted as expected: run bin/check --fix") unless content == expected
+  rescue ArgumentError => e
+    error(path, e.message)
+  end
+end
+
+# Rewrites each block of Ruby that check_code_blocks would accept from its
+# example file, or from its own text in an archived post, with the expected
+# highlighting. Any other block is left as it is, for the checks to report.
+def fix_code_blocks(path)
+  html = read(path)
+  fixed = html.gsub(PRE) do
+    match = Regexp.last_match
+    attributes, content = match[1], match[2]
+    example = attributes[EXAMPLE, 1]
+    if code?(content) && example && @files.include?(example)
+      "<pre#{attributes}>#{code_markup(read(example))}</pre>"
+    elsif code?(content) && attributes.empty? && ARCHIVED.include?(path)
+      "<pre#{attributes}>#{code_markup(text_of(content))}</pre>"
+    else
+      match[0]
+    end
+  rescue ArgumentError
+    match[0]
+  end
+  File.write(path, fixed) unless fixed == html
+  fixed != html
+end
+
+def check_entry(entry, updated)
+  id = entry.elements["id"].text
+  href = entry.elements["link"].attributes["href"]
+  published, changed = %w[published updated].map { |key| Time.iso8601(entry.elements[key].text) }
+  error("feed.xml", "#{id} must be its link without .html") unless "#{id}.html" == href
+  error("feed.xml", "#{id} is updated before it is published") if changed < published
+  error("feed.xml", "#{id} is updated after the feed") if changed > updated
+
+  path = href.delete_prefix("#{ORIGIN}/")
+  unless href.start_with?("#{ORIGIN}/") && @files.include?(path)
+    error("feed.xml", "#{href} leads nowhere")
+    return
+  end
+
+  title = CGI.unescapeHTML(read(path)[%r{<h1>(.*?)</h1>}, 1].to_s)
+  error("feed.xml", "the title of #{id} differs from the page") unless entry.elements["title"].text == title
+  [path, published]
+end
+
+# The feed is served as XML, which a browser can run: only Atom elements and
+# attributes from a short list, no document type, no processing instruction,
+# and links to the site only.
+def check_feed_markup(feed)
+  error("feed.xml", "has a document type") if feed.doctype
+  error("feed.xml", "has a processing instruction") unless REXML::XPath.match(feed, "//processing-instruction()").empty?
+  REXML::XPath.each(feed, "//*") do |element|
+    unless element.namespace == ATOM && FEED_ELEMENTS.include?(element.name)
+      error("feed.xml", "<#{element.expanded_name}> is not allowed")
+    end
+    element.attributes.each_attribute do |attribute|
+      error("feed.xml", "the attribute #{attribute.expanded_name} is not allowed") unless FEED_ATTRIBUTES.include?(attribute.expanded_name)
+    end
+  end
+  links = REXML::XPath.match(feed, "//*[local-name()='link']/@href").map(&:value) +
+          REXML::XPath.match(feed, "//*[local-name()='icon']").map(&:text)
+  links.reject { |link| link.start_with?("#{ORIGIN}/") }.each { |link| error("feed.xml", "#{link} is not on #{ORIGIN}") }
+end
+
+def check_feed(posts)
+  feed = REXML::Document.new(read("feed.xml"))
+  check_feed_markup(feed)
+  updated = Time.iso8601(REXML::XPath.first(feed, "/feed/updated").text)
+  entries = REXML::XPath.match(feed, "/feed/entry").filter_map { |entry| check_entry(entry, updated) }
+  paths = entries.map(&:first)
+  dates = entries.map(&:last)
+  error("feed.xml", "an entry appears twice") unless paths.uniq.size == paths.size
+  error("feed.xml", "entries must go from newest to oldest") unless dates == dates.sort.reverse
+  (posts - paths).each { |post| error("feed.xml", "#{post} is missing") }
+rescue REXML::ParseException, ArgumentError, NoMethodError => e
+  error("feed.xml", "malformed: #{e.message.lines.first.strip}")
+end
+
+# The sitemap lists every page but 404.html, by its canonical URL, once, and
+# holds nothing else.
+def check_sitemap(pages)
+  sitemap = REXML::Document.new(read("sitemap.xml"))
+  error("sitemap.xml", "has a document type") if sitemap.doctype
+  error("sitemap.xml", "has a processing instruction") unless REXML::XPath.match(sitemap, "//processing-instruction()").empty?
+  REXML::XPath.each(sitemap, "//*") do |element|
+    error("sitemap.xml", "<#{element.expanded_name}> is not allowed") unless element.namespace == SITEMAP && %w[urlset url loc].include?(element.name)
+    element.attributes.each_attribute do |attribute|
+      error("sitemap.xml", "the attribute #{attribute.expanded_name} is not allowed") unless attribute.expanded_name == "xmlns"
+    end
+  end
+  listed = REXML::XPath.match(sitemap, "//*[local-name()='loc']").map(&:text)
+  expected = (pages - ["404.html"]).map { |page| ORIGIN + url_for(page) }
+  error("sitemap.xml", "a page is listed twice") unless listed.uniq.size == listed.size
+  (expected - listed).each { |url| error("sitemap.xml", "#{url} is missing") }
+  (listed - expected).each { |url| error("sitemap.xml", "#{url} is not a page of the site") }
+rescue REXML::ParseException => e
+  error("sitemap.xml", "malformed: #{e.message.lines.first.strip}")
+end
+
+# robots.txt announces the sitemap, and hides nothing the pages need: pages,
+# feed, sitemap, style, fonts and images stay open to crawlers.
+def check_robots(pages)
+  lines = read("robots.txt").lines(chomp: true)
+  error("robots.txt", "must announce #{ORIGIN}/sitemap.xml") unless lines.include?("Sitemap: #{ORIGIN}/sitemap.xml")
+  rules = lines.filter_map { |line| line[/\ADisallow:\s*(\S+)\z/, 1] }
+  served = pages.map { |page| url_for(page) } + @files.grep(/\.(?:xml|css|woff2|svg|ico|png)\z/).map { |file| "/#{file}" }
+  served.each do |url|
+    rule = rules.find { |prefix| url.start_with?(prefix) }
+    error("robots.txt", "Disallow: #{rule} hides #{url}") if rule
+  end
+end
+
+fix = ARGV == ["--fix"]
+abort "usage: bin/check [--fix]" unless fix || ARGV.empty?
+
+# Nothing is read or written before every file has been accepted, so that no
+# symbolic link is ever followed.
+@files = repository_files
+check_files(@files)
+abort(@errors.join("\n")) unless @errors.empty?
+check_pinned
+
+pages = @files.grep(/\.html\z/)
+pages.select { |path| fix_code_blocks(path) }.each { |path| puts "fixed #{path}" } if fix
+
+home = read("index.html")
+used = []
+pages.each do |path|
+  html = read(path)
+  check_head(path, html)
+  check_shared(path, html, home)
+  # The <span> elements of highlighted code are checked by check_code_blocks.
+  without_code = html.gsub(PRE) do
+    match = Regexp.last_match
+    code?(match[2]) ? "<pre#{match[1]}><code></code></pre>" : match[0]
+  end
+  check_tags(path, without_code)
+  check_code_blocks(path, html, used)
+end
+
+posts = pages.grep(POST)
+blog = read("blog/index.html")
+posts.each { |post| error("blog/index.html", "#{post} is missing") unless blog.include?(%(href="/#{post}")) }
+(ARCHIVED - posts).each { |post| error("bin/check", "archived post #{post} does not exist") }
+(@files.grep(%r{\Aexamples/}) - used).each { |example| error(example, "no page shows it") }
+check_feed(posts)
+check_sitemap(pages)
+check_robots(pages)
+
+abort(@errors.join("\n")) unless @errors.empty?
+puts "#{pages.size} pages, #{used.uniq.size} examples, #{posts.size} posts: ok"

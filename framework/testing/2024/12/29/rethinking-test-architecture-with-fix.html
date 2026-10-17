@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Rethinking Test Architecture with Clear Specification Separation · Fixrb</title>
+  <meta name="description" content="Discover how Fix’s unique approach to testing in Ruby promotes clear separation between specifications and implementation, making your test suite more maintainable and reusable.">
+  <link rel="canonical" href="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Rethinking Test Architecture with Clear Specification Separation">
+  <meta property="og:description" content="Discover how Fix’s unique approach to testing in Ruby promotes clear separation between specifications and implementation, making your test suite more maintainable and reusable.">
+  <meta property="og:url" content="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>Rethinking Test Architecture with Clear Specification Separation</h1>
+        <p><time datetime="2024-12-29">December 29, 2024</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <p>In the Ruby development world, testing frameworks like RSpec or Minitest have become industry standards. However, Fix proposes a radically different approach that deserves our attention: a clean separation between specifications and their implementation.</p>
+      <h2 id="traditional-architecture-a-mix-of-concerns">Traditional Architecture: A Mix of Concerns</h2>
+      <p>Traditionally, Ruby testing frameworks mix the definition of expected behaviors and the concrete examples that verify them in the same file. Let’s look at a classic example with RSpec:</p>
+      <pre><code><span class="constant">RSpec</span>.describe <span class="constant">Calculator</span> <span class="keyword">do</span>
+  subject(<span class="string">:calculator</span>) <span class="keyword">do</span>
+    described_class.new(first_number)
+  <span class="keyword">end</span>
+  describe <span class="string">"when first number is 2"</span> <span class="keyword">do</span>
+    let(<span class="string">:first_number</span>) <span class="keyword">do</span>
+      <span class="number">2</span>
+    <span class="keyword">end</span>
+    context <span class="string">"#add"</span> <span class="keyword">do</span>
+      let(<span class="string">:second_number</span>) <span class="keyword">do</span>
+        <span class="number">3</span>
+      <span class="keyword">end</span>
+      it <span class="string">"adds two numbers"</span> <span class="keyword">do</span>
+        expect(calculator.add(second_number)).to be(<span class="number">5</span>)
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>In this example, the specification (adding two numbers) is wrapped in several layers of setup and context, mixing the what (adding numbers should equal 5) with the how (creating instances, setting up variables).</p>
+      <h2 id="the-fix-approach-a-clear-separation-of-responsibilities">The Fix Approach: A Clear Separation of Responsibilities</h2>
+      <p>Fix adopts a radically different philosophy by clearly dividing two aspects:</p>
+      <ol>
+        <li>Specifications: pure documents that define expected behaviors</li>
+        <li>Tests: concrete implementations that challenge these specifications</li>
+      </ol>
+      <p>Here’s how the same calculator test looks with Fix:</p>
+      <pre><code><span class="comment"># 1. The specification - a pure and reusable document</span>
+<span class="constant">Fix</span> <span class="string">:Calculator</span> <span class="keyword">do</span>
+  on(<span class="string">:new</span>, <span class="number">2</span>) <span class="keyword">do</span>
+    on(<span class="string">:add</span>, <span class="number">3</span>) <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be <span class="number">5</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># 2. The test - a specific implementation</span>
+<span class="constant">Fix</span>[<span class="string">:Calculator</span>].test { <span class="constant">Calculator</span> }</code></pre>
+      <p>The contrast is striking. Fix’s specification is:</p>
+      <ul>
+        <li>Concise: the expected behavior is expressed in just a few lines</li>
+        <li>Clear: the flow from constructor to method call is immediately apparent</li>
+        <li>Pure: it describes only what should happen, not how to set it up</li>
+      </ul>
+      <p>This separation brings several major advantages:</p>
+      <h3 id="1-specification-reusability">1. Specification Reusability</h3>
+      <p>Specifications become autonomous documents that can be reused across different implementations. The same calculator specification could be used to test different calculator classes as long as they follow the same interface.</p>
+      <h3 id="2-isolated-testing">2. Isolated Testing</h3>
+      <p>Each test can be executed in complete isolation, which makes debugging easier and improves test code maintainability. The separation between specification and implementation means you can change how you test without changing what you’re testing.</p>
+      <h2 id="a-more-complex-example">A More Complex Example</h2>
+      <p>Let’s see how this separation applies in a more elaborate case:</p>
+      <pre><code><span class="comment"># A generic specification for a payment system</span>
+<span class="constant">Fix</span> <span class="string">:PaymentSystem</span> <span class="keyword">do</span>
+  with <span class="string">amount:</span> <span class="number">100</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_positive
+
+    on <span class="string">:process</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_successful
+      it <span class="constant">MUST</span> change(account, <span class="string">:balance</span>).by(-<span class="number">100</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">amount:</span> -<span class="number">50</span> <span class="keyword">do</span>
+    on <span class="string">:process</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> raise_exception(<span class="constant">InvalidAmountError</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># Specific tests for different implementations</span>
+<span class="constant">Fix</span>[<span class="string">:PaymentSystem</span>].test { <span class="constant">StripePayment</span>.new(<span class="string">amount:</span> <span class="number">100</span>) }
+<span class="constant">Fix</span>[<span class="string">:PaymentSystem</span>].test { <span class="constant">PaypalPayment</span>.new(<span class="string">amount:</span> <span class="number">100</span>) }</code></pre>
+      <p>In this example, the payment system specification is generic and can be applied to different payment implementations. By focusing on the interface rather than the implementation details, we create a reusable contract that any payment processor can fulfill.</p>
+      <h2 id="benefits-in-practice">Benefits in Practice</h2>
+      <p>This architectural separation provides several practical benefits:</p>
+      <ol>
+        <li><p><strong>Documentation</strong>: Specifications serve as clear, living documentation of your system’s expected behavior</p></li>
+        <li><p><strong>Maintainability</strong>: Changes to test implementation don’t require changes to specifications</p></li>
+        <li><p><strong>Flexibility</strong>: The same specifications can verify multiple implementations, making it ideal for:</p>
+        <ul>
+          <li>Testing different versions of a class</li>
+          <li>Verifying third-party integrations</li>
+          <li>Ensuring consistency across microservices</li>
+        </ul></li>
+        <li><p><strong>Clarity</strong>: By separating what from how, both specifications and tests become more focused and easier to understand</p></li>
+      </ol>
+      <h2 id="conclusion">Conclusion</h2>
+      <p>Fix invites us to rethink how we write our tests in Ruby. By clearly separating specifications from concrete tests, it allows us to:</p>
+      <ul>
+        <li>Create clearer and reusable specifications</li>
+        <li>Maintain living documentation of our expectations</li>
+        <li>Test different implementations against the same specifications</li>
+        <li>Isolate problems more easily</li>
+      </ul>
+      <p>This unique architectural approach makes Fix a particularly interesting tool for projects that require precise and reusable specifications while maintaining great flexibility in their implementation.</p>
+      <footer>
+        <p>Filed under framework and testing. <a href="/blog/">All posts</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

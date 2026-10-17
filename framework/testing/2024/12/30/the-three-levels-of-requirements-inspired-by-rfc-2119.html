@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>The Three Levels of Requirements Inspired by RFC 2119 · Fixrb</title>
+  <meta name="description" content="Discover how Fix implements MUST, SHOULD, and MAY requirement levels for more precise specifications, and how this approach compares to RSpec’s historical evolution.">
+  <link rel="canonical" href="https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="The Three Levels of Requirements Inspired by RFC 2119">
+  <meta property="og:description" content="Discover how Fix implements MUST, SHOULD, and MAY requirement levels for more precise specifications, and how this approach compares to RSpec’s historical evolution.">
+  <meta property="og:url" content="https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>The Three Levels of Requirements Inspired by RFC 2119</h1>
+        <p><time datetime="2024-12-30">December 30, 2024</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <p>In software development, precision in language is crucial. This is particularly true when defining test specifications. Fix, through the Spectus library, introduces three levels of requirements directly inspired by RFC 2119, offering rich and nuanced semantics for your specifications.</p>
+      <h2 id="the-three-requirement-levels">The Three Requirement Levels</h2>
+      <h3 id="mustmust_not-the-absolute">MUST/MUST_NOT: The Absolute</h3>
+      <p>The MUST level represents an absolute requirement of the specification. When you use MUST, you indicate that a feature is mandatory and non-negotiable. Formally, for a test using MUST to pass, the expectation must be conclusively met. If the expectation fails, the test fails unconditionally.</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Password</span> <span class="keyword">do</span>
+  it <span class="constant">MUST_NOT</span> be_empty
+  it <span class="constant">MUST</span> have_length_of(<span class="number">8</span>..<span class="number">128</span>)
+
+  with <span class="string">content:</span> <span class="string">"password123"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> include_number
+    it <span class="constant">MUST_NOT</span> be_common_password
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>In this example, each test marked with MUST represents a rule that cannot be broken. An empty or too short password is simply not acceptable. The test will fail if any of these conditions are not met, regardless of any other circumstances.</p>
+      <h3 id="shouldshould_not-the-recommendation">SHOULD/SHOULD_NOT: The Recommendation</h3>
+      <p>SHOULD indicates a strong recommendation that can be ignored in particular circumstances, but whose implications must be understood and carefully evaluated. From a technical standpoint, if an expectation marked with SHOULD fails, the test can still pass if no exception is raised. This allows for graceful degradation of optional but recommended features.</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:EmailService</span> <span class="keyword">do</span>
+  on <span class="string">:send</span>, <span class="string">to:</span> <span class="string">"user@example.com"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> deliver_email
+    it <span class="constant">SHOULD</span> be_rate_limited
+    it <span class="constant">SHOULD_NOT</span> take_longer_than(<span class="number">5</span>.seconds)
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>Here, while email delivery is mandatory (MUST), rate limiting is strongly recommended (SHOULD) but could be disabled in specific contexts. If the rate limiting check fails but doesn’t raise an exception, the test will still pass, indicating that while the recommendation wasn’t followed, the system is still functioning as expected.</p>
+      <h3 id="may-the-optional">MAY: The Optional</h3>
+      <p>MAY indicates a truly optional feature. In Fix’s implementation, a MAY requirement has a unique behavior: the test will pass either if the expectation is met OR if a NoMethodError is raised. This elegantly handles cases where optional features are not implemented at all. This is particularly valuable for specifying features that might be implemented differently across various contexts or might not be implemented at all.</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:UserProfile</span> <span class="keyword">do</span>
+  on <span class="string">:avatar</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_valid_image
+    it <span class="constant">SHOULD</span> be_less_than(<span class="number">5</span>.megabytes)
+    it <span class="constant">MAY</span> be_square
+    it <span class="constant">MAY</span> support_animation
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>In this example:</p>
+      <ul>
+        <li>The avatar must be a valid image (MUST) - this will fail if not met</li>
+        <li>It should be lightweight (SHOULD) - this will pass if it fails without exception</li>
+        <li>It may be square (MAY) - this will pass if either:
+        <ol>
+          <li>The expectation is met (the avatar is square)</li>
+          <li>The method to check squareness isn’t implemented (raises NoMethodError)</li>
+        </ol></li>
+        <li>Similarly, animation support is optional and can be entirely unimplemented</li>
+      </ul>
+      <p>This three-level system allows for precise specification of requirements while maintaining flexibility in implementation. Here’s a more complex example that demonstrates all three levels working together:</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Document</span> <span class="keyword">do</span>
+  <span class="comment"># Absolute requirements - must pass their expectations</span>
+  it <span class="constant">MUST</span> have_content
+  it <span class="constant">MUST</span> have_created_at
+
+  <span class="comment"># Strong recommendations - can fail without exception</span>
+  it <span class="constant">SHOULD</span> have_author
+  it <span class="constant">SHOULD</span> be_versioned
+
+  <span class="comment"># Optional features - can be unimplemented</span>
+  it <span class="constant">MAY</span> be_encryptable
+  it <span class="constant">MAY</span> support_collaborative_editing
+
+  on <span class="string">:publish</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> change(document, <span class="string">:status</span>).to(<span class="string">:published</span>)  <span class="comment"># Must succeed</span>
+    it <span class="constant">SHOULD</span> notify_subscribers             <span class="comment"># Can fail gracefully</span>
+    it <span class="constant">MAY</span> trigger_indexing                  <span class="comment"># Can be unimplemented</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="historical-evolution-from-rspec-to-fix">Historical Evolution: From RSpec to Fix</h2>
+      <p>This semantic approach contrasts with RSpec’s history. Originally, <a href="https://github.com/rspec/rspec-expectations/blob/ba31727e856de42abb5a2e6566855f0831e1a619/Should.md">RSpec used the <code>should</code> keyword</a> as its main interface:</p>
+      <pre><code><span class="comment"># Old RSpec style</span>
+describe <span class="constant">User</span> <span class="keyword">do</span>
+  it <span class="string">"should validate email"</span> <span class="keyword">do</span>
+    user.email = <span class="string">"invalid"</span>
+    user.should_not be_valid
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>However, this approach had several issues:</p>
+      <ul>
+        <li>Monkey-patching <code>Object</code> to add <code>should</code> could cause conflicts</li>
+        <li>Using <code>should</code> for absolute requirements was semantically incorrect</li>
+        <li>Code became harder to maintain due to global namespace pollution</li>
+      </ul>
+      <p>RSpec eventually migrated to the <code>expect</code> syntax:</p>
+      <pre><code><span class="comment"># Modern RSpec</span>
+describe <span class="constant">User</span> <span class="keyword">do</span>
+  it <span class="string">"validates email"</span> <span class="keyword">do</span>
+    user.email = <span class="string">"invalid"</span>
+    expect(user).not_to be_valid
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="the-fix-approach-clarity-and-precision">The Fix Approach: Clarity and Precision</h2>
+      <p>Fix takes a different path by fully embracing RFC 2119 semantics. Here’s a complete example illustrating all three levels:</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Article</span> <span class="keyword">do</span>
+  <span class="comment"># Absolute requirements</span>
+  it <span class="constant">MUST</span> have_title
+  it <span class="constant">MUST</span> have_content
+
+  <span class="comment"># Strong recommendations</span>
+  it <span class="constant">SHOULD</span> have_meta_description
+  it <span class="constant">SHOULD</span> be_properly_formatted
+
+  <span class="comment"># Optional features</span>
+  it <span class="constant">MAY</span> have_cover_image
+  it <span class="constant">MAY</span> have_comments_enabled
+
+  on <span class="string">:publish</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> change(article, <span class="string">:status</span>).to(<span class="string">:published</span>)
+    it <span class="constant">SHOULD</span> trigger_notification
+    it <span class="constant">MAY</span> be_featured
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># Test against a specific implementation</span>
+<span class="constant">Fix</span>[<span class="string">:Article</span>].test { <span class="constant">Article</span>.new(<span class="string">title:</span> <span class="string">"Test"</span>, <span class="string">content:</span> <span class="string">"Content"</span>) }</code></pre>
+      <p>This approach offers several advantages:</p>
+      <ul>
+        <li>Clear and precise semantics for each requirement level</li>
+        <li>No global monkey-patching</li>
+        <li>Living documentation that exactly reflects developer intentions</li>
+        <li>Better team communication through standardized vocabulary</li>
+      </ul>
+      <h2 id="conclusion">Conclusion</h2>
+      <p>Fix’s three requirement levels, inherited from Spectus, offer a powerful and nuanced way to express your testing expectations. This approach, combined with the clear separation between specifications and implementations, makes Fix particularly well-suited for writing maintainable and communicative tests.</p>
+      <p>RSpec’s evolution shows us the importance of precise semantics and clean architecture. Fix capitalizes on these lessons while offering a modern and elegant approach to Ruby testing.</p>
+      <footer>
+        <p>Filed under framework and testing. <a href="/blog/">All posts</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

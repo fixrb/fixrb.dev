@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>A Fresh Take on Ruby Testing · Fixrb</title>
+  <meta name="description" content="Introducing Fix 0.7, a minimalist Ruby testing framework focused on clear specifications and pure Ruby objects, built in just 148 lines of code.">
+  <link rel="canonical" href="https://fixrb.dev/framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="A Fresh Take on Ruby Testing">
+  <meta property="og:description" content="Introducing Fix 0.7, a minimalist Ruby testing framework focused on clear specifications and pure Ruby objects, built in just 148 lines of code.">
+  <meta property="og:url" content="https://fixrb.dev/framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>A Fresh Take on Ruby Testing</h1>
+        <p><time datetime="2015-09-03">September 3, 2015</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <p>Today marks an exciting milestone in our journey as we announce the release of Fix 0.7! After months of careful development and <a href="https://speakerdeck.com/cyril/konbanha-tiao-jian-yabiheibiatesuto">multiple iterations</a>, we’re proud to present a testing framework that brings simplicity and clarity back to Ruby testing.</p>
+      <h2 id="the-philosophy-behind-fix">The Philosophy Behind Fix</h2>
+      <p>Fix emerged from a simple observation: testing frameworks shouldn’t be more complex than the code they’re testing. Built on just 148 lines of code and powered by the <a href="https://github.com/fixrb/spectus">Spectus expectation library</a>, Fix takes a deliberately minimalist approach. We’ve intentionally omitted features like benchmarking and mocking to focus on what matters most: writing clear, maintainable specifications.</p>
+      <h3 id="key-features">Key Features</h3>
+      <ul>
+        <li><strong>Pure Specification Documents</strong>: Fix treats specs as living documents that remain logic-free and crystal clear</li>
+        <li><strong>Version-Resistant</strong>: Specifications remain stable across Fix versions, protecting against software erosion</li>
+        <li><strong>No Magic</strong>: We avoid monkey-patching and other Ruby “<a href="https://blog.arkency.com/2013/06/are-we-abusing-at-exit/">magic tricks</a>” that can obscure behavior</li>
+        <li><strong>Authentic Ruby Objects</strong>: Work with pure, unmuted Ruby objects for unambiguous and structured specs</li>
+      </ul>
+      <h2 id="why-another-testing-framework">Why Another Testing Framework?</h2>
+      <p>After a decade of Ruby development, I found myself struggling to understand RSpec’s source code. This raised a concerning question: if a testing framework is more complex than the code it tests, how confident can we be in our tests?</p>
+      <p>Let’s look at a revealing example:</p>
+      <pre><code><span class="keyword">class</span> <span class="constant">App</span>
+  <span class="keyword">def</span> equal?(*)
+    <span class="keyword">true</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+require <span class="string">"rspec"</span>
+
+<span class="constant">RSpec</span>.describe <span class="constant">App</span> <span class="keyword">do</span>
+  it <span class="string">"is the answer to life, the universe and everything"</span> <span class="keyword">do</span>
+    expect(described_class.new).to equal(<span class="number">42</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>Running this with RSpec:</p>
+      <pre><samp>$ <kbd>rspec wat_spec.rb</kbd>
+.
+
+Finished in 0.00146 seconds (files took 0.17203 seconds to load)
+1 example, 0 failures</samp></pre>
+      <p>Surprisingly, RSpec tells us that <code>App.new</code> equals 42! While this specific issue could be resolved by <a href="https://github.com/rspec/rspec-expectations/blob/995d1acd5161d94d28f6af9835b79c9d9e586307/lib/rspec/matchers/built_in/equal.rb#L40">reversing actual and expected values</a>, it highlights potential risks in complex testing frameworks.</p>
+      <h2 id="fix-in-action">Fix in Action</h2>
+      <p>Let’s see how Fix handles a real-world test case:</p>
+      <pre><code><span class="comment"># car_spec.rb</span>
+require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Car</span> <span class="keyword">do</span>
+  on <span class="string">:new</span>, <span class="string">color:</span> <span class="string">"red"</span> <span class="keyword">do</span>
+    it { <span class="constant">MUST</span> be_an_instance_of <span class="constant">Car</span> }
+
+    on <span class="string">:color</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> eql <span class="string">"red"</span> }
+    <span class="keyword">end</span>
+
+    on <span class="string">:start</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> change(car, <span class="string">:running?</span>).from(<span class="keyword">false</span>).to(<span class="keyword">true</span>) }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># Running the specification</span>
+<span class="constant">Fix</span>[<span class="string">:Car</span>].test { <span class="constant">Car</span> }</code></pre>
+      <p>Notice how Fix:</p>
+      <ul>
+        <li>Keeps specifications clear and concise</li>
+        <li>Uses method chaining for natural readability</li>
+        <li>Focuses on behavior rather than implementation details</li>
+        <li>Maintains consistent syntax across different types of tests</li>
+      </ul>
+      <h2 id="looking-forward">Looking Forward</h2>
+      <p>As we approach version 1.0.0, our focus remains on stability and refinement rather than adding new features. Fix is ready for production use, and we’re excited to see how the Ruby community puts it to work.</p>
+      <h3 id="key-areas-of-focus">Key Areas of Focus</h3>
+      <ol>
+        <li><strong>Documentation Enhancement</strong>: Making it easier for newcomers to get started</li>
+        <li><strong>Performance Optimization</strong>: Ensuring Fix remains lightweight and fast</li>
+        <li><strong>Community Feedback</strong>: Incorporating real-world usage patterns</li>
+        <li><strong>Ecosystem Growth</strong>: Building tools and extensions around the core framework</li>
+      </ol>
+      <h2 id="get-involved">Get Involved</h2>
+      <ul>
+        <li>Try Fix in your projects: <code>gem install fix</code></li>
+        <li><a href="https://github.com/fixrb/fix">Visit our GitHub repository</a></li>
+        <li>Share your feedback - we value all perspectives!</li>
+      </ul>
+      <p>Whether you love it or see room for improvement, we want to hear from you. Your feedback will help shape the future of Fix.</p>
+      <p>Happy testing!</p>
+      <footer>
+        <p>Filed under framework and release. <a href="/blog/">All posts</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>The Fundamental Distinction Between Expected and Actual Values in Testing · Fixrb</title>
+  <meta name="description" content="Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.">
+  <link rel="canonical" href="https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="The Fundamental Distinction Between Expected and Actual Values in Testing">
+  <meta property="og:description" content="Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.">
+  <meta property="og:url" content="https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>The Fundamental Distinction Between Expected and Actual Values in Testing</h1>
+        <p><time datetime="2024-11-04">November 4, 2024</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <p>The distinction between expected and actual values in automated testing is more than just a convention - it’s a fundamental architectural principle that deserves our attention.</p>
+      <p>To emphasize the semantic difference between these two values, we must understand that the expected value is a known constant, an integral part of the specification. In contrast, the actual value, obtained by challenging a foreign object, must be evaluated against the expected value by the predicate. This is precisely the role of the latter: to ensure that the obtained value satisfies the criteria defined by the expected value.</p>
+      <p>This distinction is so fundamental that it must be honored in the very design of the predicate: it receives the expected value as a reference during initialization, then evaluates the actual value against this reference. This asymmetry in value handling reflects their profoundly different nature, a principle that modern testing libraries like <a href="https://github.com/fixrb/matchi">Matchi</a> have wisely chosen to implement.</p>
+      <p>Let’s illustrate this principle with a concrete example. Consider a simple equivalence test between two strings:</p>
+      <pre><code><span class="constant">EXPECTED_VALUE</span> = <span class="string">"foo"</span>
+actual_value = <span class="string">"bar"</span></code></pre>
+      <p>At first glance, these two approaches seem equivalent:</p>
+      <pre><code><span class="constant">EXPECTED_VALUE</span>.eql?(actual_value) <span class="comment"># => false</span>
+actual_value.eql?(<span class="constant">EXPECTED_VALUE</span>) <span class="comment"># => false</span></code></pre>
+      <p>However, this apparent symmetry can be deceptive. Consider a scenario where the actual value has been compromised:</p>
+      <pre><code><span class="keyword">def</span> actual_value.eql?(*)
+  <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+actual_value.eql?(<span class="constant">EXPECTED_VALUE</span>) <span class="comment"># => true</span></code></pre>
+      <p>This example, though simplified, highlights a fundamental principle: the predicate must never trust the actual value. Delegating the responsibility of comparison to the latter would mean trusting it for its own evaluation. This is why the predicate must always maintain control of the comparison, using the expected value as a reference to evaluate the actual value, and not the reverse.</p>
+      <p>This rigorous approach to predicate design contributes not only to the robustness of tests but also to their clarity and long-term maintainability.</p>
+      <footer>
+        <p>Filed under design and testing. <a href="/blog/">All posts</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

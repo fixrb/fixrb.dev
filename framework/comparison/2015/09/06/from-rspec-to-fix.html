@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>From RSpec to Fix: A Journey Towards Simpler Testing · Fixrb</title>
+  <meta name="description" content="Discover how Fix brings simplicity and clarity to Ruby testing with its minimalist approach and intuitive syntax, comparing it with traditional frameworks like RSpec.">
+  <link rel="canonical" href="https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="From RSpec to Fix: A Journey Towards Simpler Testing">
+  <meta property="og:description" content="Discover how Fix brings simplicity and clarity to Ruby testing with its minimalist approach and intuitive syntax, comparing it with traditional frameworks like RSpec.">
+  <meta property="og:url" content="https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>From RSpec to Fix: A Journey Towards Simpler Testing</h1>
+        <p><time datetime="2015-09-06">September 6, 2015</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <h2 id="the-quest-for-simplicity">The Quest for Simplicity</h2>
+      <p>One of the most striking differences between Fix and traditional testing frameworks like RSpec lies in their complexity. Let’s look at some numbers that tell an interesting story:</p>
+      <h3 id="rspecs-components-version-33">RSpec’s Components (version 3.3)</h3>
+      <ul>
+        <li><a href="https://github.com/rspec/rspec/releases/tag/v3.3.0">rspec</a> gem (7 LOC) with runtime dependencies:
+        <ul>
+          <li><a href="https://github.com/rspec/rspec-core/releases/tag/v3.3.2">rspec-core</a>: 6,689 LOC</li>
+          <li><a href="https://github.com/rspec/rspec-expectations/releases/tag/v3.3.1">rspec-expectations</a>: 3,697 LOC</li>
+          <li><a href="https://github.com/rspec/rspec-mocks/releases/tag/v3.3.2">rspec-mocks</a>: 3,963 LOC</li>
+          <li><a href="https://github.com/rspec/rspec-support/releases/tag/v3.3.0">rspec-support</a>: 1,509 LOC</li>
+          <li><a href="https://github.com/halostatue/diff-lcs/releases/tag/v1.2.5">diff-lcs</a>: 1,264 LOC</li>
+        </ul></li>
+      </ul>
+      <p><strong>Total: 17,129 lines of code</strong></p>
+      <h3 id="fixs-components-version-07">Fix’s Components (version 0.7)</h3>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix/releases/tag/v0.7.0">fix</a> gem (148 LOC) with runtime dependencies:
+        <ul>
+          <li><a href="https://github.com/fixrb/spectus/releases/tag/v2.3.1">spectus</a>: 289 LOC</li>
+          <li><a href="https://github.com/fixrb/matchi/releases/tag/v0.0.9">matchi</a>: 73 LOC</li>
+        </ul></li>
+      </ul>
+      <p><strong>Total: 510 lines of code</strong></p>
+      <p>The core philosophy is simple: a testing framework shouldn’t be more complex than the code it tests. This dramatic difference in code size (16,619 lines of code) reflects Fix’s commitment to minimalism and clarity.</p>
+      <h2 id="a-real-world-comparison">A Real-World Comparison</h2>
+      <p>Let’s look at a real-world example that demonstrates the key differences in approach. Consider this Monster class:</p>
+      <pre><code><span class="keyword">class</span> <span class="constant">Monster</span>
+  <span class="keyword">def</span> <span class="keyword">self</span>.get
+    {
+      <span class="string">boo:</span> {
+        <span class="string">name:</span> <span class="string">"Boo"</span>,
+        <span class="string">life:</span> <span class="number">123</span>,
+        <span class="string">mana:</span> <span class="number">42</span>
+      },
+      <span class="string">hasu:</span> {
+        <span class="string">name:</span> <span class="string">"Hasu"</span>,
+        <span class="string">life:</span> <span class="number">88</span>,
+        <span class="string">mana:</span> <span class="number">40</span>
+      }
+    }
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> get(id)
+    <span class="keyword">self</span>.class.get.fetch(id)
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h3 id="rspecs-layered-approach">RSpec’s Layered Approach</h3>
+      <pre><code>require_relative <span class="string">"monster"</span>
+require <span class="string">"rspec/autorun"</span>
+
+<span class="constant">RSpec</span>.describe <span class="constant">Monster</span> <span class="keyword">do</span>
+  describe <span class="string">".get"</span> <span class="keyword">do</span>
+    subject(<span class="string">:monsters</span>) { described_class.get }
+
+    describe <span class="string">"#keys"</span> <span class="keyword">do</span>
+      it { expect(monsters.keys).to eql <span class="string">%i(boo hasu)</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  describe <span class="string">".new"</span> <span class="keyword">do</span>
+    subject(<span class="string">:described_instance</span>) { described_class.new }
+
+    describe <span class="string">"#get"</span> <span class="keyword">do</span>
+      subject(<span class="string">:monster</span>) { described_instance.get(name) }
+
+      context <span class="string">"with Boo monster"</span> <span class="keyword">do</span>
+        let(<span class="string">:name</span>) { <span class="string">:boo</span> }
+        it { expect(monster).to eql({ <span class="string">name:</span> <span class="string">"Boo"</span>, <span class="string">life:</span> <span class="number">123</span>, <span class="string">mana:</span> <span class="number">42</span> }) }
+      <span class="keyword">end</span>
+
+      context <span class="string">"with Boom monster"</span> <span class="keyword">do</span>
+        let(<span class="string">:name</span>) { <span class="string">:boom</span> }
+        it { expect { monster }.to raise_exception <span class="constant">KeyError</span> }
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h3 id="fixs-direct-style">Fix’s Direct Style</h3>
+      <pre><code>require_relative <span class="string">"monster"</span>
+require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span>.describe <span class="constant">Monster</span> <span class="keyword">do</span>
+  on <span class="string">:get</span> <span class="keyword">do</span>
+    on <span class="string">:keys</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> eql <span class="string">%i(boo hasu)</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:new</span> <span class="keyword">do</span>
+    on <span class="string">:get</span>, <span class="string">:boo</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> eql({ <span class="string">name:</span> <span class="string">"Boo"</span>, <span class="string">life:</span> <span class="number">123</span>, <span class="string">mana:</span> <span class="number">42</span> }) }
+    <span class="keyword">end</span>
+
+    on <span class="string">:get</span>, <span class="string">:boom</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> raise_exception <span class="constant">KeyError</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="key-differentiators">Key Differentiators</h2>
+      <ol>
+        <li><p><strong>Method Chaining</strong>: Fix allows describing methods with one expression, whether for class or instance methods. This leads to more concise and readable code.</p></li>
+        <li><p><strong>Single Source of Truth</strong>: All specifications are derived from the described front object populated at the root. There’s no need for explicit or implicit subjects - there’s just one read-only dynamic subject deduced from the front object and described methods.</p></li>
+        <li><p><strong>Consistent Syntax</strong>: Fix maintains the same syntax regardless of what’s being tested. Whether you’re checking a value, expecting an error, or verifying a state change, the syntax remains uniform and predictable.</p></li>
+      </ol>
+      <h2 id="clarity-in-practice">Clarity in Practice</h2>
+      <p>Fix encourages a more direct and less ceremonial approach to testing. Compare how both frameworks handle error checking:</p>
+      <p>RSpec:</p>
+      <pre><code>expect { problematic_call }.to raise_exception(<span class="constant">ErrorType</span>)</code></pre>
+      <p>Fix:</p>
+      <pre><code>it { <span class="constant">MUST</span> raise_exception <span class="constant">ErrorType</span> }</code></pre>
+      <p>Or value comparison:</p>
+      <p>RSpec:</p>
+      <pre><code>expect(value).to eq(expected)</code></pre>
+      <p>Fix:</p>
+      <pre><code>it { <span class="constant">MUST</span> eql expected }</code></pre>
+      <p>This consistency helps reduce cognitive load and makes tests easier to write and understand.</p>
+      <h2 id="conclusion">Conclusion</h2>
+      <p>Fix represents a fresh approach to Ruby testing that prioritizes simplicity and clarity. By reducing complexity and maintaining a consistent syntax, it helps developers focus on what matters: writing clear, maintainable tests that effectively verify their code’s behavior.</p>
+      <p>Want to try Fix for yourself? Get started with:</p>
+      <pre><kbd>gem install fix</kbd></pre>
+      <p>Visit our <a href="https://rubydoc.info/gems/fix">documentation</a> to learn more about how Fix can improve your testing workflow.</p>
+      <footer>
+        <p>Filed under framework and comparison. <a href="/blog/">All posts</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
