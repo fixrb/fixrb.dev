@@ -90,18 +90,17 @@ Then open <http://localhost:8000/>. Pages use root-relative links, so opening a 
 
 Write `gems/NAME/index.html` from `gems/matchi/index.html`: what the gem does, how to install it, examples from `examples/NAME/`, the version the page documents, and links to its README, API reference and source at that version. Link it from the gem's card on `index.html`, and add it to `sitemap.xml`.
 
-## Going live
+## Releasing a gem
 
-`fixrb.dev` is served from `docs/` in `fixrb/fix` until Fix 1.0 is released. Then:
+When a gem is released, update its card on `index.html` (version and status) and its page (the version documented, and its links at that version), check that those links resolve, and run its examples against the release with `bin/examples`.
 
-1. Verify `fixrb.dev` for the `fixrb` organization (organization settings, Pages, verified domains), so that no other repository can claim it.
-2. In `fixrb/fix`, remove the custom domain and turn Pages off, then delete `docs/`.
-3. Here, update the gem cards on `index.html` (versions and statuses such as "1.0 in preparation"), check that the links of each gem page resolve (the tag, API reference and RubyGems pages of the version documented), and run `bin/examples` against the released gems.
-4. Add a `CNAME` file containing `fixrb.dev`, commit, then publish Pages from the `main` branch, root folder, and enforce HTTPS.
-5. Add `fixrb.dev` to Google Search Console as a domain property (a DNS TXT record), and submit `https://fixrb.dev/sitemap.xml`.
-6. Pages publishes every push to `main`, checked or not. To publish only what passes `bin/check`, protect `main` in the repository settings: changes through pull requests, with the Check status required.
+## Hosting
 
-The DNS records that point `fixrb.dev` to GitHub Pages do not change; steps 1 and 5 only add TXT records.
+GitHub Pages serves `fixrb.dev` from the `main` branch, root folder: `CNAME` names the domain, and `.nojekyll` makes Pages serve the files as they are. The domain is verified for the `fixrb` organization (organization settings, Pages, verified domains), so that no other repository can claim it. It was served from `docs/` in `fixrb/fix`, by Jekyll, until October 2026.
+
+Pages publishes every push to `main`, checked or not. To publish only what passes `bin/check`, protect `main` in the repository settings: changes through pull requests, with the Check status required.
+
+For search engines, `fixrb.dev` is to be a domain property in Google Search Console (a DNS TXT record) and in Bing Webmaster Tools (imported from Search Console), with `https://fixrb.dev/sitemap.xml` submitted to both.
 
 ## License
 
