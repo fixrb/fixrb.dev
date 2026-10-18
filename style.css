@@ -459,8 +459,8 @@ figcaption {
 
 /* Cards: the gem list and the post lists */
 
-#stack > ul,
-#others > ul {
+#fix > ul,
+#libraries > ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 2rem 1.75rem;
@@ -469,8 +469,8 @@ figcaption {
   list-style: none;
 }
 
-#stack > ul > li,
-#others > ul > li {
+#fix > ul > li,
+#libraries > ul > li {
   display: flex;
   flex-direction: column;
   margin: 0 calc(3 * var(--px)) calc(3 * var(--px)) var(--px);
@@ -484,19 +484,19 @@ figcaption {
     calc(3 * var(--px)) calc(3 * var(--px)) 0 var(--shadow);
 }
 
-#stack h4,
-#others h4 {
+#fix h4,
+#libraries h4 {
   margin: 0 0 0.5rem;
   font-family: var(--display);
   font-size: 1.5rem;
 }
 
-#stack li p,
-#others li p {
+#fix li p,
+#libraries li p {
   margin: 0;
 }
 
-#stack li p:has(> small) {
+#gems li p:has(> small) {
   margin-top: auto;
   padding-top: 0.75rem;
 }

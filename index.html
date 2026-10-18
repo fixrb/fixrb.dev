@@ -80,29 +80,14 @@
       <h2 id="gems-title">Gems</h2>
       <p>Each gem does one thing, in a few hundred lines of code at most, so that you can read it before you trust it.</p>
 
-      <section id="stack">
-        <h3>The Fix stack</h3>
-        <p>Fix 1.0 is built on Matchi and Aw, and three more gems build on Fix.</p>
+      <section id="fix">
+        <h3>Fix and its extensions</h3>
+        <p>Fix is the main gem of Fixrb. fix-command and fix-its extend it.</p>
         <ul>
           <li>
             <h4><a href="https://github.com/fixrb/fix">fix</a></h4>
             <p>Specifications with MUST, SHOULD and MAY requirements, kept apart from the implementations they challenge.</p>
             <p><small>1.0 in preparation</small></p>
-          </li>
-          <li>
-            <h4><a href="/gems/matchi/">matchi</a></h4>
-            <p>Matchers for any test framework, in which the expected value makes the comparison, not the object under test.</p>
-            <p><small>Version 5.0</small></p>
-          </li>
-          <li>
-            <h4><a href="https://github.com/fixrb/aw">aw</a></h4>
-            <p>Runs a block in a forked process and returns its result. Fix uses it to keep contexts apart.</p>
-            <p><small>1.0 in preparation</small></p>
-          </li>
-          <li>
-            <h4><a href="https://github.com/fixrb/matchi-fix">matchi-fix</a></h4>
-            <p>A Matchi matcher that checks a value against a Fix specification, from any test framework.</p>
-            <p><small>Moving to Fix 1.0</small></p>
           </li>
           <li>
             <h4><a href="https://github.com/fixrb/fix-command">fix-command</a></h4>
@@ -117,25 +102,49 @@
         </ul>
       </section>
 
-      <section id="others">
-        <h3>Outside the stack</h3>
-        <p>Earlier versions of Fix were built on these gems. Fix 1.0 does not use them.</p>
+      <section id="libraries">
+        <h3>Libraries</h3>
+        <p>These gems do not extend Fix: use them on their own, with any test framework, or to build one. Fix 1.0 is built on matchi and aw.</p>
         <ul>
           <li>
-            <h4><a href="https://github.com/fixrb/defi">defi</a></h4>
-            <p>Prepares a method call, a name and its arguments, to send to any object.</p>
+            <h4><a href="/gems/matchi/">matchi</a></h4>
+            <p>Matchers for any test framework, in which the expected value makes the comparison, not the object under test.</p>
+            <p><small>Version 5.0</small></p>
+          </li>
+          <li>
+            <h4><a href="https://github.com/fixrb/matchi-fix">matchi-fix</a></h4>
+            <p>Extends matchi with a matcher that checks a value against a Fix specification, from any test framework.</p>
+            <p><small>Moving to Fix 1.0</small></p>
+          </li>
+          <li>
+            <h4><a href="https://github.com/fixrb/aw">aw</a></h4>
+            <p>Runs a block in a forked process and returns its result. Fix uses it to keep contexts apart.</p>
+            <p><small>1.0 in preparation</small></p>
           </li>
           <li>
             <h4><a href="https://github.com/fixrb/spectus">spectus</a></h4>
-            <p>Expectations with the requirement levels of RFC 2119.</p>
+            <p>Expectations with the requirement levels of RFC 2119. Built on test_tube and expresenter.</p>
+            <p><small>Version 5.0</small></p>
           </li>
           <li>
             <h4><a href="https://github.com/fixrb/test_tube">test_tube</a></h4>
-            <p>A test tube to conduct software experiments.</p>
+            <p>Checks a value, or what a block returns or raises, against a matcher. Built on defi.</p>
+            <p><small>Version 4.0</small></p>
           </li>
           <li>
             <h4><a href="https://github.com/fixrb/expresenter">expresenter</a></h4>
-            <p>Presents the result of an expectation.</p>
+            <p>Presents the result of an expectation: success, warning, info, failure or error.</p>
+            <p><small>Version 1.5</small></p>
+          </li>
+          <li>
+            <h4><a href="https://github.com/fixrb/defi">defi</a></h4>
+            <p>Prepares a method call, a name and its arguments, to send to any object.</p>
+            <p><small>Version 3.0</small></p>
+          </li>
+          <li>
+            <h4><a href="https://github.com/fixrb/brutal">brutal</a></h4>
+            <p>Writes plain Ruby tests from a YAML file, by recording what your code returns in every combination of contexts.</p>
+            <p><small>1.6 in beta</small></p>
           </li>
         </ul>
       </section>

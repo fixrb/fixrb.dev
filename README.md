@@ -67,7 +67,7 @@ Runs the examples, each in its own Ruby process, with the gems found on the load
 The stylesheet relies on this structure, which every page follows.
 
 - `body > header`: a link to `/` with the logo and the site name, then `nav[aria-label="Main"] > ul`. `body > footer`: a paragraph, then a list of links. `main` in between.
-- Home: `section#intro` (logo, `hgroup`, paragraph, `figure` with the example, `ul` of two links), then `section#gems` holding `section#stack` and `section#others`. A gem card is `li > h4 > a`, a `p`, and in the stack a status in `p > small`.
+- Home: `section#intro` (logo, `hgroup`, paragraph, `figure` with the example, `ul` of two links), then `section#gems` holding `section#fix` (Fix and the gems that extend it) and `section#libraries` (the gems that do not). A gem card is `li > h4 > a`, a `p`, and a status in `p > small`.
 - Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, then the `hgroup`.
 - Lists of posts: `ul > li > article`, with a title `h2 > a` or `h3 > a`, a date `p > time`, and a description `p`.
 - Posts: `article > header` (the `h1`, then `p` with the date and author), `p[role="note"]` for a note, `article > footer`.
@@ -87,6 +87,10 @@ Then open <http://localhost:8000/>. Pages use root-relative links, so opening a 
 2. Add it at the top of `blog/index.html` and of the latest posts on `index.html` (three at most), and to `sitemap.xml`.
 3. Add an entry at the top of `feed.xml`: `id` is the URL without `.html`, as for the former posts. Update the feed's `updated`.
 4. Put its code in `examples/`, then run `bin/check --fix` and `bin/examples`.
+
+## Adding a gem
+
+Give it a card on `index.html`: in `section#fix` if it extends Fix, in `section#libraries` otherwise, right after the gem it extends, if any. Its description says which gems of the project it is built on, and its status which version is released or being prepared.
 
 ## Adding a gem page
 
