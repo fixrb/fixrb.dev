@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>aw: run a Ruby block in a forked process · Fixrb</title>
+  <meta name="description" content="Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.">
+  <link rel="canonical" href="https://fixrb.dev/gems/aw/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="aw: run a Ruby block in a forked process">
+  <meta property="og:description" content="Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.">
+  <meta property="og:url" content="https://fixrb.dev/gems/aw/">
+  <meta property="og:image" content="https://fixrb.dev/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/gems/aw/img/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/gems/aw/img/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/gems/aw/img/apple-touch-icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/aw/img/hero.svg" alt="" width="208" height="208">
+        <hgroup>
+          <h1>aw</h1>
+          <p>Runs a Ruby block in a forked process.</p>
+        </hgroup>
+      </header>
+      <p>What the block returns comes back to the parent, and what it raises is raised again there. What it does to the process stays in the child: mutations, globals, constants, the current directory, <code>ENV</code>, a crash. What it does outside, to files or to other processes, does not.</p>
+      <figure>
+        <img src="/gems/aw/img/scene.png" alt="A pixel-art hero shouting “Aw, fork!” while his forked clone strikes a golem." width="603" height="363">
+        <figcaption>The forked clone, PID 12345, does the fighting: Ken keeps his 24 HP.</figcaption>
+      </figure>
+      <dl>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later, with <code>fork(2)</code>: CRuby on Linux, macOS and the BSDs</dd>
+        <dt>Dependencies</dt>
+        <dd>None</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+        <dt>Used by</dt>
+        <dd>Fix 1.0</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "aw"</code> to your Gemfile, or run <code>gem install aw</code>. Without <code>fork(2)</code>, on Windows or JRuby, <code>Aw.supported?</code> answers <code>false</code>, and <code>fork!</code> and <code>fork?</code> raise <code>NotImplementedError</code>.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p><code>fork!</code> returns what the block returned, and <code>fork?</code> tells whether the block returned rather than raised. The list changes in the child only:</p>
+      <pre data-example="examples/aw/usage.rb"><code>require <span class="string">"aw"</span>
+
+list = [<span class="string">"foo"</span>]
+
+<span class="constant">Aw</span>.fork! { list &lt;&lt; <span class="string">"bar"</span> } <span class="comment"># => ["foo", "bar"]</span>
+list                       <span class="comment"># => ["foo"]</span>
+
+<span class="constant">Aw</span>.fork? { list.fetch(<span class="number">0</span>) } <span class="comment"># => true</span>
+<span class="constant">Aw</span>.fork? { list.fetch(<span class="number">1</span>) } <span class="comment"># => false</span>
+</code></pre>
+
+      <h2 id="errors">Errors</h2>
+      <p><code>fork!</code> raises again in the parent what the block raised, with its message, its backtrace and its cause. That includes the <code>SystemExit</code> of an <code>exit</code> or an <code>abort</code>, and the <code>SignalException</code> of a signal that Ruby turns into an exception, such as <code>TERM</code>: left uncaught, they end the parent as they would have ended the child.</p>
+      <p><code>fork!</code> and <code>fork?</code> raise <code>Aw::ChildError</code> when the child delivers no result: a signal such as <code>KILL</code> ended it, the child called <code>exit!</code> or <code>exec</code>, or the block left with <code>break</code>, <code>return</code> or <code>throw</code>. The error’s <code>status</code> is the child’s <code>Process::Status</code>:</p>
+      <pre data-example="examples/aw/errors.rb"><code>require <span class="string">"aw"</span>
+
+raised = <span class="keyword">begin</span>
+  <span class="constant">Aw</span>.fork! { <span class="constant">Integer</span>(<span class="string">"forty-two"</span>) }
+<span class="keyword">rescue</span> <span class="constant">ArgumentError</span> => e
+  e
+<span class="keyword">end</span>
+raised.message <span class="comment"># => "invalid value for Integer(): \"forty-two\""</span>
+
+failed = <span class="keyword">begin</span>
+  <span class="constant">Aw</span>.fork! { <span class="constant">Process</span>.kill(<span class="string">:KILL</span>, <span class="constant">Process</span>.pid) }
+<span class="keyword">rescue</span> <span class="constant">Aw</span>::<span class="constant">ChildError</span> => e
+  e
+<span class="keyword">end</span>
+failed.status.signaled? <span class="comment"># => true</span>
+</code></pre>
+      <p>The value or the exception travels through a pipe with <code>Marshal</code>, and comes back as a copy. When <code>Marshal</code> cannot dump it (a <code>Proc</code>, an <code>IO</code>, an object with singleton methods, an instance of an anonymous class, or anything that holds one) or the parent cannot load it (an instance of a class the parent does not know), <code>fork!</code> raises <code>Aw::ChildError</code> too. <code>fork?</code> transfers neither, so it answers even when they could not come back.</p>
+
+      <h2 id="limits">Limits</h2>
+      <ul>
+        <li>Aw is not a sandbox. It keeps in the child the changes that code you trust makes to the process; a hostile block runs as your user, and can make <code>fork!</code> return or raise anything, make <code>fork?</code> answer <code>true</code>, run the parent’s <code>marshal_load</code> methods and autoloads, make the parent hold as much memory as it writes, signal it, and leave processes behind. Only the <code>status</code> of an <code>Aw::ChildError</code> comes from the system.</li>
+        <li>Aw has no timeout: <code>fork!</code> and <code>fork?</code> wait until the child exits, and, when it delivers no result, until any process the block forked without <code>exec</code> exits too. Wrap the call in a <code>Timeout</code> if the block might never end: an interrupted parent kills and reaps the child before going on.</li>
+        <li>What the block does outside the process stays done. Files and connections the parent opened are shared with the child, offsets included: let the block open its own connections.</li>
+        <li>Only the thread that calls <code>fork!</code> or <code>fork?</code> exists in the child.</li>
+        <li>A call costs a few milliseconds, more for a large process: about 2 ms at 50 MB, and 20 ms at 700 MB.</li>
+      </ul>
+      <p>The README details the guarantees, and what else to know about fork: buffered output, fiber schedulers, macOS, <code>SIGCHLD</code> and SimpleCov.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/aw/blob/v1.0.0/README.md">README</a>: what comes back and what cannot, the guarantees, things to know about fork, and the changes in 1.0.</li>
+        <li><a href="https://rubydoc.info/gems/aw/1.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/aw/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/aw/tree/v1.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
