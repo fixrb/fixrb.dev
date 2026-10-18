@@ -542,6 +542,16 @@ article > header p {
   color: var(--muted);
 }
 
+/* A gem page: the gem's drawing beside its name, at the size its width and
+   height give it, a whole number of screen pixels per pixel of the drawing. */
+article > header:has(> img) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2.5rem;
+  margin-bottom: 2rem;
+}
+
 article > footer {
   margin-top: 3.5rem;
   padding-top: 1.5rem;

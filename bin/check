@@ -4,7 +4,8 @@
 # Checks fixrb.dev with the Ruby standard library and git: the files of the
 # repository, the markup rules, the head and layout shared by every page,
 # internal links and anchors, code examples kept identical to their files
-# under examples/ and highlighted as Ripper reads them, and the feed.
+# under examples/ and highlighted as Ripper reads them, the feed, the sitemap,
+# robots.txt and the SVG drawings.
 #
 #   bin/check         checks, and changes nothing
 #   bin/check --fix   first rewrites every <pre><code> from its example file
@@ -28,6 +29,7 @@ FILES = [
   %r{\A(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.html\z},
   %r{\Aexamples(?:/[a-z0-9_-]+)+\.rb\z},
   %r{\Afonts/[a-z0-9-]+\.woff2\z},
+  %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
   %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|
          favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
@@ -36,11 +38,19 @@ FILES = [
 # Files the site cannot do without.
 REQUIRED = %w[404.html blog/index.html feed.xml index.html robots.txt sitemap.xml style.css].freeze
 
-# Files a browser could run when opened directly, which do not change: their
-# content is pinned. To change one on purpose, update its digest here.
+# Files kept exactly as their source publishes them: the logo of fixrb/logo.
+# To change one on purpose, update its digest here.
 PINNED = {
   "logo.svg" => "a4f9f48d3bd57cb9942379ea0227f49f056dc667c3536cfc1c85f026c713601e"
 }.freeze
+
+# An SVG file is a document a browser runs when it is opened directly. A
+# drawing of the site is made of rectangles and paths, with attributes from a
+# short list, and no value can hold a URL: no colon, no slash.
+SVG = "http://www.w3.org/2000/svg"
+SVG_ELEMENTS = %w[svg title g rect path].freeze
+SVG_ATTRIBUTES = %w[xmlns version width height viewBox shape-rendering xml:space transform fill stroke-width x y d].freeze
+SVG_VALUE = /\A[#a-zA-Z0-9.,() -]*\z/
 
 ATOM = "http://www.w3.org/2005/Atom"
 SITEMAP = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -106,6 +116,8 @@ TOKEN_CLASSES = {
 }.flat_map { |css, types| types.map { |type| [type, css] } }.to_h.freeze
 
 @errors = []
+# Files of the site that pages link to, load or announce as their image.
+@linked = []
 
 def error(path, message)
   @errors << "#{path}: #{message}"
@@ -215,6 +227,8 @@ def check_reference(path, html, value)
     url, fragment = value.split("#", 2)
     target = file_for(url)
     return error(path, "#{value} leads nowhere") unless @files.include?(target)
+
+    @linked << target
     return if fragment.nil? || ids(read(target)).include?(fragment)
 
     error(path, "#{value}: no element with id #{fragment}")
@@ -279,6 +293,12 @@ def check_head(path, html)
   error(path, "og:url must be #{canonical}") unless html.include?(%(<meta property="og:url" content="#{canonical}">))
   error(path, "og:description must repeat the description") unless html.include?(%(<meta property="og:description" content="#{description}">))
   error(path, "needs og:site_name") unless html.include?(%(<meta property="og:site_name" content="Fixrb">))
+
+  image = html[/<meta property="og:image" content="([^"]+)">/, 1].to_s
+  file = image.delete_prefix("#{ORIGIN}/")
+  return error(path, "og:image must be a file of the site, at #{ORIGIN}/") unless image.start_with?("#{ORIGIN}/") && @files.include?(file)
+
+  @linked << file
 end
 
 def check_shared(path, html, home)
@@ -427,6 +447,27 @@ def check_robots(pages)
   end
 end
 
+def check_svg(path)
+  svg = REXML::Document.new(read(path))
+  error(path, "has a document type") if svg.doctype
+  error(path, "has a processing instruction") unless REXML::XPath.match(svg, "//processing-instruction()").empty?
+  error(path, "must be an <svg>") unless svg.root&.name == "svg"
+  REXML::XPath.each(svg, "//*") do |element|
+    next error(path, "<#{element.expanded_name}> is not allowed") unless element.namespace == SVG && SVG_ELEMENTS.include?(element.name)
+
+    element.attributes.each_attribute do |attribute|
+      name = attribute.expanded_name
+      next error(path, "the attribute #{name} is not allowed") unless SVG_ATTRIBUTES.include?(name)
+      next if name == "xmlns" && attribute.value == SVG
+
+      error(path, "the value of #{name} is not allowed") unless attribute.value.match?(SVG_VALUE)
+    end
+    error(path, "<#{element.name}> holds text") if element.name != "title" && element.texts.any? { |text| !text.value.strip.empty? }
+  end
+rescue REXML::ParseException => e
+  error(path, "malformed: #{e.message.lines.first.strip}")
+end
+
 fix = ARGV == ["--fix"]
 abort "usage: bin/check [--fix]" unless fix || ARGV.empty?
 
@@ -436,6 +477,7 @@ abort "usage: bin/check [--fix]" unless fix || ARGV.empty?
 check_files(@files)
 abort(@errors.join("\n")) unless @errors.empty?
 check_pinned
+@files.grep(/\.svg\z/).each { |path| check_svg(path) }
 
 pages = @files.grep(/\.html\z/)
 pages.select { |path| fix_code_blocks(path) }.each { |path| puts "fixed #{path}" } if fix
@@ -460,6 +502,7 @@ blog = read("blog/index.html")
 posts.each { |post| error("blog/index.html", "#{post} is missing") unless blog.include?(%(href="/#{post}")) }
 (ARCHIVED - posts).each { |post| error("bin/check", "archived post #{post} does not exist") }
 (@files.grep(%r{\Aexamples/}) - used).each { |example| error(example, "no page shows it") }
+(@files.grep(%r{\Agems/[^/]+/img/}) - @linked).each { |image| error(image, "no page uses it") }
 check_feed(posts)
 check_sitemap(pages)
 check_robots(pages)
