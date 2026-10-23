@@ -14,7 +14,7 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 | `blog/index.html`, `feed.xml` | The list of posts and its Atom feed |
 | `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files kept out of results |
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
-| `examples/` | Every code example shown on a page, as a Ruby file |
+| `examples/` | Every code example shown on a page, as a Ruby file or a manifest of brutal |
 | `404.html` | Served by GitHub Pages for any unknown address |
 | `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png` | Style and images |
 | `bin/check`, `bin/examples` | The checks, and the runner of the examples |
@@ -30,14 +30,14 @@ GitHub Pages publishes every file of the repository, so `bin/check` accepts only
 
 - Semantic HTML5, element names in lowercase: no `div`, no `span`, no `class`, no inline style or script. The stylesheet targets elements, ids, ARIA attributes and, in code blocks only, the five token classes below.
 - One exception: inside `<pre><code>`, Ruby tokens are wrapped in `<span>` elements with one of five classes, `comment`, `keyword`, `constant`, `string` and `number`. They are never written by hand: `bin/check --fix` writes them from Ruby's own tokenizer, Ripper, and `bin/check` fails if they differ in any way from what it would write.
-- A `<pre>` holds either Ruby code, in one `<code>`, or a terminal session: `<kbd>` for what is typed, `<samp>` for what the computer prints, text, and no other element. A `<pre>` never contains another.
+- A `<pre>` holds either a file of `examples/`, in one `<code>` (Ruby code highlighted, or a manifest of brutal as it is), or a terminal session: `<kbd>` for what is typed, `<samp>` for what the computer prints, text, and no other element. A `<pre>` never contains another.
 - Every page starts with the same lines, up to the content security policy (`default-src 'none'`, then `'self'` for styles, images and fonts) and the referrer policy. Except `404.html`, each has a description, a canonical URL, the Open Graph tags that repeat them, `og:site_name`, and an `og:image` served by the site.
 - The site header and footer are the same on every page; only the menu link to the page itself carries `aria-current="page"`.
 - Element and attribute names are in lowercase, and no attribute appears twice. Attributes and `rel` values come from a short list in `bin/check`: nothing that would contact another site (`preconnect`, `ping`, `srcset`) or open a window (`target`).
 - `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`) out of search results, never a page, the feed, the style, a font or an image.
 - Files a browser could run when opened directly are checked too. An SVG file may only hold `svg`, `title`, `g`, `rect` and `path`, with attributes from a short list and values without a colon or a slash, so that none holds a URL; `logo.svg` is also pinned by its SHA-256, as fixrb/logo publishes it. `feed.xml` may only hold Atom elements, from a short list, linking to the site. A `CNAME` file contains `fixrb.dev`.
 - Links inside the site start with `/` and lead to a file of the repository. Stylesheets, images and fonts are served by the site. No file is a symbolic link.
-- A code block shows a file of `examples/`, character for character: `<pre data-example="examples/gem/name.rb"><code>…</code></pre>`, with `<` and `&` escaped. To add or change one, edit the file, write `<pre data-example="…"><code></code></pre>` the first time, and run `bin/check --fix`. Examples end their lines with LF. A line that ends with `# => VALUE` must evaluate to an object whose `inspect` is `VALUE`.
+- A code block shows a file of `examples/`, character for character: `<pre data-example="examples/gem/name.rb"><code>…</code></pre>`, with `<` and `&` escaped. To add or change one, edit the file, write `<pre data-example="…"><code></code></pre>` the first time, and run `bin/check --fix`. Examples end their lines with LF. A line that ends with `# => VALUE` must evaluate to an object whose `inspect` is `VALUE`. A manifest of brutal, `NAME_brutal.yaml`, is shown without highlighting, and the test file next to it, `test_NAME.rb`, is the one brutal writes from it.
 - The five posts published before Fix 1.0 are kept as they were written, with a note saying so. Their code is not run but is highlighted like the rest; they are listed in `bin/check`.
 
 ## Checking
@@ -58,7 +58,7 @@ Rewrites the code blocks of every page, and nothing else, then checks. A block t
 RUBYLIB=../matchi/lib bin/examples examples/matchi
 ```
 
-Runs the examples, each in its own Ruby process, with the gems found on the load path, and prints the file each `require` loaded, so that the version under test is visible. Before a release of a gem, run its examples against the code to be released.
+Runs the examples, each in its own Ruby process, with the gems found on the load path, and prints the file each `require` loaded, so that the version under test is visible. A manifest of brutal is checked with `brutal --check`: `RUBYLIB=../brutal/lib:../aw/lib bin/examples examples/brutal`. Before a release of a gem, run its examples against the code to be released.
 
 `bin/examples` runs the code of the examples, and `bin/check --fix` copies it into pages: run neither on a branch you have not read.
 
@@ -68,7 +68,7 @@ The stylesheet relies on this structure, which every page follows.
 
 - `body > header`: a link to `/` with the logo and the site name, then `nav[aria-label="Main"] > ul`. `body > footer`: a paragraph, then a list of links. `main` in between.
 - Home: `section#intro` (logo, `hgroup`, paragraph, `figure` with the example, `ul` of two links), then `section#gems` holding `section#fix` (Fix and the gems that extend it) and `section#libraries` (the gems that do not). A gem card is `li > h4 > a`, a `p`, and a status in `p > small`.
-- Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, then the `hgroup`. An illustration, if any, is a `figure` right after the first paragraph.
+- Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, if it has one, then the `hgroup`. An illustration, if any, is a `figure` right after the first paragraph.
 - Lists of posts: `ul > li > article`, with a title `h2 > a` or `h3 > a`, a date `p > time`, and a description `p`.
 - Posts: `article > header` (the `h1`, then `p` with the date and author), `p[role="note"]` for a note, `article > footer`.
 - Pixelify Sans sets `h1`, the `h2` of sections and posts, the site name, menus and gem names only: at small sizes its C reads as an O. Titles in lists of posts, `h3`, dates and running text use the system font.
@@ -99,8 +99,8 @@ Write `gems/NAME/index.html` from `gems/matchi/index.html`: what the gem does, h
 A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, which `bin/check` requires a page to use:
 
 - A pixel drawing, shown in the header with `alt=""`, its `width` and `height` set to a whole number of screen pixels per pixel of the drawing: 4 for the jester of matchi, 2 for the hero of aw, whose pixels are finer. At 288 pixels wide at most, it keeps that size on a 320-pixel screen. Its pixels fall on whole units of its `viewBox`, which keeps every pixel whole on screen. Letters, if any, are set in Pixelify Sans, at its regular weight: its strokes are one pixel wide, where the bold of the titles is wider than a pixel.
-- An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. It shrinks with narrow screens. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is shown at 603 × 363.
-- `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
+- An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. It shrinks with narrow screens. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is shown at 603 × 363; the scene of brutal, 1280 × 960 at 4 pixels per pixel, at 640 × 480.
+- `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head; without them, the page uses the site's icons, as brutal's does. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
 
   ```sh
   LC_ALL=C inkscape gems/matchi/img/icon.svg \
@@ -134,6 +134,7 @@ The site, its code and its text are released under the [MIT License](LICENSE.md)
 - Logo: [fixrb/logo](https://github.com/fixrb/logo), public domain (CC0).
 - The jester of matchi (`gems/matchi/img/`): drawn by Cyril Kato, with its letters set in Pixelify Sans, under the MIT License like the rest of the site.
 - The scene and the hero of aw (`gems/aw/img/`): `scene.png` is `img/aw.png`, the pixel-art illustration of aw's README, as it is; the hero comes from the same source, redrawn as SVG on a grid of 104 × 104 pixels, one unit of its `viewBox` per pixel. Both are under the MIT License like the rest of the site.
+- The scene of brutal (`gems/brutal/img/scene.png`): `img/brutal-driven-development.png`, the pixel-art illustration of brutal's README, 320 × 240 pixels drawn at 4 pixels per pixel, written again as a paletted PNG holding the image only (`IHDR`, `PLTE`, `IDAT`, `IEND`), pixel for pixel the same; shown at 640 × 480. Under the MIT License like the rest of the site.
 - [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) by Stefie Justprince, under the SIL Open Font License 1.1 (`fonts/OFL.txt`). `fonts/pixelify-sans.woff2` is a subset of `PixelifySans[wght].ttf` from [google/fonts](https://github.com/google/fonts/tree/main/ofl/pixelifysans) (SHA-256 `9ba86cd010a4de309d263ceff8e8044092c9db7efda869620cb9ff1c4389e8a5`), made with:
 
   ```sh

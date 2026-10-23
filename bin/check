@@ -4,8 +4,9 @@
 # Checks fixrb.dev with the Ruby standard library and git: the files of the
 # repository, the markup rules, the head and layout shared by every page,
 # internal links and anchors, code examples kept identical to their files
-# under examples/ and highlighted as Ripper reads them, the feed, the sitemap,
-# robots.txt and the SVG drawings.
+# under examples/ and highlighted as Ripper reads them (a YAML manifest of
+# brutal is shown as it is), the feed, the sitemap, robots.txt and the SVG
+# drawings.
 #
 #   bin/check         checks, and changes nothing
 #   bin/check --fix   first rewrites every <pre><code> from its example file
@@ -27,7 +28,7 @@ ORIGIN = "https://fixrb.dev"
 # publishes the whole repository, so anything else would go live unchecked.
 FILES = [
   %r{\A(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.html\z},
-  %r{\Aexamples(?:/[a-z0-9_-]+)+\.rb\z},
+  %r{\Aexamples(?:/[a-z0-9_-]+)+\.(?:rb|yaml)\z},
   %r{\Afonts/[a-z0-9-]+\.woff2\z},
   %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
@@ -97,11 +98,12 @@ REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate hom
 LOCAL_LINKS = %w[stylesheet icon apple-touch-icon preload].freeze
 ID_REFERENCES = %w[aria-labelledby].freeze
 
-# A <pre> holds either Ruby, as a <code> highlighted by bin/check --fix, or a
-# terminal session, as <kbd> and <samp>. The checks and --fix find blocks with
-# PRE alone, so that they always see the same ones.
+# A <pre> holds either a file of examples/, as a <code> written by bin/check
+# --fix (Ruby highlighted, a YAML manifest as it is), or a terminal session, as
+# <kbd> and <samp>. The checks and --fix find blocks with PRE alone, so that
+# they always see the same ones.
 PRE = %r{<pre\b([^>]*)>(.*?)</pre>}im
-EXAMPLE = %r{\A data-example="(examples(?:/[a-z0-9_-]+)+\.rb)"\z}
+EXAMPLE = %r{\A data-example="(examples(?:/[a-z0-9_-]+)+\.(?:rb|yaml))"\z}
 
 # The class of each Ruby token, as Ripper names it. Any other token
 # (identifiers, operators, punctuation, spaces) stays plain text.
@@ -212,8 +214,9 @@ def highlight(source)
   end.join
 end
 
-def code_markup(source)
-  "<code>#{highlight(source)}</code>"
+# The <code> of an example: Ruby highlighted, YAML as it is.
+def code_markup(source, example)
+  "<code>#{example.end_with?(".yaml") ? escape(source) : highlight(source)}</code>"
 end
 
 # A link inside the site leads to a file of the repository, which keeps it
@@ -330,7 +333,7 @@ def check_code_blocks(path, html, used)
     else
       next error(path, "a <pre><code> needs a data-example attribute naming a file of examples/")
     end
-    expected = code_markup(source)
+    expected = code_markup(source, example.to_s)
     next error(path, "#{example} differs from the page") unless text_of(content) == source
     error(path, "a code block is not highlighted as expected: run bin/check --fix") unless content == expected
   rescue ArgumentError => e
@@ -348,9 +351,9 @@ def fix_code_blocks(path)
     attributes, content = match[1], match[2]
     example = attributes[EXAMPLE, 1]
     if code?(content) && example && @files.include?(example)
-      "<pre#{attributes}>#{code_markup(read(example))}</pre>"
+      "<pre#{attributes}>#{code_markup(read(example), example)}</pre>"
     elsif code?(content) && attributes.empty? && ARCHIVED.include?(path)
-      "<pre#{attributes}>#{code_markup(text_of(content))}</pre>"
+      "<pre#{attributes}>#{code_markup(text_of(content), path)}</pre>"
     else
       match[0]
     end

@@ -1,12 +1,15 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Runs every file under examples/, each in its own Ruby process, and fails if
-# one exits with an error. A line ending with "# => VALUE" must evaluate to an
-# object whose inspect is VALUE.
+# Runs every Ruby file under examples/, each in its own Ruby process, and
+# fails if one exits with an error. A line ending with "# => VALUE" must
+# evaluate to an object whose inspect is VALUE. A manifest of brutal,
+# NAME_brutal.yaml, is checked with brutal: the test file next to it must be
+# the one brutal writes from it.
 #
 # The gems come from the environment, for instance:
 #   RUBYLIB=../matchi/lib bin/examples examples/matchi
+#   RUBYLIB=../brutal/lib:../aw/lib bin/examples examples/brutal
 # For each example, the file loaded by each of its top-level requires is
 # printed, so that the version under test is visible.
 
@@ -50,18 +53,30 @@ def instrument(source)
   end.join("\n")
 end
 
-paths = roots.flat_map { |root| File.file?(root) ? [root] : Dir.glob("#{root}/**/*.rb") }
+# Checks a manifest of brutal: brutal --check runs its code and compares the
+# test file in place with the one it would write. Prints where brutal came from.
+BRUTAL = <<~'RUBY'
+  require "brutal"
+  puts "required brutal from #{$LOADED_FEATURES.find { |feature| feature.end_with?("/brutal.rb") }}"
+  exit Brutal::CLI.run(["--check", ARGV.fetch(0)])
+RUBY
+
+paths = roots.flat_map { |root| File.file?(root) ? [root] : Dir.glob("#{root}/**/*.{rb,yaml}") }
              .map { |path| path.delete_prefix("#{Dir.pwd}/") }.sort
 abort "No example found in #{roots.join(', ')}" if paths.empty?
 
 failures = paths.reject do |path|
-  source = File.read(path, encoding: "UTF-8")
-  output, status = Open3.capture2e(RbConfig.ruby, "-e", RUNNER, path, *source.scan(REQUIRE).flatten,
-                                   stdin_data: instrument(source))
+  if path.end_with?(".yaml")
+    output, status = Open3.capture2e(RbConfig.ruby, "-e", BRUTAL, path)
+  else
+    source = File.read(path, encoding: "UTF-8")
+    output, status = Open3.capture2e(RbConfig.ruby, "-e", RUNNER, path, *source.scan(REQUIRE).flatten,
+                                     stdin_data: instrument(source))
+  end
   puts "#{status.success? ? 'ok  ' : 'FAIL'} #{path}"
   # A forked child runs the at_exit hook too: show each line once.
   shown = status.success? ? output.lines.grep(/\Arequired /).uniq : output.lines
-  print shown.join.gsub(/^/, "     ")
+  print shown.join.gsub(/^/, "     ") unless shown.empty?
   status.success?
 end
 

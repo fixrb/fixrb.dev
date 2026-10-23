@@ -1,0 +1,14 @@
+header: |
+  require_relative "greeter"
+
+subject: |
+  Greeter.new(%{name})
+
+contexts:
+  name:
+    - '"Alice"'
+    - '"world"'
+
+actuals:
+  - "%{subject}.salute"
+  - "%{subject}.salute.length"
