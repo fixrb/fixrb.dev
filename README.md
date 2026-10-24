@@ -100,7 +100,7 @@ A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, whi
 
 - A pixel drawing, shown in the header with `alt=""`, its `width` and `height` set to a whole number of screen pixels per pixel of the drawing: 4 for the jester of matchi, 2 for the hero of aw, whose pixels are finer. At 288 pixels wide at most, it keeps that size on a 320-pixel screen. Its pixels fall on whole units of its `viewBox`, which keeps every pixel whole on screen. Letters, if any, are set in Pixelify Sans, at its regular weight: its strokes are one pixel wide, where the bold of the titles is wider than a pixel.
 - An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. It shrinks with narrow screens. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is shown at 603 × 363; the scene of brutal, 1280 × 960 at 4 pixels per pixel, at 640 × 480.
-- `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head; without them, the page uses the site's icons, as brutal's does. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
+- `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head; without them, the page uses the site's icons. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
 
   ```sh
   LC_ALL=C inkscape gems/matchi/img/icon.svg \
@@ -112,6 +112,8 @@ A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, whi
   `--export-area` is in document pixels, not in units of the `viewBox`.
 
   The icon of aw, 104 × 104 pixels, fits in 180 only at one pixel per pixel: its Apple icon has that scale, with a margin of 38. Its `favicon.ico` holds images of 48, 32 and 16 pixels, each pixel the exact average of the pixels of the icon it covers. Both were written from `icon.svg` by a Python script, with the standard library only. `icon.svg` leaves out `shape-rendering="crispEdges"`, which at 32 screen pixels would keep about one row and one column in three; `hero.svg`, shown at 2 screen pixels per pixel, keeps it.
+
+  The icon of brutal is the lumberjack's face, 22 × 26 pixels cut out of the scene as they are, centered on a grid of 32 × 32: `icon.svg` has one unit of its `viewBox` per pixel, so that it is exact at 32 and 64 screen pixels; `favicon.ico` holds that image at 32 pixels, and at 16, each pixel the exact average of the four it covers; the Apple icon shows it at 6 pixels per pixel, with margins of 24 and 12. All three were written by a Python script, with the standard library only.
 
 ## Releasing a gem
 
@@ -134,7 +136,7 @@ The site, its code and its text are released under the [MIT License](LICENSE.md)
 - Logo: [fixrb/logo](https://github.com/fixrb/logo), public domain (CC0).
 - The jester of matchi (`gems/matchi/img/`): drawn by Cyril Kato, with its letters set in Pixelify Sans, under the MIT License like the rest of the site.
 - The scene and the hero of aw (`gems/aw/img/`): `scene.png` is `img/aw.png`, the pixel-art illustration of aw's README, as it is; the hero comes from the same source, redrawn as SVG on a grid of 104 × 104 pixels, one unit of its `viewBox` per pixel. Both are under the MIT License like the rest of the site.
-- The scene of brutal (`gems/brutal/img/scene.png`): `img/brutal-driven-development.png`, the pixel-art illustration of brutal's README, 320 × 240 pixels drawn at 4 pixels per pixel, written again as a paletted PNG holding the image only (`IHDR`, `PLTE`, `IDAT`, `IEND`), pixel for pixel the same; shown at 640 × 480. Under the MIT License like the rest of the site.
+- The scene and the icons of brutal (`gems/brutal/img/`): `scene.png` is `img/brutal-driven-development.png`, the pixel-art illustration of brutal's README, 320 × 240 pixels drawn at 4 pixels per pixel, written again as a paletted PNG holding the image only (`IHDR`, `PLTE`, `IDAT`, `IEND`), pixel for pixel the same, and shown at 640 × 480; the icons are the lumberjack's face, cut out of it. Under the MIT License like the rest of the site.
 - [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) by Stefie Justprince, under the SIL Open Font License 1.1 (`fonts/OFL.txt`). `fonts/pixelify-sans.woff2` is a subset of `PixelifySans[wght].ttf` from [google/fonts](https://github.com/google/fonts/tree/main/ofl/pixelifysans) (SHA-256 `9ba86cd010a4de309d263ceff8e8044092c9db7efda869620cb9ff1c4389e8a5`), made with:
 
   ```sh
