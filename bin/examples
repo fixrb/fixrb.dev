@@ -43,7 +43,8 @@ RUNNER = <<~'RUBY'
     end
   end
 
-  eval($stdin.read, TOPLEVEL_BINDING, ARGV.fetch(0), 1)
+  # The example is UTF-8, as a Ruby file is, whatever the locale.
+  eval($stdin.read.force_encoding(Encoding::UTF_8), TOPLEVEL_BINDING, ARGV.fetch(0), 1)
 RUBY
 
 def instrument(source)
@@ -67,11 +68,11 @@ abort "No example found in #{roots.join(', ')}" if paths.empty?
 
 failures = paths.reject do |path|
   if path.end_with?(".yaml")
-    output, status = Open3.capture2e(RbConfig.ruby, "-e", BRUTAL, path)
+    output, status = Open3.capture2e(RbConfig.ruby, "-e", BRUTAL, path, binmode: true)
   else
     source = File.read(path, encoding: "UTF-8")
     output, status = Open3.capture2e(RbConfig.ruby, "-e", RUNNER, path, *source.scan(REQUIRE).flatten,
-                                     stdin_data: instrument(source))
+                                     stdin_data: instrument(source), binmode: true)
   end
   puts "#{status.success? ? 'ok  ' : 'FAIL'} #{path}"
   # A forked child runs the at_exit hook too: show each line once.

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>defi: a Ruby method call prepared for any object · Fixrb</title>
+  <meta name="description" content="Defi prepares a Ruby method call, a name with its arguments, and sends it to any object, keeping what came back: the value returned, or the exception raised.">
+  <link rel="canonical" href="https://fixrb.dev/gems/defi/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="defi: a Ruby method call prepared for any object">
+  <meta property="og:description" content="Defi prepares a Ruby method call, a name with its arguments, and sends it to any object, keeping what came back: the value returned, or the exception raised.">
+  <meta property="og:url" content="https://fixrb.dev/gems/defi/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>defi</h1>
+          <p>Prepares a method call, and sends it to any object.</p>
+        </hgroup>
+      </header>
+      <p>A challenge is a method name with its arguments, as you would write them after a dot. Sent to an object, it brings back what came out of the call: the value the method returned, or the exception it raised. The same challenge can be sent to as many objects as you like, to compare what each one does with it.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>4.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later</dd>
+        <dt>Dependencies</dt>
+        <dd>None</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "defi"</code> to your Gemfile, or run <code>gem install defi</code>.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p>A challenge takes positional arguments, keyword arguments and a block, and passes them as they are. <code>to</code> sends it to an object and returns a value; <code>object</code> is what came back, <code>raised?</code> says whether it was raised, and <code>call</code> returns the object or raises the exception again:</p>
+      <pre data-example="examples/defi/usage.rb"><code>require <span class="string">"defi"</span>
+
+challenge = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:fetch</span>, <span class="string">:b</span>, <span class="number">0</span>)
+challenge.to_s <span class="comment"># => ".fetch(:b, 0)"</span>
+
+value = challenge.to({ <span class="string">b:</span> <span class="number">2</span> })
+value.raised? <span class="comment"># => false</span>
+value.object  <span class="comment"># => 2</span>
+value.call    <span class="comment"># => 2</span>
+
+value = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:fetch</span>, <span class="string">:b</span>).to({})
+value.raised?     <span class="comment"># => true</span>
+value.object      <span class="comment"># => #&lt;KeyError: key not found: :b></span>
+value.call <span class="keyword">rescue</span> $!.class <span class="comment"># => KeyError</span>
+
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:encode</span>, <span class="string">"US-ASCII"</span>, <span class="string">undef:</span> <span class="string">:replace</span>).to(<span class="string">"café"</span>).object <span class="comment"># => "caf?"</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:map</span>) { |n| n * <span class="number">2</span> }.to([<span class="number">1</span>, <span class="number">2</span>]).object <span class="comment"># => [2, 4]</span>
+</code></pre>
+      <p>A challenge and a value are frozen; their arguments are the objects given, not copies.</p>
+
+      <h2 id="exceptions">What comes back</h2>
+      <p>The message is sent with <code>public_send</code>: a private method, or a <code>BasicObject</code>, which has no <code>public_send</code>, gives a <code>NoMethodError</code>. A challenge keeps as its value the exceptions a method raises on its own: a <code>StandardError</code>, a <code>ScriptError</code> such as <code>NotImplementedError</code>, a <code>SystemStackError</code>, or the <code>SystemExit</code> of an <code>exit</code>. What is not the method’s doing goes through: an <code>Interrupt</code>, a signal, a <code>NoMemoryError</code>, the exception a <code>Timeout</code> uses to end its block, and any other subclass of <code>Exception</code>.</p>
+      <pre data-example="examples/defi/exceptions.rb"><code>require <span class="string">"defi"</span>
+
+<span class="comment"># What a method raises on its own comes back as the value.</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:+</span>, <span class="number">1</span>).to(<span class="string">"a"</span>).object.class     <span class="comment"># => TypeError</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:secret</span>).to(<span class="constant">Object</span>.new).object.class <span class="comment"># => NoMethodError</span>
+
+exiting = <span class="constant">Object</span>.new
+<span class="keyword">def</span> exiting.call = exit(<span class="number">3</span>)
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:call</span>).to(exiting).object.status <span class="comment"># => 3</span>
+
+<span class="comment"># What is not the method's doing goes through.</span>
+interrupting = <span class="constant">Object</span>.new
+<span class="keyword">def</span> interrupting.call = raise(<span class="constant">Interrupt</span>)
+outcome = <span class="keyword">begin</span>
+  <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:call</span>).to(interrupting)
+<span class="keyword">rescue</span> <span class="constant">Interrupt</span>
+  <span class="string">:went_through</span>
+<span class="keyword">end</span>
+outcome <span class="comment"># => :went_through</span>
+</code></pre>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/defi/blob/v4.0.0/README.md">README</a>: usage, what comes back, and the changes in 4.0.</li>
+        <li><a href="https://rubydoc.info/gems/defi/4.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/defi/versions/4.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/defi/tree/v4.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
