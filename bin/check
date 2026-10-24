@@ -33,7 +33,7 @@ FILES = [
   %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
   %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|
-         favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
+         card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
 ].freeze
 
 # Files the site cannot do without.

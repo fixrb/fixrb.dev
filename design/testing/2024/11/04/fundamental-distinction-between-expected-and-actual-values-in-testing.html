@@ -9,12 +9,17 @@
   <meta name="description" content="Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.">
   <link rel="canonical" href="https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">
   <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2024-11-04">
+  <meta property="article:author" content="https://cyril.email/">
   <meta property="og:site_name" content="Fixrb">
   <meta property="og:title" content="The Fundamental Distinction Between Expected and Actual Values in Testing">
   <meta property="og:description" content="Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.">
   <meta property="og:url" content="https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">
-  <meta property="og:image" content="https://fixrb.dev/icon.png">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.png">
@@ -43,7 +48,7 @@
       <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
       <p>The distinction between expected and actual values in automated testing is more than just a convention - it’s a fundamental architectural principle that deserves our attention.</p>
       <p>To emphasize the semantic difference between these two values, we must understand that the expected value is a known constant, an integral part of the specification. In contrast, the actual value, obtained by challenging a foreign object, must be evaluated against the expected value by the predicate. This is precisely the role of the latter: to ensure that the obtained value satisfies the criteria defined by the expected value.</p>
-      <p>This distinction is so fundamental that it must be honored in the very design of the predicate: it receives the expected value as a reference during initialization, then evaluates the actual value against this reference. This asymmetry in value handling reflects their profoundly different nature, a principle that modern testing libraries like <a href="https://github.com/fixrb/matchi">Matchi</a> have wisely chosen to implement.</p>
+      <p>This distinction is so fundamental that it must be honored in the very design of the predicate: it receives the expected value as a reference during initialization, then evaluates the actual value against this reference. This asymmetry in value handling reflects their profoundly different nature, a principle that modern testing libraries like <a href="/gems/matchi/">Matchi</a> have wisely chosen to implement.</p>
       <p>Let’s illustrate this principle with a concrete example. Consider a simple equivalence test between two strings:</p>
       <pre><code><span class="constant">EXPECTED_VALUE</span> = <span class="string">"foo"</span>
 actual_value = <span class="string">"bar"</span></code></pre>

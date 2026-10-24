@@ -16,7 +16,7 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
 | `examples/` | Every code example shown on a page, as a Ruby file or a manifest of brutal |
 | `404.html` | Served by GitHub Pages for any unknown address |
-| `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png` | Style and images |
+| `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png`, `card.png` | Style, images, and the card shown where the home or a post is shared |
 | `bin/check`, `bin/examples` | The checks, and the runner of the examples |
 | `.github/` | CI, which runs `bin/check`, and Dependabot, for the actions |
 | `.ruby-version` | The Ruby of CI and of the highlighting |
