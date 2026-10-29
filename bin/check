@@ -92,7 +92,7 @@ ATTRIBUTES = %r{\A(?:\s+[a-z][a-z0-9-]*(?:="[^"]*")?)*\s*/?\z}i
 FORBIDDEN_ELEMENTS = %w[div span script style iframe frame object embed form base].freeze
 ATTRIBUTE_NAMES = %w[
   lang charset name content http-equiv property rel href src alt width height type sizes as crossorigin
-  title id role datetime aria-label aria-labelledby aria-current data-example
+  title id role datetime aria-label aria-labelledby aria-current data-example scope
 ].freeze
 REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home].freeze
 LOCAL_LINKS = %w[stylesheet icon apple-touch-icon preload].freeze

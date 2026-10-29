@@ -192,7 +192,7 @@ main {
   padding: 3rem var(--gutter) 5rem;
 }
 
-main :is(p, ul, ol, dl, pre, figure, hgroup, h1, h2, h3, h4) {
+main :is(p, ul, ol, dl, pre, figure, table, hgroup, h1, h2, h3, h4) {
   max-width: var(--measure);
 }
 
@@ -287,6 +287,23 @@ dt {
 
 dd {
   margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.375rem 1.5rem 0.375rem 0;
+  border-bottom: var(--px) solid var(--surface);
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
 }
 
 @media (max-width: 34rem) {

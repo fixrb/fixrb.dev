@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>spectus: Ruby expectations with the MUST, SHOULD and MAY of RFC 2119 · Fixrb</title>
+  <meta name="description" content="Spectus expresses Ruby expectations with the requirement levels of RFC 2119, MUST, SHOULD and MAY, and gives a result that says how each one went, without raising.">
+  <link rel="canonical" href="https://fixrb.dev/gems/spectus/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="spectus: Ruby expectations with the MUST, SHOULD and MAY of RFC 2119">
+  <meta property="og:description" content="Spectus expresses Ruby expectations with the requirement levels of RFC 2119, MUST, SHOULD and MAY, and gives a result that says how each one went, without raising.">
+  <meta property="og:url" content="https://fixrb.dev/gems/spectus/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>spectus</h1>
+          <p>Expectations with the requirement levels of RFC 2119.</p>
+        </hgroup>
+      </header>
+      <p>An expectation says what a value <strong>MUST</strong> do, <strong>SHOULD</strong> do, or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>. It is a level, a negation and a matcher; called with a block, it gives a result that says how it went, and never raises for an expectation that is not met. Spectus is the engine of Fix 1.0, and works with any matcher that has <code>match?</code> and <code>to_s</code>, such as those of <a href="/gems/matchi/">matchi</a>.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>6.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later</dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/defi/">defi</a></dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "spectus"</code> to your Gemfile, or run <code>gem install spectus</code>. The examples below use <code>gem "matchi"</code> for the matchers.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p><code>Spectus.must</code>, <code>must_not</code>, <code>should</code>, <code>should_not</code> and <code>may</code> build a requirement from a matcher; <code>may</code> has no negative form, the RFC having none. <code>call</code> runs the matcher with the block and returns a result:</p>
+      <pre data-example="examples/spectus/usage.rb"><code>require <span class="string">"spectus"</span>
+require <span class="string">"matchi"</span>
+
+eq = <span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">42</span>)
+requirement = <span class="constant">Spectus</span>.must(eq)
+requirement.level  <span class="comment"># => :MUST</span>
+requirement.negate <span class="comment"># => false</span>
+
+result = requirement.call { <span class="number">6</span> * <span class="number">7</span> }
+result.passed?     <span class="comment"># => true</span>
+result.outcome     <span class="comment"># => :success</span>
+result.actual      <span class="comment"># => "42"</span>
+result.description <span class="comment"># => "eq 42"</span>
+result.to_s        <span class="comment"># => "Success: expected 42 to eq 42"</span>
+
+<span class="constant">Spectus</span>.must_not(eq).call { <span class="number">42</span> }.to_s <span class="comment"># => "Failure: expected 42 not to eq 42"</span>
+<span class="constant">Spectus</span>.should(eq).call { <span class="number">2</span> }.to_s    <span class="comment"># => "Warning: expected 2 to eq 42"</span>
+<span class="constant">Spectus</span>.must(eq).call { <span class="number">1</span> / <span class="number">0</span> }.to_s  <span class="comment"># => "Error: ZeroDivisionError: divided by 0"</span>
+</code></pre>
+
+      <h2 id="outcomes">Outcomes</h2>
+      <p>Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. Hence five outcomes, by what <code>match?</code> answered or raised; a success, a warning and an info pass:</p>
+      <table>
+        <thead>
+          <tr><th scope="col">Level</th><th scope="col">True</th><th scope="col">False</th><th scope="col">Missing method</th><th scope="col">Other exception</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">MUST</th><td>success</td><td>failure</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">SHOULD</th><td>success</td><td>warning</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">MAY</th><td>success</td><td>failure</td><td>info</td><td>error</td></tr>
+        </tbody>
+      </table>
+      <p>A negation swaps the first two columns. A missing method is a <code>NoMethodError</code> raised by <code>match?</code> on the very value the block returned; <code>match?</code> must answer <code>true</code> or <code>false</code>, and any other answer is an error.</p>
+      <pre data-example="examples/spectus/outcomes.rb"><code>require <span class="string">"spectus"</span>
+require <span class="string">"matchi"</span>
+
+<span class="comment"># A method the value does not have: an error for MUST and SHOULD, an info</span>
+<span class="comment"># for MAY, where the method is optional.</span>
+blank = <span class="constant">Matchi</span>::<span class="constant">Predicate</span>.new(<span class="string">:be_blank</span>)
+<span class="constant">Spectus</span>.must(blank).call { <span class="string">""</span> }.outcome   <span class="comment"># => :error</span>
+<span class="constant">Spectus</span>.should(blank).call { <span class="string">""</span> }.outcome <span class="comment"># => :error</span>
+<span class="constant">Spectus</span>.may(blank).call { <span class="string">""</span> }.outcome    <span class="comment"># => :info</span>
+<span class="constant">Spectus</span>.may(blank).call { <span class="string">""</span> }.passed?    <span class="comment"># => true</span>
+
+<span class="comment"># A match that is false: a failure, or a warning for SHOULD.</span>
+empty = <span class="constant">Matchi</span>::<span class="constant">Predicate</span>.new(<span class="string">:be_empty</span>)
+<span class="constant">Spectus</span>.must(empty).call { [<span class="number">1</span>] }.outcome   <span class="comment"># => :failure</span>
+<span class="constant">Spectus</span>.should(empty).call { [<span class="number">1</span>] }.outcome <span class="comment"># => :warning</span>
+<span class="constant">Spectus</span>.may(empty).call { [<span class="number">1</span>] }.outcome    <span class="comment"># => :failure</span>
+
+<span class="comment"># An exception the block raises reaches the matcher, which may expect it.</span>
+raises = <span class="constant">Matchi</span>::<span class="constant">RaiseException</span>.new(<span class="constant">ZeroDivisionError</span>)
+<span class="constant">Spectus</span>.must(raises).call { <span class="number">1</span> / <span class="number">0</span> }.outcome          <span class="comment"># => :success</span>
+<span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">1</span>)).call { <span class="number">1</span> / <span class="number">0</span> }.outcome     <span class="comment"># => :error</span>
+<span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">1</span>)).call { <span class="number">1</span> / <span class="number">0</span> }.error_class <span class="comment"># => "ZeroDivisionError"</span>
+</code></pre>
+
+      <h2 id="results">Results</h2>
+      <p>A result is plain data, frozen: the level, the negation, the outcome, the description of the matcher, the actual value as its <code>inspect</code> wrote it, and the class, message and backtrace of an exception, as strings in UTF-8 read defensively. It can be marshalled, shared between ractors and printed without running any user code again, which is what a runner that forks needs:</p>
+      <pre data-example="examples/spectus/result.rb"><code>require <span class="string">"spectus"</span>
+require <span class="string">"matchi"</span>
+
+<span class="comment"># A result is plain data, frozen: it can be marshalled and shared.</span>
+result = <span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">42</span>)).call { raise <span class="string">"boom"</span> }
+result.frozen?                              <span class="comment"># => true</span>
+result.error_class                          <span class="comment"># => "RuntimeError"</span>
+result.error_message                        <span class="comment"># => "boom"</span>
+result.actual                               <span class="comment"># => "#&lt;RuntimeError: boom>"</span>
+result.summary                              <span class="comment"># => "RuntimeError: boom"</span>
+<span class="constant">Marshal</span>.load(<span class="constant">Marshal</span>.dump(result)) == result <span class="comment"># => true</span>
+<span class="constant">Ractor</span>.shareable?(result)                   <span class="comment"># => true</span>
+
+<span class="comment"># The texts are read defensively: nothing in a result runs user code again.</span>
+loud = <span class="constant">Object</span>.new
+<span class="keyword">def</span> loud.inspect = raise(<span class="string">"no"</span>)
+<span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">1</span>)).call { loud }.actual <span class="comment"># => "an object of Object"</span>
+</code></pre>
+      <p>The block and <code>match?</code> run under the policy of defi: the exceptions a method raises on its own end in the result, while an <code>Interrupt</code>, a signal, a <code>NoMemoryError</code> and the end of a <code>Timeout</code> go through.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/spectus/blob/v6.0.0/README.md">README</a>: usage, outcomes, results, exceptions, and the changes in 6.0.</li>
+        <li><a href="https://rubydoc.info/gems/spectus/6.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/spectus/versions/6.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/spectus/tree/v6.0.0">Source code</a></li>
+        <li><a href="/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">The three levels of requirements, inspired by RFC 2119</a>, on the blog.</li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
