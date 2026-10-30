@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>fix-its: the word its for Fix, a method and its expectation on one line · Fixrb</title>
+  <meta name="description" content="Fix::Its adds the word its to the language of Fix: a method of the subject and one expectation about what it returns, on one line, the result pointing at the line of its.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix-its/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="fix-its: the word its for Fix, a method and its expectation on one line">
+  <meta property="og:description" content="Fix::Its adds the word its to the language of Fix: a method of the subject and one expectation about what it returns, on one line, the result pointing at the line of its.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix-its/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>fix-its</h1>
+          <p>The word <code>its</code> for Fix: a method of the subject and its expectation on one line.</p>
+        </hgroup>
+      </header>
+      <p>Fix::Its adds the word <code>its</code> to the language of <a href="/gems/fix/">fix</a>: a method of the subject and one expectation about what it returns, on one line. <code>its(:size) { MUST eq 3 }</code> is <code>on(:size) { it MUST eq 3 }</code>, and the result points at the line of <code>its</code>.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later, with <code>fork</code></dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/fix/">fix</a></dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "fix-its"</code> to your Gemfile, or run <code>gem install fix-its</code>, then <code>require "fix/its"</code>, which requires fix.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p><code>its</code> takes the name of the method and its arguments, as <code>on</code> does, and a block that gives the requirement: a level and a matcher. Inside an <code>on</code> or a <code>with</code>, it sends its method to the value of that context.</p>
+      <pre data-example="examples/fix-its/word.rb"><code>require <span class="string">"fix/its"</span>
+
+<span class="constant">Fix</span> <span class="string">:Word</span> <span class="keyword">do</span>
+  its(<span class="string">:size</span>) { <span class="constant">MUST</span> eq <span class="number">5</span> }
+  its(<span class="string">:upcase</span>) { <span class="constant">MUST</span> eq <span class="string">"HELLO"</span> }
+  its(<span class="string">:start_with?</span>, <span class="string">"he"</span>) { <span class="constant">MUST</span> be_true }
+
+  on <span class="string">:chars</span> <span class="keyword">do</span>
+    its(<span class="string">:first</span>) { <span class="constant">MUST</span> eq <span class="string">"h"</span> }
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Word</span>].test { <span class="string">"hello"</span> })
+</code></pre>
+      <pre><kbd>ruby word.rb</kbd>
+<samp>word.rb:4: Success: expected 5 to eq 5
+word.rb:5: Success: expected "HELLO" to eq "HELLO"
+word.rb:6: Success: expected true to be true
+word.rb:9: Success: expected "h" to eq "h"</samp></pre>
+      <p>The block is the context of the <code>on</code>, read once with the rest of the document, and its last expression is the requirement; a block that gives anything else raises <code>ArgumentError</code> at load, as does a missing block. Since <code>its</code> is a word of the language, a let cannot be named so. In Ruby 3.4 and later, a bare <code>it</code> in a block is the parameter of the block: <code>its(:size) { MUST eq it }</code> builds <code>eq nil</code>; write the value.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix-its/blob/v1.0.0/README.md">README</a></li>
+        <li><a href="https://rubydoc.info/gems/fix-its/1.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/fix-its/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/fix-its/tree/v1.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

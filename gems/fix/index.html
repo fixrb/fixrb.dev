@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>fix: Ruby specifications in the words of RFC 2119, tested against a subject · Fixrb</title>
+  <meta name="description" content="A specification says what a subject MUST, SHOULD or MAY do, and nothing about how it is made. Any subject is then tested against it, each context in a child process, and every expectation gets a result.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="fix: Ruby specifications in the words of RFC 2119, tested against a subject">
+  <meta property="og:description" content="A specification says what a subject MUST, SHOULD or MAY do, and nothing about how it is made. Any subject is then tested against it, each context in a child process, and every expectation gets a result.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/#gems">Gems</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>fix</h1>
+          <p>Specifications in the words of RFC 2119, tested against a subject.</p>
+        </hgroup>
+      </header>
+      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made. Any subject is then tested against it, each context in a child process, and every expectation gets a result. Fix is the main gem of Fixrb, built on <a href="/gems/spectus/">spectus</a>, <a href="/gems/matchi/">matchi</a>, <a href="/gems/defi/">defi</a> and <a href="/gems/aw/">aw</a>.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later, with <code>fork</code></dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/aw/">aw</a>, <a href="/gems/defi/">defi</a>, <a href="/gems/matchi/">matchi</a>, <a href="/gems/spectus/">spectus</a></dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "fix"</code> to your Gemfile, or run <code>gem install fix</code>.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p>A file writes a specification, then tests a subject against it. <code>Fix :Duck do … end</code> builds the specification and registers it under its name; <code>Fix[:Duck]</code> finds it again. <code>test</code> builds a new subject with the block for every expectation, sends it the methods of the <code>on</code> around it, judges what comes out, writes one line per expectation and returns whether all of them pass; <code>exit</code> turns that into the status of the process.</p>
+      <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Swoosh..."</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaaaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
+</code></pre>
+      <pre><kbd>ruby duck.rb</kbd>
+<samp>duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
+duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck</samp></pre>
+      <p>The duck has no <code>speak</code>: under MAY, a method the subject does not have is an info, which passes. Keep the parentheses of <code>exit(…)</code>: <code>exit Fix[:Duck].test do … end</code> would give the block to <code>exit</code>.</p>
+
+      <h2 id="language">Writing a specification</h2>
+      <p>The block of <code>Fix</code> is a document, read once when the file is loaded, with four words. <code>on :name, *arguments</code> sends a method to the subject, and the expectations inside judge what it returns; an <code>on</code> inside an <code>on</code> sends its method to that value. <code>let(:name) { … }</code> is a parameter of the subject, a block the subject block calls, computed once per expectation; <code>with name: value</code> opens a context where the parameter has that value. <code>it</code> takes a requirement: a level, <code>MUST</code>, <code>MUST_NOT</code>, <code>SHOULD</code>, <code>SHOULD_NOT</code> or <code>MAY</code>, then a matcher.</p>
+      <pre data-example="examples/fix/greeting.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Greeting</span> <span class="keyword">do</span>
+  let(<span class="string">:name</span>) { <span class="string">"Bob"</span> }
+
+  it <span class="constant">MUST</span> eq <span class="string">"Hello, Bob!"</span>
+  it <span class="constant">MUST_NOT</span> be_nil
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">11</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">name:</span> <span class="string">"Alice"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Hello, Alice!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Greeting</span>].test { <span class="string">"Hello, #{</span>name<span class="string">}!"</span> })
+</code></pre>
+      <pre><kbd>ruby greeting.rb</kbd>
+<samp>greeting.rb:6: Success: expected "Hello, Bob!" to eq "Hello, Bob!"
+greeting.rb:7: Success: expected "Hello, Bob!" not to be nil
+greeting.rb:10: Success: expected 11 to eq 11
+greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"</samp></pre>
+      <p>A let is visible from the subject block and from the other lets only: named in an expectation, it raises <code>NameError</code> at load, with the remedy. Its name cannot be a method of the object the subject is built on, nor a word of the language, so that nothing is redefined in silence. The matchers are those of <a href="/gems/matchi/">matchi</a>, as words: <code>eq</code>, <code>be</code>, <code>be_true</code>, <code>be_false</code>, <code>be_nil</code>, <code>be_within(delta).of</code>, <code>match</code>, <code>be_an_instance_of</code>, <code>be_a_kind_of</code>, <code>raise_exception</code>, <code>change</code>, <code>satisfy</code>; and <code>fix(:Name)</code>, since a specification is a matcher too. There is no predicate helper: <code>on(:empty?) { it MUST be_true }</code> asks the question.</p>
+      <p>Everything that is wrong in the document raises when the file is loaded, before any test: an <code>it</code> with a block or without a requirement, a let or a specification named twice, a matcher without <code>match?</code>. A block that raises registers nothing.</p>
+
+      <h2 id="outcomes">Outcomes</h2>
+      <p>Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. Hence five outcomes, of which a success, a warning and an info pass:</p>
+      <table>
+        <thead>
+          <tr><th scope="col">Level</th><th scope="col">Match is true</th><th scope="col">Match is false</th><th scope="col">Missing method</th><th scope="col">Other exception</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">MUST</th><td>success</td><td>failure</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">SHOULD</th><td>success</td><td>warning</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">MAY</th><td>success</td><td>failure</td><td>info</td><td>error</td></tr>
+        </tbody>
+      </table>
+      <p>A negation swaps the first two columns. The missing method is the one named by the <code>on</code> of the context, when the object it is sent to raises <code>NoMethodError</code> for it. Below an error, <code>test</code> writes the frames of its backtrace that are not those of Fix and its gems:</p>
+      <pre data-example="examples/fix/account.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Account</span>
+  <span class="keyword">def</span> initialize(balance)
+    @balance = balance
+  <span class="keyword">end</span>
+
+  attr_reader <span class="string">:balance</span>
+
+  <span class="keyword">def</span> withdraw(amount)
+    raise <span class="constant">ArgumentError</span>, <span class="string">"insufficient funds"</span> <span class="keyword">if</span> amount > balance
+
+    @balance -= amount
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Account</span> <span class="keyword">do</span>
+  on <span class="string">:balance</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">100</span>
+    it <span class="constant">MUST</span> eq <span class="number">200</span>
+    it <span class="constant">SHOULD</span> eq <span class="number">200</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:currency</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"EUR"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:withdraw</span>, <span class="number">500</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq(-<span class="number">400</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Account</span>].test { <span class="constant">Account</span>.new(<span class="number">100</span>) } <span class="comment"># => false</span>
+</code></pre>
+      <pre><kbd>ruby account.rb</kbd>
+<samp>account.rb:19: Success: expected 100 to eq 100
+account.rb:20: Failure: expected 100 to eq 200
+account.rb:21: Warning: expected 100 to eq 200
+account.rb:25: Info: NoMethodError: undefined method 'currency' for an instance of Account
+account.rb:29: Error: ArgumentError: insufficient funds
+  account.rb:11:in 'Account#withdraw'
+  account.rb:33:in '&lt;main>'</samp></pre>
+
+      <h2 id="results">Results</h2>
+      <p><code>test</code> writes, for each expectation, one line, <code>LOCATION: OUTCOME: SUMMARY</code>, the summary being that of <a href="/gems/spectus/">spectus</a>; that grammar is what a runner reads, with the status of the process. <code>run</code> gives the same results as data, in the order of the contexts, and <code>match?</code> tests a value as a matcher does:</p>
+      <pre data-example="examples/fix/results.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Size</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">3</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+results = <span class="constant">Fix</span>[<span class="string">:Size</span>].run { <span class="string">"abcd"</span> }
+results.map(&amp;<span class="string">:outcome</span>) <span class="comment"># => [:success, :failure]</span>
+results.map(&amp;<span class="string">:passed?</span>) <span class="comment"># => [true, false]</span>
+
+result = results.last
+result.location <span class="comment"># => "examples/fix/results.rb:7"</span>
+result.chain    <span class="comment"># => ".size"</span>
+result.summary  <span class="comment"># => "expected 4 to eq 3"</span>
+result.to_s     <span class="comment"># => "examples/fix/results.rb:7: Failure: expected 4 to eq 3"</span>
+result.result.class <span class="comment"># => Spectus::Result</span>
+
+<span class="constant">Fix</span>[<span class="string">:Size</span>].match? { <span class="string">"abc"</span> } <span class="comment"># => true</span>
+</code></pre>
+
+      <h2 id="processes">Processes</h2>
+      <p>Each context with expectations runs in a child process, forked from the one that tests, with <a href="/gems/aw/">aw</a>: a subject that leaves something behind cannot touch the next context, and what it raises, an <code>exit</code> included, is an error of its expectation alone. The contexts run one after the other, and the parent writes the results of a context as its child returns them. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger.</p>
+
+      <h2 id="extensions">Extensions</h2>
+      <p><a href="/gems/fix-its/">fix-its</a> adds the word <code>its</code>, a method and its expectation on one line. <a href="/gems/matchi-fix/">matchi-fix</a> brings a specification of Fix to any framework that takes a matcher of matchi. The block of <code>Fix</code> runs on an instance of <code>Fix::Dsl</code>, where a gem may add a word of its own.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix/blob/v1.0.0/README.md">README</a>: the language, outcomes, results and processes in full.</li>
+        <li><a href="https://rubydoc.info/gems/fix/1.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/fix/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/fix/tree/v1.0.0">Source code</a></li>
+        <li><a href="/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">Rethinking test architecture with clear specification separation</a> and <a href="/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">The three levels of requirements, inspired by RFC 2119</a>, on the blog.</li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
