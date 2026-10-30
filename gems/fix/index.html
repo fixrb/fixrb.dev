@@ -40,12 +40,13 @@
   <main>
     <article>
       <header>
+        <img src="/logo.svg" alt="" width="128" height="128">
         <hgroup>
           <h1>fix</h1>
           <p>Specifications in the words of RFC 2119, tested against a subject.</p>
         </hgroup>
       </header>
-      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made. Any subject is then tested against it, each context in a child process, and every expectation gets a result. Fix is the main gem of Fixrb, built on <a href="/gems/spectus/">spectus</a>, <a href="/gems/matchi/">matchi</a>, <a href="/gems/defi/">defi</a> and <a href="/gems/aw/">aw</a>.</p>
+      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made: it names no class, builds no object, and holds no logic. Any subject is then tested against it, each context in a child process, and every expectation gets a result. One specification can test several implementations, a library you depend on, or the same object at every release; and because the levels are three, it can tell what it requires from what it recommends and what it leaves optional.</p>
       <dl>
         <dt>Version</dt>
         <dd>1.0.0</dd>
@@ -60,7 +61,7 @@
       <h2 id="install">Install</h2>
       <p>Add <code>gem "fix"</code> to your Gemfile, or run <code>gem install fix</code>.</p>
 
-      <h2 id="usage">Usage</h2>
+      <h2 id="usage">In one file</h2>
       <p>A file writes a specification, then tests a subject against it. <code>Fix :Duck do … end</code> builds the specification and registers it under its name; <code>Fix[:Duck]</code> finds it again. <code>test</code> builds a new subject with the block for every expectation, sends it the methods of the <code>on</code> around it, judges what comes out, writes one line per expectation and returns whether all of them pass; <code>exit</code> turns that into the status of the process.</p>
       <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
 
@@ -89,10 +90,213 @@ exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test {
 <samp>duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
 duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
 duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck</samp></pre>
-      <p>The duck has no <code>speak</code>: under MAY, a method the subject does not have is an info, which passes. Keep the parentheses of <code>exit(…)</code>: <code>exit Fix[:Duck].test do … end</code> would give the block to <code>exit</code>.</p>
+      <p>The duck has no <code>speak</code>: under MAY, a method the subject does not have is an info, which passes. The specification could sit in a file of its own and the test in another; the class could be anything with a <code>walk</code> and a <code>swim</code>. Keep the parentheses of <code>exit(…)</code>: <code>exit Fix[:Duck].test do … end</code> would give the block to <code>exit</code>.</p>
 
-      <h2 id="language">Writing a specification</h2>
-      <p>The block of <code>Fix</code> is a document, read once when the file is loaded, with four words. <code>on :name, *arguments</code> sends a method to the subject, and the expectations inside judge what it returns; an <code>on</code> inside an <code>on</code> sends its method to that value. <code>let(:name) { … }</code> is a parameter of the subject, a block the subject block calls, computed once per expectation; <code>with name: value</code> opens a context where the parameter has that value. <code>it</code> takes a requirement: a level, <code>MUST</code>, <code>MUST_NOT</code>, <code>SHOULD</code>, <code>SHOULD_NOT</code> or <code>MAY</code>, then a matcher.</p>
+      <h2 id="cases">What a specification is for</h2>
+
+      <h3 id="implementations">One specification, as many subjects as you like</h3>
+      <p>A specification is written once and tested against anything: the subject is chosen by the block of <code>test</code>, not by the specification. Here a stack is specified by what it does, then tested against <code>Array</code> and against a linked list. Nested <code>on</code> form a method chain, each one sent to what the one above returned, so <code>push</code> has to return the stack for <code>pop</code> to follow.</p>
+      <pre data-example="examples/fix/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:push</span>, <span class="number">2</span> <span class="keyword">do</span>
+      on <span class="string">:pop</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+
+      on <span class="string">:size</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">LinkedStack</span>
+  <span class="constant">Node</span> = <span class="constant">Data</span>.define(<span class="string">:value</span>, <span class="string">:below</span>)
+
+  <span class="keyword">def</span> initialize = @top = <span class="keyword">nil</span>
+  <span class="keyword">def</span> empty? = @top.nil?
+  <span class="keyword">def</span> size = each_node.count
+  <span class="keyword">def</span> push(value) = tap { @top = <span class="constant">Node</span>.new(value, @top) }
+
+  <span class="keyword">def</span> pop
+    value = @top&amp;.value
+    @top = @top&amp;.below
+    value
+  <span class="keyword">end</span>
+
+  private
+
+  <span class="keyword">def</span> each_node
+    <span class="keyword">return</span> to_enum(<span class="string">:each_node</span>) <span class="keyword">unless</span> block_given?
+
+    node = @top
+    <span class="keyword">while</span> node
+      <span class="keyword">yield</span> node
+      node = node.below
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] }               <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { <span class="constant">LinkedStack</span>.new } <span class="comment"># => true</span>
+</code></pre>
+      <pre><kbd>ruby stack.rb</kbd>
+<samp>stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil
+stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil</samp></pre>
+
+      <h3 id="contract">A contract in three levels</h3>
+      <p>The levels of RFC 2119 say what an adapter has to do, what it had better do, and what it may leave out. A MUST not met fails the build; a SHOULD not met is a warning, and a MAY on a method the subject does not have is an info: both pass, and both are written, so the gap is known without blocking anyone. <code>let</code> declares a parameter of the subject, and <code>with</code> opens a context where it has another value: the block of <code>test</code> reads it to build the subject.</p>
+      <pre data-example="examples/fix/cache.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># What the application needs from a cache: a contract, in three levels.</span>
+<span class="constant">Fix</span> <span class="string">:Cache</span> <span class="keyword">do</span>
+  let(<span class="string">:entries</span>) { {} }
+
+  on <span class="string">:read</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+
+  with <span class="string">entries:</span> { <span class="string">answer:</span> <span class="number">42</span> } <span class="keyword">do</span>
+    on <span class="string">:read</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">42</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:write</span>, <span class="string">:answer</span>, <span class="number">42</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:clear</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">MemoryCache</span>
+  <span class="keyword">def</span> initialize = @store = {}
+  <span class="keyword">def</span> read(key) = @store[key]
+  <span class="keyword">def</span> write(key, value) = @store[key] = value
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Cache</span>].test { entries.each_with_object(<span class="constant">MemoryCache</span>.new) { |(key, value), cache| cache.write(key, value) } })
+</code></pre>
+      <pre><kbd>ruby cache.rb</kbd>
+<samp>cache.rb:8: Success: expected nil to be nil
+cache.rb:13: Success: expected 42 to eq 42
+cache.rb:18: Warning: expected 42 to be true
+cache.rb:22: Info: NoMethodError: undefined method 'clear' for an instance of MemoryCache</samp></pre>
+
+      <h3 id="dependencies">What you expect of a dependency</h3>
+      <p>The subject does not have to be yours. A specification can hold what the application relies on in a library, and run at each upgrade of that library; here the standard <code>JSON</code> module. An exception the method raises is judged as such: <code>raise_exception</code> expects it, any other matcher reports an error.</p>
+      <pre data-example="examples/fix/json.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"json"</span>
+
+<span class="comment"># What the application expects of a library it depends on, tested at each</span>
+<span class="comment"># upgrade of that library.</span>
+<span class="constant">Fix</span> <span class="string">:JSON</span> <span class="keyword">do</span>
+  on <span class="string">:generate</span>, [<span class="number">1</span>, <span class="number">2</span>] <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"[1,2]"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">"[1,2]"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq [<span class="number">1</span>, <span class="number">2</span>]
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">"nope"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> raise_exception <span class="constant">JSON</span>::<span class="constant">ParserError</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pretty_generate</span>, [<span class="number">1</span>] <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"[\n  1\n]"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:JSON</span>].test { <span class="constant">JSON</span> })
+</code></pre>
+      <pre><kbd>ruby json.rb</kbd>
+<samp>json.rb:8: Success: expected "[1,2]" to eq "[1,2]"
+json.rb:12: Success: expected [1, 2] to eq [1, 2]
+json.rb:16: Success: expected #&lt;JSON::ParserError: unexpected token 'nope' at line 1 column 1> to raise exception JSON::ParserError
+json.rb:20: Success: expected "[\n  1\n]" to eq "[\n  1\n]"</samp></pre>
+
+      <h3 id="composition">Specifications that compose</h3>
+      <p>A specification is a matcher: <code>fix(:Name)</code> requires a registered one, <code>fix { … }</code> one written on the spot, and a level applies to it as to any matcher. A failed <code>fix</code> says that the specification is not met, not which of its expectations failed: test that specification on its own for the detail.</p>
+      <pre data-example="examples/fix/compose.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Positive</span> <span class="keyword">do</span>
+  on <span class="string">:positive?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Score</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_a_kind_of <span class="constant">Numeric</span>
+  it <span class="constant">MUST</span> fix(<span class="string">:Positive</span>)
+  it <span class="constant">MUST_NOT</span> fix { on(<span class="string">:nan?</span>) { it <span class="constant">MUST</span> be_true } }
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Score</span>].test { <span class="number">7.5</span> })
+</code></pre>
+      <pre><kbd>ruby compose.rb</kbd>
+<samp>compose.rb:10: Success: expected 7.5 to be a kind of Numeric
+compose.rb:11: Success: expected 7.5 to fix Positive
+compose.rb:12: Success: expected 7.5 not to fix an anonymous specification</samp></pre>
+
+      <h3 id="isolation">State that cannot leak</h3>
+      <p>Each context with expectations runs in a child process forked from the one that tests, with <a href="/gems/aw/">aw</a>. A subject that writes to a global, a constant, <code>ENV</code> or the current directory does so in its child alone: every context starts from the state the file was loaded with, and the order of the contexts cannot change a result.</p>
+      <pre data-example="examples/fix/registry.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># A subject with a global state: every context starts from the state the</span>
+<span class="comment"># file was loaded with, since each one runs in a child process.</span>
+<span class="keyword">module</span> <span class="constant">Registry</span>
+  <span class="constant">NAMES</span> = []
+
+  <span class="keyword">def</span> <span class="keyword">self</span>.add(name) = tap { <span class="constant">NAMES</span> &lt;&lt; name }
+  <span class="keyword">def</span> <span class="keyword">self</span>.names = <span class="constant">NAMES</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Registry</span> <span class="keyword">do</span>
+  on <span class="string">:add</span>, <span class="string">"Alice"</span> <span class="keyword">do</span>
+    on <span class="string">:names</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq [<span class="string">"Alice"</span>]
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:add</span>, <span class="string">"Bob"</span> <span class="keyword">do</span>
+    on <span class="string">:names</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq [<span class="string">"Bob"</span>]
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:names</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq []
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Registry</span>].test { <span class="constant">Registry</span> })
+</code></pre>
+      <pre><kbd>ruby registry.rb</kbd>
+<samp>registry.rb:15: Success: expected ["Alice"] to eq ["Alice"]
+registry.rb:21: Success: expected ["Bob"] to eq ["Bob"]
+registry.rb:26: Success: expected [] to eq []</samp></pre>
+
+      <h2 id="language">The language</h2>
+      <p>The block of <code>Fix</code> is a document, read once when the file is loaded, with four words. <code>on :name, *arguments</code> sends a method to the subject, and the expectations inside judge what it returns. <code>let(:name) { … }</code> is a parameter of the subject, computed once per expectation, the first time the subject block calls it; <code>with name: value</code> opens a context where it has that value. <code>it</code> takes a requirement: a level, <code>MUST</code>, <code>MUST_NOT</code>, <code>SHOULD</code>, <code>SHOULD_NOT</code> or <code>MAY</code>, then a matcher.</p>
       <pre data-example="examples/fix/greeting.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Greeting</span> <span class="keyword">do</span>
@@ -117,8 +321,8 @@ exit(<span class="constant">Fix</span>[<span class="string">:Greeting</span>].te
 greeting.rb:7: Success: expected "Hello, Bob!" not to be nil
 greeting.rb:10: Success: expected 11 to eq 11
 greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"</samp></pre>
-      <p>A let is visible from the subject block and from the other lets only: named in an expectation, it raises <code>NameError</code> at load, with the remedy. Its name cannot be a method of the object the subject is built on, nor a word of the language, so that nothing is redefined in silence. The matchers are those of <a href="/gems/matchi/">matchi</a>, as words: <code>eq</code>, <code>be</code>, <code>be_true</code>, <code>be_false</code>, <code>be_nil</code>, <code>be_within(delta).of</code>, <code>match</code>, <code>be_an_instance_of</code>, <code>be_a_kind_of</code>, <code>raise_exception</code>, <code>change</code>, <code>satisfy</code>; and <code>fix(:Name)</code>, since a specification is a matcher too. There is no predicate helper: <code>on(:empty?) { it MUST be_true }</code> asks the question.</p>
-      <p>Everything that is wrong in the document raises when the file is loaded, before any test: an <code>it</code> with a block or without a requirement, a let or a specification named twice, a matcher without <code>match?</code>. A block that raises registers nothing.</p>
+      <p>The matchers are those of <a href="/gems/matchi/">matchi</a>, as words: <code>eq</code>, <code>be</code>, <code>be_true</code>, <code>be_false</code>, <code>be_nil</code>, <code>be_within(delta).of</code>, <code>match</code>, <code>be_an_instance_of</code>, <code>be_a_kind_of</code>, <code>raise_exception</code>, <code>change</code> and <code>satisfy</code>, plus <code>fix</code>; any object with <code>match?</code> and <code>to_s</code> is one too. There is no predicate helper: <code>on(:empty?) { it MUST be_true }</code> asks the question.</p>
+      <p>A let is visible from the subject block and from the other lets only; named in an expectation, it raises <code>NameError</code> at load, with the remedy. Its name cannot be a method of the object the subject is built on, nor a word of the language, so that nothing is redefined in silence. Everything that is wrong in the document raises when the file is loaded, before any test: an <code>it</code> with a block or without a requirement, a let or a specification named twice, a matcher without <code>match?</code>. A block that raises registers nothing.</p>
 
       <h2 id="outcomes">Outcomes</h2>
       <p>Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. Hence five outcomes, of which a success, a warning and an info pass:</p>
@@ -132,7 +336,7 @@ greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"</samp></
           <tr><th scope="row">MAY</th><td>success</td><td>failure</td><td>info</td><td>error</td></tr>
         </tbody>
       </table>
-      <p>A negation swaps the first two columns. The missing method is the one named by the <code>on</code> of the context, when the object it is sent to raises <code>NoMethodError</code> for it. Below an error, <code>test</code> writes the frames of its backtrace that are not those of Fix and its gems:</p>
+      <p>A negation swaps the first two columns. The missing method is the one named by the <code>on</code> of the context, when the object it is sent to raises <code>NoMethodError</code> for it. Below an error, <code>test</code> writes the frames of its backtrace that are not those of Fix and its gems, so that the line of the subject is there:</p>
       <pre data-example="examples/fix/account.rb"><code>require <span class="string">"fix"</span>
 
 <span class="keyword">class</span> <span class="constant">Account</span>
@@ -176,8 +380,8 @@ account.rb:29: Error: ArgumentError: insufficient funds
   account.rb:11:in 'Account#withdraw'
   account.rb:33:in '&lt;main>'</samp></pre>
 
-      <h2 id="results">Results</h2>
-      <p><code>test</code> writes, for each expectation, one line, <code>LOCATION: OUTCOME: SUMMARY</code>, the summary being that of <a href="/gems/spectus/">spectus</a>; that grammar is what a runner reads, with the status of the process. <code>run</code> gives the same results as data, in the order of the contexts, and <code>match?</code> tests a value as a matcher does:</p>
+      <h2 id="results">Results and runners</h2>
+      <p><code>test</code> writes, for each expectation, one line, <code>LOCATION: OUTCOME: SUMMARY</code>, the summary being that of <a href="/gems/spectus/">spectus</a>, and nothing else: no letter, no colour, no count. A file is run with <code>ruby</code>, and its status is 0 when the specification is met: that is all a continuous integration, a Rakefile or a runner needs, and the grammar of the lines is what a runner reads to recap or colour them. <code>run</code> gives the same results as data, in the order of the contexts, and <code>match?</code> tests a value as a matcher does:</p>
       <pre data-example="examples/fix/results.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Size</span> <span class="keyword">do</span>
@@ -203,7 +407,10 @@ result.result.class <span class="comment"># => Spectus::Result</span>
 </code></pre>
 
       <h2 id="processes">Processes</h2>
-      <p>Each context with expectations runs in a child process, forked from the one that tests, with <a href="/gems/aw/">aw</a>: a subject that leaves something behind cannot touch the next context, and what it raises, an <code>exit</code> included, is an error of its expectation alone. The contexts run one after the other, and the parent writes the results of a context as its child returns them. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger.</p>
+      <p>The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an <code>exit</code> included, is an error of its expectation alone. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.</p>
+
+      <h2 id="scope">What Fix leaves out</h2>
+      <p>No mocks, no <code>before</code> and <code>after</code>, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs <code>fork</code>, so it runs on Linux, macOS and the BSDs, not on Windows or JRuby. A test suite that needs fixtures, doubles or an application framework keeps its framework; Fix specifies the behaviour the pieces agree on, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher.</p>
 
       <h2 id="extensions">Extensions</h2>
       <p><a href="/gems/fix-its/">fix-its</a> adds the word <code>its</code>, a method and its expectation on one line. <a href="/gems/matchi-fix/">matchi-fix</a> brings a specification of Fix to any framework that takes a matcher of matchi. The block of <code>Fix</code> runs on an instance of <code>Fix::Dsl</code>, where a gem may add a word of its own.</p>
