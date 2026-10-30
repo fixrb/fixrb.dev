@@ -67,7 +67,7 @@ Runs the examples, each in its own Ruby process, with the gems found on the load
 The stylesheet relies on this structure, which every page follows.
 
 - `body > header`: a link to `/` with the logo and the site name, then `nav[aria-label="Main"] > ul`. `body > footer`: a paragraph, then a list of links. `main` in between.
-- Home: `section#intro` (logo, `hgroup`, paragraph, `figure` with the example, `ul` of two links), then `section#gems` holding `section#fix` (Fix and the gems that extend it), `section#libraries` (building blocks that do not) and `section#tools` (commands to run as they are). A gem card is `li > h4`, holding the gem's icon, if it has one, then `> a`; a `p`; and a status in `p > small`.
+- Home: `section#fix` (an `hgroup` whose first `p` is the eyebrow, a paragraph, a `ul` of two links, a `dl` of facts, and a `figure` with the example: from 62rem, the figure takes a second column), then `section#why` (a `ul` of three `li > h3 + p`, in a row from 56rem), then `section#gems` holding `section#extensions` (the gems around Fix), `section#libraries` (building blocks that do not depend on it) and `section#tools` (commands to run as they are). A gem card is `li > h4`, holding the gem's icon, if it has one, then `> a`; a `p`; and a status in `p > small`.
 - Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, if it has one, then the `hgroup`. An illustration, if any, is a `figure` right after the first paragraph.
 - Lists of posts: `ul > li > article`, with a title `h2 > a` or `h3 > a`, a date `p > time`, and a description `p`.
 - Posts: `article > header` (the `h1`, then `p` with the date and author), `p[role="note"]` for a note, `article > footer`.

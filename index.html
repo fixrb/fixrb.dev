@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
-  <title>Fixrb: Fix and Matchi, testing libraries for Ruby</title>
-  <meta name="description" content="Ruby testing libraries: Fix keeps specifications apart from the code they test, and Matchi’s matchers let the expected value make the comparison.">
+  <title>Fixrb: Fix, specifications for Ruby, and the gems around it</title>
+  <meta name="description" content="Fix tests Ruby code against specifications in the words of RFC 2119, written once and kept apart from any implementation. Fixrb gathers Fix and the gems around it.">
   <link rel="canonical" href="https://fixrb.dev/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
-  <meta property="og:title" content="Fixrb: Fix and Matchi, testing libraries for Ruby">
-  <meta property="og:description" content="Ruby testing libraries: Fix keeps specifications apart from the code they test, and Matchi’s matchers let the expected value make the comparison.">
+  <meta property="og:title" content="Fixrb: Fix, specifications for Ruby, and the gems around it">
+  <meta property="og:description" content="Fix tests Ruby code against specifications in the words of RFC 2119, written once and kept apart from any implementation. Fixrb gathers Fix and the gems around it.">
   <meta property="og:url" content="https://fixrb.dev/">
   <meta property="og:image" content="https://fixrb.dev/card.png">
   <meta property="og:image:width" content="1200">
@@ -38,86 +38,86 @@
   </header>
 
   <main>
-    <section id="intro">
-      <img src="/logo.svg" alt="" width="128" height="128">
+    <section id="fix" aria-labelledby="fix-title">
       <hgroup>
-        <h1>Fixrb</h1>
-        <p>A collection of Ruby testing libraries designed to make programmers happy.</p>
+        <p>The main gem of Fixrb</p>
+        <h1 id="fix-title">Fix</h1>
+        <p>Specifications for Ruby, in the words of RFC 2119, tested against any subject.</p>
       </hgroup>
-      <p>Fix is at the heart of it. A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of RFC 2119, and nothing about how it is made. A test then challenges one subject against it, and the same specification can challenge as many as you need: another implementation, a library you depend on, the same object at its next version.</p>
-      <figure>
-        <pre data-example="examples/fix/calculator.rb"><code>require <span class="string">"fix"</span>
-
-<span class="comment"># A specification: what a calculator does, whatever it is made of.</span>
-<span class="constant">Fix</span> <span class="string">:Calculator</span> <span class="keyword">do</span>
-  on <span class="string">:add</span>, <span class="number">2</span>, <span class="number">3</span> <span class="keyword">do</span>
-    it <span class="constant">MUST</span> eq <span class="number">5</span>
-  <span class="keyword">end</span>
-
-  on <span class="string">:divide</span>, <span class="number">1</span>, <span class="number">0</span> <span class="keyword">do</span>
-    it <span class="constant">MUST</span> raise_exception <span class="constant">ZeroDivisionError</span>
-  <span class="keyword">end</span>
-<span class="keyword">end</span>
-
-<span class="comment"># An implementation.</span>
-<span class="keyword">module</span> <span class="constant">Calculator</span>
-  <span class="keyword">def</span> <span class="keyword">self</span>.add(a, b) = a + b
-  <span class="keyword">def</span> <span class="keyword">self</span>.divide(a, b) = a / b
-<span class="keyword">end</span>
-
-<span class="comment"># A test: the specification names no class, the test picks the subject.</span>
-exit(<span class="constant">Fix</span>[<span class="string">:Calculator</span>].test { <span class="constant">Calculator</span> })
-</code></pre>
-        <pre><kbd>ruby calculator.rb</kbd>
-<samp>calculator.rb:6: Success: expected 5 to eq 5
-calculator.rb:10: Success: expected #&lt;ZeroDivisionError: divided by 0> to raise exception ZeroDivisionError</samp></pre>
-        <figcaption>One line per expectation, the status of the process for the whole: nothing else to configure.</figcaption>
-      </figure>
+      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them.</p>
       <ul>
-        <li>A specification is a document, read once when the file is loaded: no setup, no mock, no logic, and everything wrong in it raises before any test runs.</li>
-        <li>Three levels tell what is required, what is recommended and what is optional: a SHOULD not met is a warning, a MAY on a method the subject does not have is an info, and both pass.</li>
-        <li>Each context runs in a child process: what a subject does to a global, a constant or <code>ENV</code> stays in its context, and the order of the contexts cannot change a result.</li>
-      </ul>
-      <ul>
-        <li><a href="/gems/fix/">The fix gem</a>: what a specification is for, and how to write one</li>
+        <li><a href="/gems/fix/">Read about Fix</a></li>
         <li><a href="#gems">All the gems</a></li>
+      </ul>
+      <dl>
+        <dt>Install</dt>
+        <dd><code>gem install fix</code></dd>
+        <dt>Version</dt>
+        <dd>1.0.0, for Ruby 3.3 or later</dd>
+        <dt>Source</dt>
+        <dd><a href="https://github.com/fixrb/fix">github.com/fixrb/fix</a>, MIT license</dd>
+      </dl>
+      <figure>
+        <pre data-example="examples/home/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># A stack, whatever it is made of.</span>
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:pop</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:peek</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># A test picks the subject: an Array.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+        <pre><kbd>ruby stack.rb</kbd>
+<samp>stack.rb:7: Success: expected 1 to eq 1
+stack.rb:12: Success: expected nil to be nil
+stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Array</samp></pre>
+        <figcaption>One line per expectation, the status of the process for the whole. Under MAY, a method the subject does not have is an info, and the run passes.</figcaption>
+      </figure>
+    </section>
+
+    <section id="why" aria-labelledby="why-title">
+      <h2 id="why-title">What makes Fix different</h2>
+      <ul>
+        <li>
+          <h3>A specification is a document</h3>
+          <p>It is read once, when the file is loaded: no setup, no mock, no logic, and anything wrong in it raises before a test runs. It names no class; the test picks the subject.</p>
+        </li>
+        <li>
+          <h3>Three levels of requirement</h3>
+          <p>MUST, SHOULD and MAY tell what is required, what is recommended and what is optional. A SHOULD not met is a warning, a MAY on a method the subject lacks is an info, and both pass.</p>
+        </li>
+        <li>
+          <h3>One process per context</h3>
+          <p>Each context runs in a child process. What a subject does to a global, a constant or <code>ENV</code> stays in its context, and the order of the contexts cannot change a result.</p>
+        </li>
       </ul>
     </section>
 
     <section id="gems" aria-labelledby="gems-title">
-      <h2 id="gems-title">Gems</h2>
-      <p>Each gem does one thing, in a few hundred lines of code at most, so that you can read it before you trust it.</p>
+      <h2 id="gems-title">The gems</h2>
+      <p>Fix is built from small libraries and extended by small gems. Each does one thing, in a few hundred lines of code at most, so that you can read it before you trust it.</p>
 
-      <section id="fix">
-        <h3>Fix and its extensions</h3>
-        <p>Fix is the main gem of Fixrb. fix-command and fix-its extend it.</p>
+      <section id="extensions">
+        <h3>Around Fix</h3>
+        <p>Gems that extend Fix, or bring its specifications to other test frameworks.</p>
         <ul>
-          <li>
-            <h4><a href="/gems/fix/">fix</a></h4>
-            <p>Specifications in the words of RFC 2119, MUST, SHOULD and MAY, kept apart from the subjects they are tested against, each context in a child process.</p>
-            <p><small>Version 1.0</small></p>
-          </li>
-          <li>
-            <h4><a href="https://github.com/fixrb/fix-command">fix-command</a></h4>
-            <p>The <code>fix</code> command, to run specification files.</p>
-            <p><small>Moving to Fix 1.0</small></p>
-          </li>
           <li>
             <h4><a href="/gems/fix-its/">fix-its</a></h4>
             <p>Adds the word <code>its</code> to specifications: a method of the subject and its expectation on one line.</p>
             <p><small>Version 1.0</small></p>
-          </li>
-        </ul>
-      </section>
-
-      <section id="libraries">
-        <h3>Libraries</h3>
-        <p>Building blocks that do not extend Fix: use them on their own, with any test framework, or to build one, as Fix 1.0 is built on spectus, matchi and aw.</p>
-        <ul>
-          <li>
-            <h4><img src="/gems/matchi/img/icon.svg" alt="" width="62" height="64"><a href="/gems/matchi/">matchi</a></h4>
-            <p>Matchers for any test framework, in which the expected value makes the comparison, not the object under test.</p>
-            <p><small>Version 6.0</small></p>
           </li>
           <li>
             <h4><a href="/gems/matchi-fix/">matchi-fix</a></h4>
@@ -125,14 +125,36 @@ calculator.rb:10: Success: expected #&lt;ZeroDivisionError: divided by 0> to rai
             <p><small>Version 4.0</small></p>
           </li>
           <li>
-            <h4><img src="/gems/aw/img/icon.svg" alt="" width="64" height="64"><a href="/gems/aw/">aw</a></h4>
-            <p>Runs a block in a forked process and returns its result. Fix 1.0 uses it to keep contexts apart.</p>
-            <p><small>Version 1.0</small></p>
+            <h4><a href="https://github.com/fixrb/fix-command">fix-command</a></h4>
+            <p>The <code>fix</code> command, to run specification files.</p>
+            <p><small>Moving to Fix 1.0</small></p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="libraries">
+        <h3>Libraries</h3>
+        <p>Building blocks that do not depend on Fix: use them on their own, with any test framework, or to build one. Fix 1.0 is built on spectus, matchi and aw.</p>
+        <ul>
+          <li>
+            <h4><img src="/gems/matchi/img/icon.svg" alt="" width="62" height="64"><a href="/gems/matchi/">matchi</a></h4>
+            <p>Matchers for any test framework, in which the expected value makes the comparison, not the object under test.</p>
+            <p><small>Version 6.0</small></p>
           </li>
           <li>
             <h4><a href="/gems/spectus/">spectus</a></h4>
             <p>Expectations with the requirement levels of RFC 2119, MUST, SHOULD and MAY, that give a result instead of raising. The engine of Fix 1.0, built on defi.</p>
             <p><small>Version 6.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/aw/img/icon.svg" alt="" width="64" height="64"><a href="/gems/aw/">aw</a></h4>
+            <p>Runs a block in a forked process and returns its result. Fix 1.0 uses it to keep contexts apart.</p>
+            <p><small>Version 1.0</small></p>
+          </li>
+          <li>
+            <h4><a href="/gems/defi/">defi</a></h4>
+            <p>Prepares a method call, a name and its arguments, to send to any object and keep what came back.</p>
+            <p><small>Version 4.0</small></p>
           </li>
           <li>
             <h4><a href="https://github.com/fixrb/test_tube">test_tube</a></h4>
@@ -143,11 +165,6 @@ calculator.rb:10: Success: expected #&lt;ZeroDivisionError: divided by 0> to rai
             <h4><a href="https://github.com/fixrb/expresenter">expresenter</a></h4>
             <p>Presents the result of an expectation: success, warning, info, failure or error.</p>
             <p><small>Version 1.5</small></p>
-          </li>
-          <li>
-            <h4><a href="/gems/defi/">defi</a></h4>
-            <p>Prepares a method call, a name and its arguments, to send to any object and keep what came back.</p>
-            <p><small>Version 4.0</small></p>
           </li>
         </ul>
       </section>
