@@ -1,24 +1,21 @@
 require "fix"
 
-# A specification
+# A specification: what a calculator does, whatever it is made of.
 Fix :Calculator do
-  on(:new, 2) do
-    on(:add, 3) do
-      it MUST be 5
-    end
+  on :add, 2, 3 do
+    it MUST eq 5
+  end
+
+  on :divide, 1, 0 do
+    it MUST raise_exception ZeroDivisionError
   end
 end
 
-# An implementation
-class Calculator
-  def initialize(first)
-    @first = first
-  end
-
-  def add(second)
-    @first + second
-  end
+# An implementation.
+module Calculator
+  def self.add(a, b) = a + b
+  def self.divide(a, b) = a / b
 end
 
-# A test
-Fix[:Calculator].test { Calculator }
+# A test: the specification names no class, the test picks the subject.
+exit(Fix[:Calculator].test { Calculator })

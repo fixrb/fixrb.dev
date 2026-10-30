@@ -44,37 +44,42 @@
         <h1>Fixrb</h1>
         <p>A collection of Ruby testing libraries designed to make programmers happy.</p>
       </hgroup>
-      <p>Fix is at the heart of it. A specification describes how an object must behave, apart from any implementation. A test then challenges one implementation against it, and the same specification can challenge as many implementations as you need.</p>
+      <p>Fix is at the heart of it. A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of RFC 2119, and nothing about how it is made. A test then challenges one subject against it, and the same specification can challenge as many as you need: another implementation, a library you depend on, the same object at its next version.</p>
       <figure>
         <pre data-example="examples/fix/calculator.rb"><code>require <span class="string">"fix"</span>
 
-<span class="comment"># A specification</span>
+<span class="comment"># A specification: what a calculator does, whatever it is made of.</span>
 <span class="constant">Fix</span> <span class="string">:Calculator</span> <span class="keyword">do</span>
-  on(<span class="string">:new</span>, <span class="number">2</span>) <span class="keyword">do</span>
-    on(<span class="string">:add</span>, <span class="number">3</span>) <span class="keyword">do</span>
-      it <span class="constant">MUST</span> be <span class="number">5</span>
-    <span class="keyword">end</span>
+  on <span class="string">:add</span>, <span class="number">2</span>, <span class="number">3</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">5</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:divide</span>, <span class="number">1</span>, <span class="number">0</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> raise_exception <span class="constant">ZeroDivisionError</span>
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-<span class="comment"># An implementation</span>
-<span class="keyword">class</span> <span class="constant">Calculator</span>
-  <span class="keyword">def</span> initialize(first)
-    @first = first
-  <span class="keyword">end</span>
-
-  <span class="keyword">def</span> add(second)
-    @first + second
-  <span class="keyword">end</span>
+<span class="comment"># An implementation.</span>
+<span class="keyword">module</span> <span class="constant">Calculator</span>
+  <span class="keyword">def</span> <span class="keyword">self</span>.add(a, b) = a + b
+  <span class="keyword">def</span> <span class="keyword">self</span>.divide(a, b) = a / b
 <span class="keyword">end</span>
 
-<span class="comment"># A test</span>
-<span class="constant">Fix</span>[<span class="string">:Calculator</span>].test { <span class="constant">Calculator</span> }
+<span class="comment"># A test: the specification names no class, the test picks the subject.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:Calculator</span>].test { <span class="constant">Calculator</span> })
 </code></pre>
-        <figcaption>The specification names no class: the test chooses which implementation to challenge.</figcaption>
+        <pre><kbd>ruby calculator.rb</kbd>
+<samp>calculator.rb:6: Success: expected 5 to eq 5
+calculator.rb:10: Success: expected #&lt;ZeroDivisionError: divided by 0> to raise exception ZeroDivisionError</samp></pre>
+        <figcaption>One line per expectation, the status of the process for the whole: nothing else to configure.</figcaption>
       </figure>
       <ul>
-        <li><a href="/gems/fix/">The fix gem</a></li>
+        <li>A specification is a document, read once when the file is loaded: no setup, no mock, no logic, and everything wrong in it raises before any test runs.</li>
+        <li>Three levels tell what is required, what is recommended and what is optional: a SHOULD not met is a warning, a MAY on a method the subject does not have is an info, and both pass.</li>
+        <li>Each context runs in a child process: what a subject does to a global, a constant or <code>ENV</code> stays in its context, and the order of the contexts cannot change a result.</li>
+      </ul>
+      <ul>
+        <li><a href="/gems/fix/">The fix gem</a>: what a specification is for, and how to write one</li>
         <li><a href="#gems">All the gems</a></li>
       </ul>
     </section>
