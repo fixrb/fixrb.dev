@@ -49,7 +49,7 @@
       <p>A matcher is built with an expected value, then asked whether an actual value matches. It answers <code>true</code> or <code>false</code>, and leaves negation, messages and reports to your test framework.</p>
       <dl>
         <dt>Version</dt>
-        <dd>5.0.0</dd>
+        <dd>6.0.0</dd>
         <dt>Ruby</dt>
         <dd>3.3 or later</dd>
         <dt>Dependencies</dt>
@@ -92,7 +92,7 @@ matcher.to_s          <span class="comment"># => "eq 42"</span>
         <dt><code>Predicate</code></dt>
         <dd>A value whose predicate answers <code>true</code>: <code>:be_empty</code> calls <code>empty?</code>.</dd>
         <dt><code>RaiseException</code></dt>
-        <dd>A block that raises an exception of a given class, optionally with a given message.</dd>
+        <dd>A block that raises an exception of a given class, optionally with a given message. An <code>Interrupt</code>, a signal or a <code>NoMemoryError</code> goes through unless it is the class expected.</dd>
         <dt><code>Change</code></dt>
         <dd>A block that changes what a public method returns, optionally <code>by</code>, <code>by_at_least</code>, <code>by_at_most</code>, <code>to</code>, or <code>from</code> and <code>to</code>.</dd>
       </dl>
@@ -135,10 +135,10 @@ require <span class="string">"minitest/autorun"</span>
 
       <h2 id="documentation">Documentation</h2>
       <ul>
-        <li><a href="https://github.com/fixrb/matchi/blob/v5.0.0/README.md">README</a>: every matcher with its arguments and errors, and the differences from RSpec.</li>
-        <li><a href="https://rubydoc.info/gems/matchi/5.0.0">API reference</a></li>
-        <li><a href="https://rubygems.org/gems/matchi/versions/5.0.0">RubyGems</a></li>
-        <li><a href="https://github.com/fixrb/matchi/tree/v5.0.0">Source code</a></li>
+        <li><a href="https://github.com/fixrb/matchi/blob/v6.0.0/README.md">README</a>: every matcher with its arguments and errors, and the differences from RSpec.</li>
+        <li><a href="https://rubydoc.info/gems/matchi/6.0.0">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/matchi/versions/6.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/matchi/tree/v6.0.0">Source code</a></li>
       </ul>
     </article>
   </main>
