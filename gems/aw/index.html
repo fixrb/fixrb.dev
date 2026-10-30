@@ -53,7 +53,7 @@
       </figure>
       <dl>
         <dt>Version</dt>
-        <dd>1.0.0</dd>
+        <dd>1.0.1</dd>
         <dt>Ruby</dt>
         <dd>3.3 or later, with <code>fork(2)</code>: CRuby on Linux, macOS and the BSDs</dd>
         <dt>Dependencies</dt>
@@ -82,7 +82,7 @@ list                       <span class="comment"># => ["foo"]</span>
 
       <h2 id="errors">Errors</h2>
       <p><code>fork!</code> raises again in the parent what the block raised, with its message, its backtrace and its cause. That includes the <code>SystemExit</code> of an <code>exit</code> or an <code>abort</code>, and the <code>SignalException</code> of a signal that Ruby turns into an exception, such as <code>TERM</code>: left uncaught, they end the parent as they would have ended the child.</p>
-      <p><code>fork!</code> and <code>fork?</code> raise <code>Aw::ChildError</code> when the child delivers no result: a signal such as <code>KILL</code> ended it, the child called <code>exit!</code> or <code>exec</code>, or the block left with <code>break</code>, <code>return</code> or <code>throw</code>. The error’s <code>status</code> is the child’s <code>Process::Status</code>:</p>
+      <p><code>fork!</code> and <code>fork?</code> raise <code>Aw::ChildError</code> when the child delivers no result: a signal such as <code>KILL</code> ended it, the child called <code>exit!</code> or <code>exec</code>, the block left with <code>break</code>, <code>return</code> or <code>throw</code>, or it closed the pipe to the parent. The error’s <code>status</code> is the child’s <code>Process::Status</code>:</p>
       <pre data-example="examples/aw/errors.rb"><code>require <span class="string">"aw"</span>
 
 raised = <span class="keyword">begin</span>
@@ -104,7 +104,7 @@ failed.status.signaled? <span class="comment"># => true</span>
       <h2 id="limits">Limits</h2>
       <ul>
         <li>Aw is not a sandbox. It keeps in the child the changes that code you trust makes to the process; a hostile block runs as your user, and can make <code>fork!</code> return or raise anything, make <code>fork?</code> answer <code>true</code>, run the parent’s <code>marshal_load</code> methods and autoloads, make the parent hold as much memory as it writes, signal it, and leave processes behind. Only the <code>status</code> of an <code>Aw::ChildError</code> comes from the system.</li>
-        <li>Aw has no timeout: <code>fork!</code> and <code>fork?</code> wait until the child exits, and, when it delivers no result, until any process the block forked without <code>exec</code> exits too. Wrap the call in a <code>Timeout</code> if the block might never end: an interrupted parent kills and reaps the child before going on.</li>
+        <li>Aw has no timeout: <code>fork!</code> and <code>fork?</code> wait until the child exits, and, when it delivers no result, until any process the block forked without <code>exec</code> exits too. Wrap the call in a <code>Timeout</code> if the block might never end: an interrupted parent asks the child to leave, kills it if it is still there half a second later, and reaps it before going on.</li>
         <li>What the block does outside the process stays done. Files and connections the parent opened are shared with the child, offsets included: let the block open its own connections.</li>
         <li>Only the thread that calls <code>fork!</code> or <code>fork?</code> exists in the child.</li>
         <li>A call costs a few milliseconds, more for a large process: about 2 ms at 50 MB, and 20 ms at 700 MB.</li>
@@ -113,10 +113,10 @@ failed.status.signaled? <span class="comment"># => true</span>
 
       <h2 id="documentation">Documentation</h2>
       <ul>
-        <li><a href="https://github.com/fixrb/aw/blob/v1.0.0/README.md">README</a>: what comes back and what cannot, the guarantees, things to know about fork, and the changes in 1.0.</li>
-        <li><a href="https://rubydoc.info/gems/aw/1.0.0">API reference</a></li>
-        <li><a href="https://rubygems.org/gems/aw/versions/1.0.0">RubyGems</a></li>
-        <li><a href="https://github.com/fixrb/aw/tree/v1.0.0">Source code</a></li>
+        <li><a href="https://github.com/fixrb/aw/blob/v1.0.1/README.md">README</a>: what comes back and what cannot, the guarantees, things to know about fork, and the changes in 1.0 and 1.0.1.</li>
+        <li><a href="https://rubydoc.info/gems/aw/1.0.1">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/aw/versions/1.0.1">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/aw/tree/v1.0.1">Source code</a></li>
       </ul>
     </article>
   </main>
