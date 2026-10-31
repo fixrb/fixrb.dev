@@ -9,7 +9,16 @@
   <author>
     <name>Cyril Kato</name>
   </author>
-  <updated>2026-10-17T00:00:00+00:00</updated>
+  <updated>2026-10-31T00:00:00+00:00</updated>
+
+  <entry>
+    <id>https://fixrb.dev/framework/release/2026/10/31/fix-1</id>
+    <title>Fix 1.0 is here</title>
+    <link href="https://fixrb.dev/framework/release/2026/10/31/fix-1.html" rel="alternate" type="text/html"/>
+    <published>2026-10-31T00:00:00+00:00</published>
+    <updated>2026-10-31T00:00:00+00:00</updated>
+    <summary>Fix 1.0 is out: a testing framework for Ruby where a test suite is a specification, a document in the words of RFC 2119 that names no class, tested against any subject, each context in a process of its own.</summary>
+  </entry>
 
   <entry>
     <id>https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119</id>
