@@ -381,7 +381,7 @@ account.rb:29: Error: ArgumentError: insufficient funds
   account.rb:33:in '&lt;main>'</samp></pre>
 
       <h2 id="results">Results and runners</h2>
-      <p><code>test</code> writes, for each expectation, one line, <code>LOCATION: OUTCOME: SUMMARY</code>, the summary being that of <a href="/gems/spectus/">spectus</a>, and nothing else: no letter, no colour, no count. A file is run with <code>ruby</code>, and its status is 0 when the specification is met: that is all a continuous integration, a Rakefile or a runner needs, and the grammar of the lines is what a runner reads to recap or colour them. <code>run</code> gives the same results as data, in the order of the contexts, and <code>match?</code> tests a value as a matcher does:</p>
+      <p><code>test</code> writes, for each expectation, one line, <code>LOCATION: OUTCOME: SUMMARY</code>, the summary being that of <a href="/gems/spectus/">spectus</a>, and nothing else: no letter, no colour, no count. A file is run with <code>ruby</code>, and its status is 0 when the specification is met: that is all a continuous integration, a Rakefile or a runner needs, and the grammar of the lines is what a runner reads to recap or colour them. <a href="/gems/fix-command/">fix-command</a> is such a runner: the <code>fix</code> command runs each file in a process of its own and tells how many were met. <code>run</code> gives the same results as data, in the order of the contexts, and <code>match?</code> tests a value as a matcher does:</p>
       <pre data-example="examples/fix/results.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Size</span> <span class="keyword">do</span>
