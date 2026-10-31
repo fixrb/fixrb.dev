@@ -12,7 +12,16 @@
 #   RUBYLIB=../brutal/lib:../aw/lib bin/examples examples/brutal
 # For each example, the file loaded by each of its top-level requires is
 # printed, so that the version under test is visible.
+#
+# A terminal session of a page, <pre data-directory="DIRECTORY"><kbd>COMMAND
+# </kbd><samp>OUTPUT</samp></pre>, that runs an example under the roots is run
+# too: COMMAND, `ruby FILE` or `fix` with its paths, runs in DIRECTORY, and what
+# it writes, on its standard output and error together, must be OUTPUT. A
+# session of `fix --random` runs the command its output writes first. An
+# example a session runs is checked by the session, whatever its status, and is
+# run on its own only for its `# =>` lines, if it has any.
 
+require "cgi/escape"
 require "open3"
 require "rbconfig"
 
@@ -39,7 +48,7 @@ RUNNER = <<~'RUBY'
   at_exit do
     ARGV.drop(1).each do |name|
       loaded = $LOADED_FEATURES.find { |feature| feature.end_with?("/#{name}.rb") }
-      puts "required #{name} from #{loaded}"
+      puts "required #{name} from #{loaded || "nowhere: install the gem for this Ruby, or put its lib on RUBYLIB"}"
     end
   end
 
@@ -66,7 +75,38 @@ paths = roots.flat_map { |root| File.file?(root) ? [root] : Dir.glob("#{root}/**
              .map { |path| path.delete_prefix("#{Dir.pwd}/") }.sort
 abort "No example found in #{roots.join(', ')}" if paths.empty?
 
-failures = paths.reject do |path|
+SESSION = %r{<pre data-directory="([^"]+)"><kbd>([^<]*)</kbd>\n<samp>(.*?)</samp></pre>}m
+FIX = 'require "fix/command"; exit(Fix::Command.run(ARGV))'
+
+# The examples a session runs, as bin/check finds them: the file of `ruby
+# FILE`; for `fix`, the files given and the *_fix.rb files of the directories
+# given, the fix directory when none is.
+def session_files(directory, words)
+  return [File.join(directory, words.fetch(1))] if words.first == "ruby"
+
+  paths = words.drop(1).reject { |word| word.start_with?("-") }
+  (paths.empty? ? ["fix"] : paths).flat_map do |name|
+    path = File.join(directory, name)
+    File.directory?(path) ? Dir.glob("**/*_fix.rb", base: path).sort.map { |file| File.join(path, file) } : [path]
+  end
+end
+
+# The sessions of the pages that run an example under the roots. bin/check has
+# checked their form.
+sessions = Dir.glob("**/*.html").sort.flat_map do |page|
+  File.read(page, encoding: "UTF-8").scan(SESSION).map do |directory, command, output|
+    output = CGI.unescapeHTML(output)
+    words = CGI.unescapeHTML(command).split
+    words = output.lines.first.split if words.include?("--random")
+    { page:, directory:, words:, output:, files: session_files(directory, words) }
+  end
+end.reject { |session| (session[:files] & paths).empty? }
+
+covered = sessions.flat_map { |session| session[:files] }.reject do |path|
+  File.read(path, encoding: "UTF-8").each_line.any? { |line| EXPECTATION.match?(line.chomp) }
+end
+
+failures = (paths - covered).reject do |path|
   if path.end_with?(".yaml")
     output, status = Open3.capture2e(RbConfig.ruby, "-e", BRUTAL, path, binmode: true)
   else
@@ -79,6 +119,16 @@ failures = paths.reject do |path|
   shown = status.success? ? output.lines.grep(/\Arequired /).uniq : output.lines
   print shown.join.gsub(/^/, "     ") unless shown.empty?
   status.success?
+end
+
+failures += sessions.reject do |session|
+  words = session[:words]
+  command = words.first == "ruby" ? [RbConfig.ruby, *words.drop(1)] : [RbConfig.ruby, "-e", FIX, "--", *words.drop(1)]
+  output, = Open3.capture2e(*command, chdir: session[:directory], binmode: true)
+  met = output.force_encoding(Encoding::UTF_8) == "#{session[:output]}\n"
+  puts "#{met ? 'ok  ' : 'FAIL'} #{session[:page]}: #{words.join(' ')}, in #{session[:directory]}"
+  print output.gsub(/^/, "     ") unless met
+  met
 end
 
 exit(failures.empty? ? 0 : 1)

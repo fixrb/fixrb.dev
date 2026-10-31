@@ -30,9 +30,9 @@
     <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
     <nav aria-label="Main">
       <ul>
-        <li><a href="/#gems">Gems</a></li>
         <li><a href="/blog/">Blog</a></li>
-        <li><a href="https://github.com/fixrb">GitHub</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
       </ul>
     </nav>
   </header>
@@ -47,7 +47,6 @@
       <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them.</p>
       <ul>
         <li><a href="/gems/fix/">Read about Fix</a></li>
-        <li><a href="#gems">All the gems</a></li>
       </ul>
       <dl>
         <dt>Install</dt>
@@ -80,7 +79,7 @@
 <span class="comment"># A test picks the subject: an Array.</span>
 exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
 </code></pre>
-        <pre><kbd>ruby stack.rb</kbd>
+        <pre data-directory="examples/home"><kbd>ruby stack.rb</kbd>
 <samp>stack.rb:7: Success: expected 1 to eq 1
 stack.rb:12: Success: expected nil to be nil
 stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Array</samp></pre>
@@ -107,7 +106,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
     </section>
 
     <section id="gems" aria-labelledby="gems-title">
-      <h2 id="gems-title">The gems</h2>
+      <h2 id="gems-title">Other gems</h2>
       <p>Fix is built from small libraries and extended by small gems. Each does one thing, in a few hundred lines of code at most, so that you can read it before you trust it.</p>
 
       <section id="extensions">

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Patterns · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="Three uses of a specification of Fix: one specification for several implementations, the contract of a dependency, and a contract in three levels for plugins.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/patterns/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Patterns · Fix guide, version 1">
+  <meta property="og:description" content="Three uses of a specification of Fix: one specification for several implementations, the contract of a dependency, and a contract in three levels for plugins.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/patterns/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Patterns</h1>
+          <p>A specification apart from any implementation, put to work three ways.</p>
+        </hgroup>
+      </header>
+      <p>A specification of Fix names no class: it says what a subject does, and the test picks the subject. These three patterns follow from that.</p>
+
+      <h2 id="implementations">One specification, several implementations</h2>
+      <p>When two classes do the same job, one specification describes the job, and each implementation is tested against it. The specification goes in a file of its own, <code>fix/specs/stack.rb</code>, which <code>fix</code> does not run, since its name does not end with <code>_fix.rb</code>:</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/specs/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:push</span>, <span class="number">2</span> <span class="keyword">do</span>
+      on <span class="string">:pop</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>Each implementation has a short file that requires it and tests a subject. An Array, in <code>fix/array_fix.rb</code>:</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/array_fix.rb"><code>require_relative <span class="string">"specs/stack"</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+      <p>A linked list of the project, in <code>lib/linked_stack.rb</code>:</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/lib/linked_stack.rb"><code><span class="keyword">class</span> <span class="constant">LinkedStack</span>
+  <span class="constant">Node</span> = <span class="constant">Data</span>.define(<span class="string">:value</span>, <span class="string">:below</span>)
+
+  <span class="keyword">def</span> initialize = @top = <span class="keyword">nil</span>
+  <span class="keyword">def</span> empty? = @top.nil?
+  <span class="keyword">def</span> push(value) = tap { @top = <span class="constant">Node</span>.new(value, @top) }
+
+  <span class="keyword">def</span> pop
+    value = @top&amp;.value
+    @top = @top&amp;.below
+    value
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>and its file, <code>fix/linked_stack_fix.rb</code>:</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/linked_stack_fix.rb"><code>require_relative <span class="string">"specs/stack"</span>
+require_relative <span class="string">"../lib/linked_stack"</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { <span class="constant">LinkedStack</span>.new })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns/stacks"><kbd>fix</kbd>
+<samp>fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+2 files met</samp></pre>
+      <p>The lines point at the specification, the same three twice; the count names the file of an implementation that is not met. Another implementation is one more short file.</p>
+
+      <h2 id="dependencies">The contract of a dependency</h2>
+      <p>A project relies on what its dependencies do: that <code>JSON.parse</code> gives string keys unless asked otherwise, say. A specification of the dependency writes that down, and tells at the next upgrade whether it still holds:</p>
+      <pre data-example="examples/fix/v1/patterns/json_fix.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"json"</span>
+
+<span class="constant">Fix</span> <span class="string">:JSON</span> <span class="keyword">do</span>
+  on <span class="string">:generate</span>, { <span class="string">"id"</span> => <span class="number">1</span> } <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">'{"id":1}'</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">'{"id":1}'</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq({ <span class="string">"id"</span> => <span class="number">1</span> })
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">'{"id":1}'</span>, <span class="string">symbolize_names:</span> <span class="keyword">true</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq({ <span class="string">id:</span> <span class="number">1</span> })
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:JSON</span>].test { <span class="constant">JSON</span> })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns"><kbd>ruby json_fix.rb</kbd>
+<samp>json_fix.rb:6: Success: expected "{\"id\":1}" to eq "{\"id\":1}"
+json_fix.rb:10: Success: expected {"id" => 1} to eq {"id" => 1}
+json_fix.rb:14: Success: expected {id: 1} to eq {id: 1}</samp></pre>
+      <p>The subject is the module itself, and each <code>on</code> a call the project makes. Only what the project uses is written, not the whole library.</p>
+
+      <h2 id="levels">A contract in three levels</h2>
+      <p>An interface often has methods that are required, others that are recommended, others that are optional: the three levels say so. Here, a plugin MUST transform a text, SHOULD have a name in lowercase, and MAY have a version:</p>
+      <pre data-example="examples/fix/v1/patterns/plugin_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Plugin</span> <span class="keyword">do</span>
+  on <span class="string">:call</span>, <span class="string">"text"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:name</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> match(<span class="string">/\A[a-z]+\z/</span>)
+  <span class="keyword">end</span>
+
+  on <span class="string">:version</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> match(<span class="string">/\A\d+\.\d+\z/</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Upcase</span>
+  <span class="keyword">def</span> call(text) = text.upcase
+  <span class="keyword">def</span> name = <span class="string">"Upcase"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Reverse</span>
+  <span class="keyword">def</span> call(text) = text.reverse
+  <span class="keyword">def</span> name = <span class="string">"reverse"</span>
+  <span class="keyword">def</span> version = <span class="string">"1.2"</span>
+<span class="keyword">end</span>
+
+results = [
+  <span class="constant">Fix</span>[<span class="string">:Plugin</span>].test { <span class="constant">Upcase</span>.new },
+  <span class="constant">Fix</span>[<span class="string">:Plugin</span>].test { <span class="constant">Reverse</span>.new }
+]
+
+exit(results.all?)
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns"><kbd>ruby plugin_fix.rb</kbd>
+<samp>plugin_fix.rb:5: Success: expected "TEXT" to be an instance of String
+plugin_fix.rb:9: Warning: expected "Upcase" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Info: NoMethodError: undefined method 'version' for an instance of Upcase
+plugin_fix.rb:5: Success: expected "txet" to be an instance of String
+plugin_fix.rb:9: Success: expected "reverse" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/</samp></pre>
+      <p>The first three lines are those of <code>Upcase</code>: its name is not in lowercase, a warning, and it has no version, an info. Both pass, so both plugins meet the contract, and the status is 0. A plugin without <code>call</code> would get an error, and not pass.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/in-a-project/" rel="prev">Previous: In a project</a></li>
+          <li><a href="/gems/fix/v1/coming-from-rspec/" rel="next">Next: Coming from RSpec</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/" aria-current="page">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

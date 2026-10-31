@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Writing specifications · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="The four words of a specification of Fix, on, let, with and it, and the three levels of requirement, MUST, SHOULD and MAY, with the five outcomes they give.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/writing-specifications/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Writing specifications · Fix guide, version 1">
+  <meta property="og:description" content="The four words of a specification of Fix, on, let, with and it, and the three levels of requirement, MUST, SHOULD and MAY, with the five outcomes they give.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/writing-specifications/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Writing specifications</h1>
+          <p>Four words, <code>on</code>, <code>let</code>, <code>with</code> and <code>it</code>, and three levels of requirement.</p>
+        </hgroup>
+      </header>
+      <p>The block of <code>Fix</code> is a document. It is read once, when the file is loaded, and builds the specification before any subject exists: no setup, no teardown, no state. Something wrong in it, such as an <code>it</code> without a requirement or a <code>let</code> declared twice in one context, raises then, before any test.</p>
+
+      <h2 id="on">Methods: <code>on</code></h2>
+      <p><code>on</code> opens a context that sends a method to the subject, with its arguments; the expectations inside it judge what comes back. An <code>on</code> inside another sends its method to that value, and so on. An <code>it</code> outside any <code>on</code> judges the subject itself.</p>
+      <pre data-example="examples/fix/v1/writing-specifications/phrase_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Phrase</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+
+  on <span class="string">:upcase</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"HELLO WORLD"</span>
+
+    on <span class="string">:length</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">11</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:split</span>, <span class="string">" "</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">%w[hello world]</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:start_with?</span>, <span class="string">"hello"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Phrase</span>].test { <span class="string">"hello world"</span> })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby phrase_fix.rb</kbd>
+<samp>phrase_fix.rb:4: Success: expected "hello world" to be an instance of String
+phrase_fix.rb:7: Success: expected "HELLO WORLD" to eq "HELLO WORLD"
+phrase_fix.rb:10: Success: expected 11 to eq 11
+phrase_fix.rb:15: Success: expected ["hello", "world"] to eq ["hello", "world"]
+phrase_fix.rb:19: Success: expected true to be true</samp></pre>
+      <p>A question is a method too: <code>on :start_with?, "hello"</code> asks it, and <code>be_true</code> wants the answer <code>true</code>. A method that raises ends the chain there: its expectations are errors, unless their matcher is <a href="/gems/fix/v1/matchers/#raise_exception"><code>raise_exception</code></a>, which is made for that. The method is sent without a block, since the block of <code>on</code> is the context.</p>
+
+      <h2 id="let-and-with">Parameters: <code>let</code> and <code>with</code></h2>
+      <p>A <code>let</code> is a parameter of the subject: a name and a block that gives its value. The block of <code>test</code> calls it to build the subject. <code>with</code> opens a context where parameters take other values:</p>
+      <pre data-example="examples/fix/v1/writing-specifications/price_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Price</span>
+  <span class="keyword">def</span> initialize(amount, <span class="string">rate:</span> <span class="number">0</span>)
+    @amount = amount
+    @rate = rate
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> total = @amount - (@amount * @rate / <span class="number">100</span>)
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Price</span> <span class="keyword">do</span>
+  let(<span class="string">:amount</span>) { <span class="number">100</span> }
+  let(<span class="string">:rate</span>) { <span class="number">0</span> }
+
+  on <span class="string">:total</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">100</span>
+
+    with <span class="string">rate:</span> <span class="number">20</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">80</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">amount:</span> <span class="number">50</span>, <span class="string">rate:</span> <span class="number">10</span> <span class="keyword">do</span>
+    on <span class="string">:total</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">45</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Price</span>].test { <span class="constant">Price</span>.new(amount, <span class="string">rate:</span>) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby price_fix.rb</kbd>
+<samp>price_fix.rb:17: Success: expected 100 to eq 100
+price_fix.rb:20: Success: expected 80 to eq 80
+price_fix.rb:26: Success: expected 45 to eq 45</samp></pre>
+      <p>A context inherits the parameters and the methods of the contexts around it: inside <code>on :total</code>, <code>with rate: 20</code> builds the price at 20% and sends it <code>total</code>. A <code>with</code> may come before an <code>on</code> or inside it.</p>
+      <ul>
+        <li>A let is visible from the subject block and from the other lets, not from the expectations, which are written before any subject exists: naming it there raises <code>NameError</code> at load.</li>
+        <li>Its value is computed the first time it is called, and kept for the rest of the expectation. Each expectation builds its subject anew: <code>let(:items) { [] }</code> gives each one its own array, while <code>with items: []</code> gives the same array to the expectations of its context.</li>
+        <li>A let cannot take the name of a method every object has, public or private, such as <code>format</code>, nor of a word of Fix, such as <code>eq</code>: <code>let(:format)</code> raises <code>ArgumentError</code> at load, <code>format is already a method of Kernel</code>, so that nothing is redefined in silence.</li>
+      </ul>
+
+      <h2 id="it">Expectations: <code>it</code></h2>
+      <p><code>it</code> takes a requirement: a level, then a matcher, as in <code>it MUST eq 100</code>. The levels are the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>: <code>MUST</code>, <code>SHOULD</code> and <code>MAY</code>, with <code>MUST_NOT</code> and <code>SHOULD_NOT</code> for a negation; RFC 2119 has no negative <code>MAY</code>. The <a href="/gems/fix/v1/matchers/">matchers</a> have a page of their own.</p>
+      <pre data-example="examples/fix/v1/writing-specifications/player_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Player</span> = <span class="constant">Data</span>.define(<span class="string">:name</span>, <span class="string">:score</span>)
+
+<span class="constant">Fix</span> <span class="string">:Player</span> <span class="keyword">do</span>
+  on <span class="string">:name</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Ada"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:score</span> <span class="keyword">do</span>
+    it <span class="constant">MUST_NOT</span> be_nil
+    it <span class="constant">SHOULD</span> eq <span class="number">100</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:avatar</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> match(<span class="string">/\.png\z/</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Player</span>].test { <span class="constant">Player</span>.new(<span class="string">name:</span> <span class="string">"Ada"</span>, <span class="string">score:</span> <span class="number">90</span>) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby player_fix.rb</kbd>
+<samp>player_fix.rb:7: Success: expected "Ada" to eq "Ada"
+player_fix.rb:11: Success: expected 90 not to be nil
+player_fix.rb:12: Warning: expected 90 to eq 100
+player_fix.rb:16: Info: NoMethodError: undefined method 'avatar' for an instance of Player</samp></pre>
+      <p>Two questions tell the levels apart. Must the method exist? <code>MUST</code> and <code>SHOULD</code> say yes, <code>MAY</code> says no. Must it do what is written? <code>MUST</code> and <code>MAY</code> say yes, <code>SHOULD</code> only recommends it. Hence five outcomes:</p>
+      <table>
+        <thead>
+          <tr><th scope="col">Level</th><th scope="col">It does</th><th scope="col">It does not</th><th scope="col">No such method</th><th scope="col">Another exception</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row"><code>MUST</code></th><td>Success</td><td>Failure</td><td>Error</td><td>Error</td></tr>
+          <tr><th scope="row"><code>SHOULD</code></th><td>Success</td><td>Warning</td><td>Error</td><td>Error</td></tr>
+          <tr><th scope="row"><code>MAY</code></th><td>Success</td><td>Failure</td><td>Info</td><td>Error</td></tr>
+        </tbody>
+      </table>
+      <p>A success, a warning and an info pass: the player above meets its specification, and the status of the process is 0. A failure and an error do not. A negation swaps the first two columns: <code>MUST_NOT be_nil</code> succeeds when the score is not <code>nil</code>.</p>
+      <p>Below an error come the frames of its backtrace that are not in Fix and its gems, indented by two spaces, so that the line of the code that raised is there: the <a href="/gems/fix/v1/matchers/#raise_exception">matchers</a> page shows one, under <code>raise_exception</code>.</p>
+
+      <h2 id="processes">One process per context</h2>
+      <p>Each context with expectations runs in a child process of the one that tests, the expectations of a context in the same child, and the contexts one after the other, a context before those inside it. What a subject changes in its process, a global, a constant, the current directory, <code>ENV</code>, stays in its context, and the order of the contexts cannot change a result. What it changes outside the process, a file or a database, does not stay there: <a href="/gems/fix/v1/in-a-project/#outside-the-process">In a project</a> comes back to it.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/getting-started/" rel="prev">Previous: Getting started</a></li>
+          <li><a href="/gems/fix/v1/matchers/" rel="next">Next: Matchers</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/" aria-current="page">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

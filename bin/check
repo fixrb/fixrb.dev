@@ -77,6 +77,14 @@ SHARED = {
   "footer" => %r{\n  <footer>\n.*?\n  </footer>\n</body>\n</html>\n\z}m
 }.freeze
 
+# A guide, gems/NAME/vN/, is read in the order of its nav, which every page of
+# it carries as its first page has it, but for the aria-current of its own
+# link: the guide, then its pages, a page not yet written being named without
+# a link. Each page ends with the links to the pages before and after it.
+GUIDE = %r{\A(gems/[a-z0-9_-]+/v\d+/)}
+GUIDE_NAV = %r{<nav aria-label="Guide">.*?</nav>}m
+PAGES_NAV = %r{<nav aria-label="Pages">(.*?)</nav>}m
+
 # Posts published before Fix 1.0, kept as written: their code is not run.
 ARCHIVED = %w[
   framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html
@@ -92,9 +100,9 @@ ATTRIBUTES = %r{\A(?:\s+[a-z][a-z0-9-]*(?:="[^"]*")?)*\s*/?\z}i
 FORBIDDEN_ELEMENTS = %w[div span script style iframe frame object embed form base].freeze
 ATTRIBUTE_NAMES = %w[
   lang charset name content http-equiv property rel href src alt width height type sizes as crossorigin
-  title id role datetime aria-label aria-labelledby aria-current data-example scope
+  title id role datetime aria-label aria-labelledby aria-current data-example data-directory scope
 ].freeze
-REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home].freeze
+REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home prev next].freeze
 LOCAL_LINKS = %w[stylesheet icon apple-touch-icon preload].freeze
 ID_REFERENCES = %w[aria-labelledby].freeze
 
@@ -104,6 +112,16 @@ ID_REFERENCES = %w[aria-labelledby].freeze
 # they always see the same ones.
 PRE = %r{<pre\b([^>]*)>(.*?)</pre>}im
 EXAMPLE = %r{\A data-example="(examples(?:/[a-z0-9_-]+)+\.(?:rb|yaml))"\z}
+
+# A terminal session that shows what a command writes names the directory of
+# examples/ where it runs, for bin/examples to run it and compare: one command,
+# `ruby FILE` or `fix` with its paths, then its output. A session of
+# `fix --random` shows first the command that gives the same order again, which
+# is the one bin/examples runs. Paths are plain, so that the files a session
+# runs are known here as there.
+DIRECTORY = %r{\A data-directory="(examples(?:/[a-z0-9_-]+)+)"\z}
+SESSION = %r{\A<kbd>([^<]*)</kbd>\n<samp>(.*)</samp>\z}m
+COMMAND = %r{\A(?:ruby [a-z0-9_/-]+\.rb|fix(?: --random(?:=\d+)?)?(?: [a-z0-9_/-]+)*)\z}
 
 # The class of each Ruby token, as Ripper names it. Any other token
 # (identifiers, operators, punctuation, spaces) stays plain text.
@@ -316,10 +334,7 @@ def check_code_blocks(path, html, used)
   html.scan(PRE) do |attributes, content|
     next error(path, "a <pre> contains another <pre>") if content.match?(/<pre\b/i)
 
-    unless content.start_with?("<code>")
-      error(path, "a terminal session is a <pre> holding only <kbd>, <samp> and text") unless attributes.empty? && terminal?(content)
-      next
-    end
+    next check_session(path, attributes, content, used) unless content.start_with?("<code>")
     next error(path, "a <pre><code> must end with </code></pre>") unless code?(content)
 
     example = attributes[EXAMPLE, 1]
@@ -339,6 +354,69 @@ def check_code_blocks(path, html, used)
   rescue ArgumentError => e
     error(path, e.message)
   end
+end
+
+def check_guide(path, html)
+  root = path[GUIDE, 1]
+  return unless root
+  return error(path, "#{root}index.html is missing: the guide starts there") unless @files.include?("#{root}index.html")
+
+  own = url_for(path)
+  nav = html[GUIDE_NAV].to_s
+  first = read("#{root}index.html")[GUIDE_NAV].to_s
+  return error(path, "its nav of the guide differs from the one of #{root}index.html") unless nav.gsub(' aria-current="page"', "") == first.gsub(' aria-current="page"', "")
+  return error(path, "the nav of the guide must mark its own link with aria-current") unless nav.include?(%(href="#{own}" aria-current="page"))
+
+  order = nav.scan(/href="([^"]+)"/).flatten
+  index = order.index(own)
+  around = [(%(href="#{order[index - 1]}" rel="prev") if index.positive?), (%(href="#{order[index + 1]}" rel="next") if order[index + 1])].compact
+  links = html[PAGES_NAV, 1].to_s.scan(/href="[^"]+" rel="[a-z]+"/)
+  error(path, "its nav of pages must link to the pages before and after it in the guide") unless links == around
+end
+
+# The examples a session runs, as bin/examples finds them: the file of `ruby
+# FILE`; for `fix`, the files given and the *_fix.rb files of the directories
+# given, the fix directory when none is.
+def session_files(directory, words)
+  return [File.join(directory, words.fetch(1))] if words.first == "ruby"
+
+  paths = words.drop(1).reject { |word| word.start_with?("-") }
+  (paths.empty? ? ["fix"] : paths).flat_map do |name|
+    path = File.join(directory, name)
+    File.directory?(path) ? Dir.glob("**/*_fix.rb", base: path).sort.map { |file| File.join(path, file) } : [path]
+  end
+end
+
+# A terminal session is checked as a whole: with a data-directory, its command,
+# its output, and the examples it runs, which it shows.
+def check_session(path, attributes, content, used)
+  return error(path, "a terminal session is a <pre> holding only <kbd>, <samp> and text") unless terminal?(content)
+
+  directory = attributes[DIRECTORY, 1]
+  unless directory
+    return error(path, "a terminal session takes no attribute but data-directory") unless attributes.empty?
+    return if !content.include?("<samp>") || ARCHIVED.include?(path)
+
+    return error(path, "a terminal session that shows output needs a data-directory, where bin/examples runs it")
+  end
+
+  session = SESSION.match(content)
+  return error(path, "a terminal session with a data-directory is one <kbd>, a line break and one <samp>") unless session
+
+  command = text_of(session[1])
+  return error(path, "bin/examples runs ruby FILE or fix, with plain paths, not #{command}") unless COMMAND.match?(command)
+
+  words = command.split
+  if words.include?("--random")
+    first = text_of(session[2]).lines.first.to_s.chomp
+    return error(path, "fix --random shows first the command that runs it again") unless first.sub(/\A(fix --random)=\d+/, '\1') == command && first != command
+
+    words = first.split
+  end
+  files = session_files(directory, words)
+  return error(path, "#{command} in #{directory} runs no example") if files.empty?
+
+  files.each { |file| @files.include?(file) ? used << file : error(path, "#{file} is not a file of the repository") }
 end
 
 # Rewrites each block of Ruby that check_code_blocks would accept from its
@@ -498,6 +576,7 @@ pages.each do |path|
   end
   check_tags(path, without_code)
   check_code_blocks(path, html, used)
+  check_guide(path, html)
 end
 
 posts = pages.grep(POST)

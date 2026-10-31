@@ -306,6 +306,11 @@ th {
   font-weight: 600;
 }
 
+/* A word in a header, such as a level, stays whole. */
+table th > code {
+  overflow-wrap: normal;
+}
+
 @media (max-width: 34rem) {
   dl {
     grid-template-columns: 1fr;
@@ -314,6 +319,26 @@ th {
 
   dd {
     margin-bottom: 0.75rem;
+  }
+
+  /* A table of five short columns still fits a phone of 320px. */
+  table {
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding-right: 0.5rem;
+  }
+
+  :is(th, td):last-child {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 22rem) {
+  table {
+    font-size: 0.8125rem;
   }
 }
 
@@ -333,6 +358,12 @@ samp {
   padding: 0.125em 0.25em;
   background: var(--surface);
   overflow-wrap: anywhere;
+}
+
+/* A word of code in a title is set as code, without the slab of running text. */
+:is(h1, h2, h3, h4) > code {
+  padding: 0;
+  background: none;
 }
 
 pre {
@@ -400,36 +431,48 @@ figcaption {
 }
 
 /* Home: Fix first. One column; from 62rem, the words on the left and the
-   example on the right, each in its own column. */
+   example on the right, each in its own column. The ids of the home page
+   are read on its sections only: a heading of another page may share one. */
 
-#fix {
+section#fix {
   display: grid;
   gap: 1.5rem;
 }
 
-#fix > hgroup > p:first-child {
+/* The eyebrow over a title: the gem on the home page, the guide on a page of
+   it. */
+hgroup > p:first-child {
   margin-bottom: 0.75rem;
   color: var(--accent);
   font: 700 1.125rem/1.2 var(--display);
   letter-spacing: 0.02em;
 }
 
-#fix h1 {
+hgroup > p:first-child a {
+  color: inherit;
+  text-decoration: none;
+}
+
+hgroup > p:first-child a:hover {
+  color: var(--bg);
+}
+
+section#fix h1 {
   margin: 0 0 0.75rem;
   font-size: clamp(3.5rem, 2.5rem + 5vw, 5.5rem);
   line-height: 1;
 }
 
-#fix > hgroup > p:last-child {
+section#fix > hgroup > p:last-child {
   font-size: clamp(1.25rem, 1rem + 1vw, 1.5rem);
   text-wrap: balance;
 }
 
-#fix > :is(p, ul, dl, figure) {
+section#fix > :is(p, ul, dl, figure) {
   margin: 0;
 }
 
-#fix > ul {
+section#fix > ul {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
@@ -437,11 +480,11 @@ figcaption {
   list-style: none;
 }
 
-#fix > ul li {
+section#fix > ul li {
   margin: 0;
 }
 
-#fix > ul a {
+section#fix > ul a {
   display: inline-block;
   padding: 0.625rem 0.875rem;
   /* Invisible, except in forced colours, where backgrounds are dropped. */
@@ -453,52 +496,46 @@ figcaption {
   box-shadow: var(--px) var(--px) 0 var(--frame);
 }
 
-#fix > ul li + li a {
-  background: var(--bg);
-  color: var(--link);
-  border-color: var(--link);
-}
-
-#fix > ul a:hover {
+section#fix > ul a:hover {
   background: var(--text);
   border-color: var(--text);
   color: var(--bg);
 }
 
-#fix > ul a:active {
+section#fix > ul a:active {
   translate: var(--px) var(--px);
   box-shadow: none;
 }
 
 /* Short enough to keep its two columns on a phone. */
-#fix > dl {
+section#fix > dl {
   grid-template-columns: max-content 1fr;
   row-gap: 0.375rem;
   margin-top: 0.5rem;
   font-size: 0.9375rem;
 }
 
-#fix > dl dd {
+section#fix > dl dd {
   margin-bottom: 0;
 }
 
-#fix > figure pre:first-child {
+section#fix > figure pre:first-child {
   margin-top: var(--px);
 }
 
-#fix > figure pre + pre {
+section#fix > figure pre + pre {
   margin-top: 1rem;
 }
 
 @media (min-width: 62rem) {
-  #fix {
+  section#fix {
     grid-template-columns: minmax(0, 1fr) minmax(0, 31rem);
     grid-template-rows: auto auto auto 1fr;
     align-items: start;
     column-gap: 3.5rem;
   }
 
-  #fix > figure {
+  section#fix > figure {
     grid-column: 2;
     grid-row: 1 / -1;
   }
@@ -506,7 +543,7 @@ figcaption {
 
 /* Home: three ideas, in a row from 56rem, each with a pixel bar. */
 
-#why > ul {
+section#why > ul {
   display: grid;
   gap: 1.75rem 2.5rem;
   max-width: none;
@@ -515,29 +552,29 @@ figcaption {
   list-style: none;
 }
 
-#why > ul > li {
+section#why > ul > li {
   margin: 0;
   padding-left: 1rem;
   border-left: calc(2 * var(--px)) solid var(--accent);
 }
 
-#why h3 {
+section#why h3 {
   margin: 0 0 0.5rem;
 }
 
-#why p {
+section#why p {
   margin: 0;
 }
 
 @media (min-width: 56rem) {
-  #why > ul {
+  section#why > ul {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 /* Cards: the gem list and the post lists */
 
-#gems > section > ul {
+section#gems > section > ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 2rem 1.75rem;
@@ -546,7 +583,7 @@ figcaption {
   list-style: none;
 }
 
-#gems > section > ul > li {
+section#gems > section > ul > li {
   display: flex;
   flex-direction: column;
   margin: 0 calc(3 * var(--px)) calc(3 * var(--px)) var(--px);
@@ -563,7 +600,7 @@ figcaption {
 /* A gem's icon, if it has one, beside its name, at a whole number of screen
    pixels per pixel of the icon: 2 for matchi and brutal; aw's, finer, is
    shown at 64 and smoothed. */
-#gems h4 {
+section#gems h4 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -572,15 +609,15 @@ figcaption {
   font-size: 1.5rem;
 }
 
-#gems h4 img {
+section#gems h4 img {
   flex: none;
 }
 
-#gems li p {
+section#gems li p {
   margin: 0;
 }
 
-#gems li p:has(> small) {
+section#gems li p:has(> small) {
   margin-top: auto;
   padding-top: 0.75rem;
 }
@@ -647,6 +684,96 @@ article > footer {
   padding-top: 1.5rem;
   border-top: var(--px) dashed var(--muted);
   color: var(--muted);
+}
+
+/* A guide: the page, then the nav of the guide. From 62rem, the nav takes a
+   column on the left and stays in view; on a narrower screen it comes after
+   the page, below the links to the pages around it. */
+
+main:has(> nav[aria-label="Guide"]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+nav[aria-label="Guide"] {
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+  border-left: calc(2 * var(--px)) solid var(--accent);
+  background: var(--surface);
+  font-size: 0.9375rem;
+}
+
+nav[aria-label="Guide"] > p {
+  margin: 0 0 0.75rem;
+  font: 700 1.125rem/1.2 var(--display);
+}
+
+nav[aria-label="Guide"] a {
+  text-decoration: none;
+}
+
+nav[aria-label="Guide"] ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--muted);
+}
+
+nav[aria-label="Guide"] li + li {
+  margin-top: 0.375rem;
+}
+
+nav[aria-label="Guide"] [aria-current="page"] {
+  color: var(--text);
+  font-weight: 700;
+}
+
+nav[aria-label="Pages"] ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 3.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav[aria-label="Pages"] li {
+  margin: 0;
+}
+
+nav[aria-label="Pages"] li:has(> [rel="next"]) {
+  margin-left: auto;
+}
+
+nav[aria-label="Pages"] a {
+  display: block;
+  padding: 0.625rem 1rem;
+  border: 2px solid var(--link);
+  text-decoration: none;
+  box-shadow: var(--px) var(--px) 0 var(--frame);
+}
+
+nav[aria-label="Pages"] a:hover {
+  border-color: var(--link);
+}
+
+@media (min-width: 62rem) {
+  main:has(> nav[aria-label="Guide"]) {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    column-gap: 3.5rem;
+  }
+
+  main:has(> nav[aria-label="Guide"]) > article {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  main > nav[aria-label="Guide"] {
+    position: sticky;
+    top: 1.5rem;
+    grid-column: 1;
+    grid-row: 1;
+  }
 }
 
 /* Site footer */

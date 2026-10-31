@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Coming from RSpec · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="What the words and matchers of RSpec become in Fix, and what has no equivalent on purpose: hooks, doubles, shared state.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/coming-from-rspec/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Coming from RSpec · Fix guide, version 1">
+  <meta property="og:description" content="What the words and matchers of RSpec become in Fix, and what has no equivalent on purpose: hooks, doubles, shared state.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/coming-from-rspec/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Coming from RSpec</h1>
+          <p>The same ideas under other names, and a few left out on purpose.</p>
+        </hgroup>
+      </header>
+      <p>RSpec and Fix both describe behaviour with nested contexts and expectations. Two things differ at the root. A specification of Fix names no class: the subject comes from the test, on the last line, so that the same specification can test another one. And a specification is a document, read once when the file is loaded: it holds no code that runs before or after an expectation.</p>
+
+      <h2 id="structure">Structure</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">RSpec</th><th scope="col">Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>RSpec.describe Counter do … end</code></td><td><code>Fix :Counter do … end</code></td></tr>
+          <tr><td><code>subject { Counter.new(start) }</code></td><td>the block of the test: <code>Fix[:Counter].test { Counter.new(start) }</code></td></tr>
+          <tr><td><code>describe "#count"</code>, then <code>subject.count</code> in each example</td><td><code>on :count do … end</code></td></tr>
+          <tr><td><code>let(:start) { 0 }</code></td><td><code>let(:start) { 0 }</code>, visible from the subject block and the other lets only</td></tr>
+          <tr><td><code>context</code> with <code>let(:start) { 5 }</code></td><td><code>with start: 5 do … end</code></td></tr>
+          <tr><td><code>before { subject.increment }</code></td><td><code>on :increment do … end</code>, around the expectations it prepares</td></tr>
+          <tr><td><code>it { is_expected.to eq(0) }</code></td><td><code>it MUST eq 0</code></td></tr>
+          <tr><td><code>is_expected.not_to</code></td><td><code>it MUST_NOT</code></td></tr>
+          <tr><td><code>shared_examples</code>, <code>it_behaves_like</code></td><td>a specification of its own, required with <a href="/gems/fix/v1/composing-specifications/"><code>fix(:Name)</code></a>, or tested against <a href="/gems/fix/v1/patterns/#implementations">several subjects</a></td></tr>
+          <tr><td><code>rspec</code>, <code>rspec spec/models</code></td><td><a href="/gems/fix/v1/running-specifications/"><code>fix</code>, <code>fix fix/models</code></a></td></tr>
+          <tr><td><code>rspec --order random</code></td><td><code>fix --random</code>, for the order of files</td></tr>
+          <tr><td><code>rspec --seed 1234</code></td><td><code>fix --random=1234</code></td></tr>
+        </tbody>
+      </table>
+      <p>An RSpec spec of a counter, with a <code>subject</code>, a <code>before</code> that increments it in one context and a <code>let</code> overridden in another, becomes:</p>
+      <pre data-example="examples/fix/v1/coming-from-rspec/counter_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Counter</span>
+  attr_reader <span class="string">:count</span>
+
+  <span class="keyword">def</span> initialize(start) = @count = start
+  <span class="keyword">def</span> increment = tap { @count += <span class="number">1</span> }
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Counter</span> <span class="keyword">do</span>
+  let(<span class="string">:start</span>) { <span class="number">0</span> }
+
+  on <span class="string">:count</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:increment</span> <span class="keyword">do</span>
+    on <span class="string">:count</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">start:</span> <span class="number">5</span> <span class="keyword">do</span>
+    on <span class="string">:count</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">5</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Counter</span>].test { <span class="constant">Counter</span>.new(start) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/coming-from-rspec"><kbd>ruby counter_fix.rb</kbd>
+<samp>counter_fix.rb:14: Success: expected 0 to eq 0
+counter_fix.rb:19: Success: expected 1 to eq 1
+counter_fix.rb:25: Success: expected 5 to eq 5</samp></pre>
+      <p>The <code>before</code> became a method of the chain: <code>increment</code> returns the counter, and <code>count</code> is sent to it. A method that needs some preparation beyond a chain gets it in the subject block, from the lets.</p>
+
+      <h2 id="matchers">Matchers</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">RSpec</th><th scope="col">Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>eq(x)</code>, <code>eql(x)</code></td><td><a href="/gems/fix/v1/matchers/#eq"><code>eq(x)</code></a>, which wants the class of <code>x</code> and uses <code>eql?</code>, where the <code>eq</code> of RSpec uses <code>==</code>: <code>1.0</code> is not <code>eq 1</code></td></tr>
+          <tr><td><code>equal(x)</code>, <code>be(x)</code></td><td><a href="/gems/fix/v1/matchers/#be"><code>be(x)</code></a></td></tr>
+          <tr><td><code>be(true)</code>, <code>be(false)</code>, <code>be_nil</code></td><td><a href="/gems/fix/v1/matchers/#be_true"><code>be_true</code>, <code>be_false</code>, <code>be_nil</code></a></td></tr>
+          <tr><td><code>be_truthy</code>, <code>be_falsey</code></td><td><code>satisfy { |value| !!value }</code>, <code>satisfy { |value| !value }</code></td></tr>
+          <tr><td><code>be_a</code>, <code>be_kind_of</code></td><td><a href="/gems/fix/v1/matchers/#be_a_kind_of"><code>be_a_kind_of</code></a></td></tr>
+          <tr><td><code>be_an_instance_of</code>, <code>be_instance_of</code></td><td><a href="/gems/fix/v1/matchers/#be_an_instance_of"><code>be_an_instance_of</code></a></td></tr>
+          <tr><td><code>be_within(d).of(x)</code></td><td><a href="/gems/fix/v1/matchers/#be_within"><code>be_within(d).of(x)</code></a></td></tr>
+          <tr><td><code>match(regexp)</code></td><td><a href="/gems/fix/v1/matchers/#match"><code>match(regexp)</code></a>, for a String or a Symbol</td></tr>
+          <tr><td><code>satisfy { |v| … }</code>, <code>be &gt;= 3</code></td><td><a href="/gems/fix/v1/matchers/#satisfy"><code>satisfy { |v| … }</code></a>, answering <code>true</code> or <code>false</code></td></tr>
+          <tr><td><code>expect { … }.to raise_error(K)</code></td><td><a href="/gems/fix/v1/matchers/#raise_exception"><code>raise_exception(K)</code></a>, the method of the context being what raises</td></tr>
+          <tr><td><code>expect { … }.to change { o.count }.by(1)</code></td><td><a href="/gems/fix/v1/matchers/#change"><code>change(o, :count).by(1)</code></a></td></tr>
+          <tr><td><code>be_empty</code>, and other predicates</td><td><code>on(:empty?) { it MUST be_true }</code></td></tr>
+          <tr><td><code>include(x)</code>, <code>start_with(x)</code></td><td><code>on(:include?, x) { it MUST be_true }</code>, <code>on(:start_with?, x) { … }</code></td></tr>
+          <tr><td><code>have_attributes(name: "Ada")</code></td><td><code>on(:name) { it MUST eq "Ada" }</code>, or <a href="/gems/fix/v1/its/"><code>its(:name) { MUST eq "Ada" }</code></a></td></tr>
+          <tr><td><code>match_array</code>, <code>contain_exactly</code></td><td><code>on(:sort) { it MUST eq [1, 2, 3] }</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="levels">Three levels instead of pending</h2>
+      <p>RSpec skips an example, or marks it <code>pending</code> so that its failure does not fail the run. Fix says it in the specification itself: <code>SHOULD</code> for what is recommended, a warning when it is not met; <code>MAY</code> for what is optional, an info when the method does not exist. Both pass, and both are written in the lines, so nothing is hidden. <a href="/gems/fix/v1/writing-specifications/#it">Writing specifications</a> has the five outcomes.</p>
+
+      <h2 id="left-out">Left out on purpose</h2>
+      <ul>
+        <li><strong>Hooks</strong>, <code>before</code>, <code>after</code>, <code>around</code>: the subject block builds what a subject needs, for each expectation, and each context runs in a process of its own, so there is nothing to clean up in memory.</li>
+        <li><strong>Doubles and mocks</strong>, <code>double</code>, <code>allow(…).to receive</code>: give the subject a real object, or a small object of the file that stands for a service, through a let. A specification says what a subject does, not which messages it sends.</li>
+        <li><strong>Shared state</strong> between examples, <code>before(:all)</code>, instance variables: a let lives with one subject, and a context cannot reach another; only a <code>with</code> shares its value, within its context.</li>
+        <li><strong>Tags and filters</strong>, <code>focus</code>: <code>fix</code> takes files and directories, and a file is a program that can be run alone.</li>
+        <li><strong><code>aggregate_failures</code></strong>: every expectation gets its line, met or not.</li>
+      </ul>
+      <p>Both can live in one project, each in its directory: <a href="/gems/fix/v1/in-a-project/#other-tests">In a project</a> tells how.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/patterns/" rel="prev">Previous: Patterns</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/" aria-current="page">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

@@ -30,9 +30,9 @@
     <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
     <nav aria-label="Main">
       <ul>
-        <li><a href="/#gems">Gems</a></li>
         <li><a href="/blog/">Blog</a></li>
-        <li><a href="https://github.com/fixrb">GitHub</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
       </ul>
     </nav>
   </header>
@@ -61,8 +61,8 @@
       <p>Add <code>gem "fix-command"</code> to your Gemfile, or run <code>gem install fix-command</code>. It brings fix with it.</p>
 
       <h2 id="usage">Usage</h2>
-      <p>Without an argument, <code>fix</code> runs the <code>*_fix.rb</code> files of the <code>fix</code> directory, at any depth: <code>fix/</code> is to Fix what <code>test/</code> is to minitest. With arguments, it runs the files given, whatever their names, and the <code>*_fix.rb</code> files of the directories given, in the order of the arguments, those of a directory in the order of their names. Two such files:</p>
-      <pre data-example="examples/fix-command/account_fix.rb"><code>require <span class="string">"fix"</span>
+      <p>Without an argument, <code>fix</code> runs the <code>*_fix.rb</code> files of the <code>fix</code> directory, at any depth: <code>fix/</code> is to Fix what <code>test/</code> is to minitest. With arguments, it runs the files given, whatever their names, and the <code>*_fix.rb</code> files of the directories given, in the order of the arguments, those of a directory in the order of their names. A project with two such files, <code>fix/account_fix.rb</code>:</p>
+      <pre data-example="examples/fix-command/fix/account_fix.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Account</span> <span class="keyword">do</span>
   on <span class="string">:balance</span> <span class="keyword">do</span>
@@ -75,7 +75,8 @@
 
 exit(<span class="constant">Fix</span>[<span class="string">:Account</span>].test { <span class="constant">Account</span>.new(<span class="number">100</span>) })
 </code></pre>
-      <pre data-example="examples/fix-command/duck_fix.rb"><code>require <span class="string">"fix"</span>
+      <p>and <code>fix/duck_fix.rb</code>:</p>
+      <pre data-example="examples/fix-command/fix/duck_fix.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
   on <span class="string">:quack</span> <span class="keyword">do</span>
@@ -93,23 +94,23 @@ exit(<span class="constant">Fix</span>[<span class="string">:Account</span>].tes
 
 exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
 </code></pre>
-      <p>Each runs in a new process, with the Ruby that runs <code>fix</code>, and writes where <code>fix</code> writes; the count comes last:</p>
-      <pre><kbd>fix examples/fix-command</kbd>
-<samp>examples/fix-command/account_fix.rb:5: Success: expected 100 to eq 100
-examples/fix-command/account_fix.rb:6: Warning: expected 100 to eq 200
-examples/fix-command/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
-examples/fix-command/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
+      <p>In the project, <code>fix</code> runs each of them in a new process, with the Ruby that runs <code>fix</code>, and they write where <code>fix</code> writes; the count comes last:</p>
+      <pre data-directory="examples/fix-command"><kbd>fix</kbd>
+<samp>fix/account_fix.rb:5: Success: expected 100 to eq 100
+fix/account_fix.rb:6: Warning: expected 100 to eq 200
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
 2 files met</samp></pre>
       <p>A file not met, a file that raises when loaded or a process that dies give <code>2 files, 1 not met: fix/account_fix.rb</code> and the status 1. The processes inherit the environment of the command: <code>bundle exec fix</code> gives every file the gems of the Gemfile, and <code>RUBYOPT=-Ilib fix</code> adds <code>lib</code> to their load path.</p>
 
       <h2 id="random">Random order</h2>
       <p>The order of the files cannot change a result, as far as the process goes: each file is a process, and each context a child of it. What a subject does outside the process can depend on it, though, a database or a file that one specification leaves changed for the next. <code>--random</code> runs the files in a random order, and writes first the command that runs them in the same order again, <code>--random=SEED</code>:</p>
-      <pre><kbd>fix --random examples/fix-command</kbd>
-<samp>fix --random=2 examples/fix-command
-examples/fix-command/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
-examples/fix-command/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
-examples/fix-command/account_fix.rb:5: Success: expected 100 to eq 100
-examples/fix-command/account_fix.rb:6: Warning: expected 100 to eq 200
+      <pre data-directory="examples/fix-command"><kbd>fix --random</kbd>
+<samp>fix --random=2
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
+fix/account_fix.rb:5: Success: expected 100 to eq 100
+fix/account_fix.rb:6: Warning: expected 100 to eq 200
 2 files met</samp></pre>
 
       <h2 id="status">Status</h2>

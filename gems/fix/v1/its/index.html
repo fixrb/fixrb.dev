@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>The word its · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="fix-its adds the word its to Fix: a method of the subject and an expectation about what it returns, on one line.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/its/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="The word its · Fix guide, version 1">
+  <meta property="og:description" content="fix-its adds the word its to Fix: a method of the subject and an expectation about what it returns, on one line.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/its/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>The word <code>its</code></h1>
+          <p>A method and its expectation on one line, with the <a href="/gems/fix-its/">fix-its</a> gem.</p>
+        </hgroup>
+      </header>
+      <p>Many contexts hold one method and one expectation:</p>
+      <pre data-example="examples/fix/v1/its/team_on_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Team</span> <span class="keyword">do</span>
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">3</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:first</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Ada"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Team</span>].test { <span class="string">%w[Ada Grace Linus]</span> })
+</code></pre>
+      <p>With fix-its, each of them takes one line. Install it, <code>gem install fix-its</code> or <code>gem "fix-its"</code> in a Gemfile, and require <code>fix/its</code>, which requires fix:</p>
+      <pre data-example="examples/fix/v1/its/team_fix.rb"><code>require <span class="string">"fix/its"</span>
+
+<span class="constant">Fix</span> <span class="string">:Team</span> <span class="keyword">do</span>
+  its(<span class="string">:size</span>) { <span class="constant">MUST</span> eq <span class="number">3</span> }
+  its(<span class="string">:first</span>) { <span class="constant">MUST</span> eq <span class="string">"Ada"</span> }
+  its(<span class="string">:include?</span>, <span class="string">"Linus"</span>) { <span class="constant">MUST</span> be_true }
+  its(<span class="string">:join</span>, <span class="string">", "</span>) { <span class="constant">MUST</span> eq <span class="string">"Ada, Grace, Linus"</span> }
+
+  on <span class="string">:last</span> <span class="keyword">do</span>
+    its(<span class="string">:length</span>) { <span class="constant">MUST</span> eq <span class="number">5</span> }
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Team</span>].test { <span class="string">%w[Ada Grace Linus]</span> })
+</code></pre>
+      <pre data-directory="examples/fix/v1/its"><kbd>ruby team_fix.rb</kbd>
+<samp>team_fix.rb:4: Success: expected 3 to eq 3
+team_fix.rb:5: Success: expected "Ada" to eq "Ada"
+team_fix.rb:6: Success: expected true to be true
+team_fix.rb:7: Success: expected "Ada, Grace, Linus" to eq "Ada, Grace, Linus"
+team_fix.rb:10: Success: expected 5 to eq 5</samp></pre>
+      <p><code>its(:size) { MUST eq 3 }</code> is <code>on(:size) { it MUST eq 3 }</code>, and the line points at the <code>its</code>.</p>
+      <ul>
+        <li><code>its</code> takes the name of the method and its arguments, as <code>on</code> does: <code>its(:join, ", ")</code>.</li>
+        <li>Its block gives the requirement, a level and a matcher, and is read with the rest of the document. A block that gives anything else, or no block, raises <code>ArgumentError</code> when the file is loaded.</li>
+        <li>Inside an <code>on</code> or a <code>with</code>, <code>its</code> sends its method to the value of that context: above, the length of the last name.</li>
+        <li><code>its</code> is a word of the language, so a let cannot take that name.</li>
+      </ul>
+      <p>Since Ruby 3.4, a bare <code>it</code> in a block is its parameter: in <code>its(:size) { MUST eq it }</code>, <code>it</code> is <code>nil</code>. On Ruby 3.3, it is the word of Fix, which raises <code>ArgumentError</code> for want of a requirement. Write the value.</p>
+      <p>Use <code>its</code> for a method and one expectation; keep <code>on</code> for a context with several expectations, a <code>with</code>, or a further <code>on</code> inside it.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/running-specifications/" rel="prev">Previous: Running specifications</a></li>
+          <li><a href="/gems/fix/v1/composing-specifications/" rel="next">Next: Composing specifications</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/" aria-current="page">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

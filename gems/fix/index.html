@@ -30,9 +30,9 @@
     <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
     <nav aria-label="Main">
       <ul>
-        <li><a href="/#gems">Gems</a></li>
         <li><a href="/blog/">Blog</a></li>
-        <li><a href="https://github.com/fixrb">GitHub</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
       </ul>
     </nav>
   </header>
@@ -86,7 +86,7 @@
 
 exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
 </code></pre>
-      <pre><kbd>ruby duck.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby duck.rb</kbd>
 <samp>duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
 duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
 duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck</samp></pre>
@@ -150,7 +150,7 @@ duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duc
 <span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] }               <span class="comment"># => true</span>
 <span class="constant">Fix</span>[<span class="string">:Stack</span>].test { <span class="constant">LinkedStack</span>.new } <span class="comment"># => true</span>
 </code></pre>
-      <pre><kbd>ruby stack.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby stack.rb</kbd>
 <samp>stack.rb:5: Success: expected true to be true
 stack.rb:11: Success: expected 2 to eq 2
 stack.rb:15: Success: expected 2 to eq 2
@@ -195,7 +195,7 @@ stack.rb:21: Success: expected nil to be nil</samp></pre>
 
 exit(<span class="constant">Fix</span>[<span class="string">:Cache</span>].test { entries.each_with_object(<span class="constant">MemoryCache</span>.new) { |(key, value), cache| cache.write(key, value) } })
 </code></pre>
-      <pre><kbd>ruby cache.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby cache.rb</kbd>
 <samp>cache.rb:8: Success: expected nil to be nil
 cache.rb:13: Success: expected 42 to eq 42
 cache.rb:18: Warning: expected 42 to be true
@@ -228,7 +228,7 @@ require <span class="string">"json"</span>
 
 exit(<span class="constant">Fix</span>[<span class="string">:JSON</span>].test { <span class="constant">JSON</span> })
 </code></pre>
-      <pre><kbd>ruby json.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby json.rb</kbd>
 <samp>json.rb:8: Success: expected "[1,2]" to eq "[1,2]"
 json.rb:12: Success: expected [1, 2] to eq [1, 2]
 json.rb:16: Success: expected #&lt;JSON::ParserError: unexpected token 'nope' at line 1 column 1> to raise exception JSON::ParserError
@@ -252,7 +252,7 @@ json.rb:20: Success: expected "[\n  1\n]" to eq "[\n  1\n]"</samp></pre>
 
 exit(<span class="constant">Fix</span>[<span class="string">:Score</span>].test { <span class="number">7.5</span> })
 </code></pre>
-      <pre><kbd>ruby compose.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby compose.rb</kbd>
 <samp>compose.rb:10: Success: expected 7.5 to be a kind of Numeric
 compose.rb:11: Success: expected 7.5 to fix Positive
 compose.rb:12: Success: expected 7.5 not to fix an anonymous specification</samp></pre>
@@ -290,7 +290,7 @@ compose.rb:12: Success: expected 7.5 not to fix an anonymous specification</samp
 
 exit(<span class="constant">Fix</span>[<span class="string">:Registry</span>].test { <span class="constant">Registry</span> })
 </code></pre>
-      <pre><kbd>ruby registry.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby registry.rb</kbd>
 <samp>registry.rb:15: Success: expected ["Alice"] to eq ["Alice"]
 registry.rb:21: Success: expected ["Bob"] to eq ["Bob"]
 registry.rb:26: Success: expected [] to eq []</samp></pre>
@@ -316,7 +316,7 @@ registry.rb:26: Success: expected [] to eq []</samp></pre>
 
 exit(<span class="constant">Fix</span>[<span class="string">:Greeting</span>].test { <span class="string">"Hello, #{</span>name<span class="string">}!"</span> })
 </code></pre>
-      <pre><kbd>ruby greeting.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby greeting.rb</kbd>
 <samp>greeting.rb:6: Success: expected "Hello, Bob!" to eq "Hello, Bob!"
 greeting.rb:7: Success: expected "Hello, Bob!" not to be nil
 greeting.rb:10: Success: expected 11 to eq 11
@@ -371,7 +371,7 @@ greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"</samp></
 
 <span class="constant">Fix</span>[<span class="string">:Account</span>].test { <span class="constant">Account</span>.new(<span class="number">100</span>) } <span class="comment"># => false</span>
 </code></pre>
-      <pre><kbd>ruby account.rb</kbd>
+      <pre data-directory="examples/fix"><kbd>ruby account.rb</kbd>
 <samp>account.rb:19: Success: expected 100 to eq 100
 account.rb:20: Failure: expected 100 to eq 200
 account.rb:21: Warning: expected 100 to eq 200
@@ -417,6 +417,7 @@ result.result.class <span class="comment"># => Spectus::Result</span>
 
       <h2 id="documentation">Documentation</h2>
       <ul>
+        <li><a href="/gems/fix/v1/">The guide</a>: Fix 1 one step at a time, from a first specification to the tests of a project.</li>
         <li><a href="https://github.com/fixrb/fix/blob/v1.0.0/README.md">README</a>: the language, outcomes, results and processes in full.</li>
         <li><a href="https://rubydoc.info/gems/fix/1.0.0">API reference</a></li>
         <li><a href="https://rubygems.org/gems/fix/versions/1.0.0">RubyGems</a></li>

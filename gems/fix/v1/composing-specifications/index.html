@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Composing specifications · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="A specification of Fix is a matcher: require one in another with fix(:Name), test a value with match?, and bring it to any test framework with matchi-fix.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/composing-specifications/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Composing specifications · Fix guide, version 1">
+  <meta property="og:description" content="A specification of Fix is a matcher: require one in another with fix(:Name), test a value with match?, and bring it to any test framework with matchi-fix.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/composing-specifications/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Composing specifications</h1>
+          <p>A specification is a matcher: one may require another, here and in other test frameworks.</p>
+        </hgroup>
+      </header>
+      <p>A specification says what a subject does. Some of that is said once and holds for many subjects: what an empty collection does, what a name looks like, what any plugin answers. Written as a specification of its own, it is required by the others.</p>
+
+      <h2 id="fix">In a specification: <code>fix</code></h2>
+      <p>The matcher <code>fix(:Name)</code> is met when the actual value meets the specification of that name. Here a stack must be empty when it is new, and must not be once something is pushed:</p>
+      <pre data-example="examples/fix/v1/composing-specifications/stack_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> fix(<span class="string">:Empty</span>)
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    it <span class="constant">MUST_NOT</span> fix(<span class="string">:Empty</span>)
+
+    on <span class="string">:last</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+      <pre data-directory="examples/fix/v1/composing-specifications"><kbd>ruby stack_fix.rb</kbd>
+<samp>stack_fix.rb:14: Success: expected [] to fix Empty
+stack_fix.rb:17: Success: expected [1] not to fix Empty
+stack_fix.rb:20: Success: expected 1 to eq 1</samp></pre>
+      <ul>
+        <li>The specification is found when the file is loaded, so write it before, or require the file that writes it: an unknown name raises <code>KeyError</code> then, <code>no specification named :Nope</code>.</li>
+        <li>The value is tested as a subject: each context of <code>Empty</code> sends its method to it, in a child process of its own, and its lines are not written. <code>fix</code> is met when all of them pass, a warning or an info included.</li>
+        <li>A <code>fix</code> not met says that the specification is not met, not which of its expectations failed: test the specification on the same value, on its own, to see them.</li>
+        <li><code>fix { … }</code> writes a specification in place, without a name, for a requirement used once.</li>
+        <li>A specification meant for <code>fix</code> is written without <code>with</code>: the value it gets is already built, so a let cannot change it.</li>
+      </ul>
+
+      <h2 id="match">In Ruby: <code>match?</code></h2>
+      <p>A specification answers <code>match?</code>, as any matcher does. Its block gives the value, and the answer says whether the value meets the specification. Here <code>Empty</code> holds for an array, a hash and a string alike:</p>
+      <pre data-example="examples/fix/v1/composing-specifications/match.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { [] }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { {} }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { <span class="string">""</span> }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { [<span class="keyword">nil</span>] } <span class="comment"># => false</span>
+</code></pre>
+      <p><code>match?</code> writes nothing: <code>test</code> is there for the lines, and <a href="/gems/fix/v1/running-specifications/#results-as-data"><code>run</code></a> for the results.</p>
+
+      <h2 id="matchi-fix">In other frameworks: matchi-fix</h2>
+      <p>The matchers of <a href="/gems/matchi/">Matchi</a> work in any test framework, and <a href="/gems/matchi-fix/">matchi-fix</a> makes a specification of Fix one of them: <code>Matchi::Fix.new(:Name)</code>, or <code>Matchi::Fix.new { … }</code> for one written in place. Install it, <code>gem install matchi-fix</code>, and require <code>matchi/fix</code>:</p>
+      <pre data-example="examples/fix/v1/composing-specifications/matchi.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"matchi/fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Fix</span>.new(<span class="string">:Empty</span>)
+matcher.to_s          <span class="comment"># => "fix Empty"</span>
+matcher.match? { [] } <span class="comment"># => true</span>
+
+<span class="constant">Spectus</span>.must(matcher).call { [<span class="keyword">nil</span>] }.to_s <span class="comment"># => "Failure: expected [nil] to fix Empty"</span>
+</code></pre>
+      <p>The last line uses <a href="/gems/spectus/">Spectus</a>, which Fix is built on. In minitest, <code>assert</code> takes its answer: <code>assert Matchi::Fix.new(:Empty).match? { [] }</code>. A project that has its tests in another framework can use the same specifications in those tests, without moving them.</p>
+      <p>In a specification of Fix, <code>it MUST Matchi::Fix.new(:Empty)</code> and <code>it MUST fix(:Empty)</code> are the same: <code>fix</code> needs no other gem.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/its/" rel="prev">Previous: The word its</a></li>
+          <li><a href="/gems/fix/v1/in-a-project/" rel="next">Next: In a project</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/" aria-current="page">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

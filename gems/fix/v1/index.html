@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fix guide: specifications for Ruby, from a first one to a project · Fixrb</title>
+  <meta name="description" content="The guide to Fix 1: install it, write a specification, run it, compose specifications, use them in a project, and what changes when you come from RSpec. Every example on its pages is run before they are published.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Fix guide: specifications for Ruby, from a first one to a project">
+  <meta property="og:description" content="The guide to Fix 1: install it, write a specification, run it, compose specifications, use them in a project, and what changes when you come from RSpec. Every example on its pages is run before they are published.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="40" height="40">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/">Fix</a></p>
+          <h1>Fix guide</h1>
+          <p>Version 1: from a first specification to the tests of a project.</p>
+        </hgroup>
+      </header>
+      <p>This guide teaches <a href="/gems/fix/">Fix</a>, version 1, one step at a time, each page building on the one before. It assumes you know Ruby, not a test framework: the last page is for those who come from RSpec.</p>
+      <p>Each page shows files, and what running them writes. Both come from the repository of this site, where every example is run before a page is published: what you read is what Fix 1 does. The outputs are those of Ruby 4.0; a message of Ruby itself, in an error, may read otherwise under another version.</p>
+      <p>Fix 1 needs Ruby 3.3 or later and <code>fork(2)</code>: Linux, macOS and the BSDs, not Windows or JRuby.</p>
+
+      <h2 id="other-documents">Other documents</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix/blob/v1.0.0/README.md">The README of fix</a> is the reference: every rule of the language, the outcomes, the results and the processes, in full. The guide links to it where a rule matters.</li>
+        <li><a href="https://rubydoc.info/gems/fix/1.0.0">The API reference</a> documents each class and method.</li>
+        <li><a href="/gems/fix/">The page of Fix</a> tells what a specification is for, in five cases.</li>
+      </ul>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/getting-started/" rel="next">Next: Getting started</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/" aria-current="page">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul>
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
