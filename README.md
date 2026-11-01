@@ -10,7 +10,8 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 |---|---|
 | `index.html` | Home: Fix, the gems, the latest posts |
 | `gems/NAME/index.html` | One page per gem |
-| `gems/NAME/img/` | A gem's drawing, illustration and icons, used by its page |
+| `gems/NAME/img/` | A gem's drawing, illustration and icons, used by a page or by `style.css` |
+| `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels |
 | `blog/index.html`, `feed.xml` | The list of posts and its Atom feed |
 | `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files kept out of results |
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
@@ -37,7 +38,7 @@ GitHub Pages publishes every file of the repository, so `bin/check` accepts only
 - Element and attribute names are in lowercase, and no attribute appears twice. Attributes and `rel` values come from a short list in `bin/check`: nothing that would contact another site (`preconnect`, `ping`, `srcset`) or open a window (`target`).
 - `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`) out of search results, never a page, the feed, the style, a font or an image.
 - Files a browser could run when opened directly are checked too. An SVG file may only hold `svg`, `title`, `g`, `rect` and `path`, with attributes from a short list and values without a colon or a slash, so that none holds a URL; `logo.svg` is also pinned by its SHA-256, as fixrb/logo publishes it. `feed.xml` may only hold Atom elements, from a short list, linking to the site. A `CNAME` file contains `fixrb.dev`.
-- Links inside the site start with `/` and lead to a file of the repository. Stylesheets, images and fonts are served by the site. No file is a symbolic link.
+- Links inside the site start with `/` and lead to a file of the repository, and so does every `url()` of `style.css`, written as a path in double quotes, `url("/gems/NAME/img/FILE.svg")`, in a comment or not; `style.css` holds no `@import`, `image-set()`, `src()` or backslash, which could load a file another way. Stylesheets, images and fonts are served by the site. No file is a symbolic link.
 - A code block shows a file of `examples/`, character for character: `<pre data-example="examples/gem/name.rb"><code>…</code></pre>`, with `<` and `&` escaped. To add or change one, edit the file, write `<pre data-example="…"><code></code></pre>` the first time, and run `bin/check --fix`. Examples end their lines with LF. A line that ends with `# => VALUE` must evaluate to an object whose `inspect` is `VALUE`. A manifest of brutal, `NAME_brutal.yaml`, is shown without highlighting, and the test file next to it, `test_NAME.rb`, is the one brutal writes from it.
 - The five posts published before Fix 1.0 are kept as they were written, with a note saying so. Their code is not run but is highlighted like the rest; they are listed in `bin/check`.
 
@@ -69,13 +70,18 @@ It then runs the terminal sessions of the pages that run one of these examples, 
 
 The stylesheet relies on this structure, which every page follows.
 
-- `body > header`: a link to `/` with the logo and the site name, then `nav[aria-label="Main"] > ul`. `body > footer`: a paragraph, then a list of links. `main` in between.
-- Home: `section#fix` (an `hgroup` whose first `p` is the eyebrow, a paragraph, a `ul` with the link to the page of Fix, a `dl` of facts, and a `figure` with the example: from 62rem, the figure takes a second column), then `section#why` (a `ul` of three `li > h3 + p`, in a row from 56rem), then `section#gems` holding `section#extensions` (the gems around Fix), `section#libraries` (building blocks that do not depend on it) and `section#tools` (commands to run as they are). A gem card is `li > h4`, holding the gem's icon, if it has one, then `> a`; a `p`; and a status in `p > small`.
-- Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, if it has one, then the `hgroup`. An illustration, if any, is a `figure` right after the first paragraph.
+- `body > header`: a link to `/` with the logo, 48 × 48 (3 screen pixels per pixel), and the site name, then `nav[aria-label="Main"] > ul`. `body > footer`: a paragraph, then a list of links. `main` in between.
+- Home: `section#fix` (an `hgroup` whose first `p` is the eyebrow, a paragraph whose three `strong` are MUST, SHOULD and MAY, in this order, a `ul` with the link to the page of Fix, a `dl` of facts, and a `figure` with the example: from 62rem, the figure takes a second column), then `section#why` (a `ul` of three `li > h3 + p`, in a row from 56rem, each with its pictogram by its position: a document, the levels, the processes), then `section#gems` holding `section#extensions` (the gems around Fix), `section#libraries` (building blocks that do not depend on it) and `section#tools` (commands to run as they are). A gem card is `li > h4`, holding the gem's icon, if it has one, then `> a`; a `p`; and a status in `p > small`.
+- Gem pages: `main > article`, whose `header` holds the gem's drawing, `img`, if it has one, then the `hgroup`. An illustration, if any, is a `figure` right after the first paragraph. The facts, a `dl`, come right after the first paragraph or after the illustration. A page with a design of its own is found by its drawing: `jester.svg` for matchi, `hero.svg` for aw, `scene.png` for brutal, `/logo.svg` in the `header` of the article for Fix. Its rules then read:
+  - matchi: the ten matchers, `h2#matchers + dl`, in the order of their emblems (Be, Eq, BeAKindOf, BeAnInstanceOf, BeWithin, Match, Satisfy, Predicate, RaiseException, Change), five to a row from 62rem; `h2#expected-value`, which wears a crown; `h2#documentation + ul`.
+  - aw: the `figure` and the `header`, shown in this order above the rest of the article, wherever they are in its markup; `h2#limits + ul`, `h2#documentation + ul`.
+  - brutal: a manifest is a file whose name ends with `.yaml`; `h2#command`, which wears an axe; `h2#limits + ul`, `h2#documentation + ul`.
+  - Fix: the three `strong` of the first paragraph, MUST, SHOULD and MAY, in this order; the table of outcomes, its rows MUST, SHOULD and MAY and its columns in the order of the README of fix, since the selectors carry the sign of each outcome.
 - Guides, `gems/NAME/vN/` (the guide of Fix 1 is `gems/fix/v1/`): `main > article`, then `nav[aria-label="Guide"]`, which holds a `p > a` to the first page of the guide, its `index.html`, and an `ol` of its pages, a page not yet written being named without a link. That nav is the same on every page of the guide, but for the `aria-current` of the page's own link. The `hgroup` of the article starts with an eyebrow, `p > a` to the guide, and the article ends with `nav[aria-label="Pages"] > ul`, the links `rel="prev"` and `rel="next"` to the pages around it in the order of the guide; `bin/check` keeps both navs in order. From 62rem, the nav of the guide takes a column on the left, and stays in view.
 - Lists of posts: `ul > li > article`, with a title `h2 > a` or `h3 > a`, a date `p > time`, and a description `p`.
 - Posts: `article > header` (the `h1`, then `p` with the date and author), `p[role="note"]` for a note, `article > footer`.
-- Pixelify Sans sets `h1`, the `h2` of sections and posts, the site name, menus and gem names only: at small sizes its C reads as an O. Titles in lists of posts, `h3`, dates and running text use the system font.
+- Pixelify Sans sets `h1`, the `h2` of sections and posts, the site name, menus, gem names and short labels (eyebrows, buttons, the numbers of the guide's stations) only, at multiples of 11px and its regular weight: at small sizes its C reads as an O. Titles in lists of posts, `h3`, dates and running text use the system font.
+- The drawings of the design are SVG files of `img/` (shared by several pages) and `gems/NAME/img/`, loaded by `style.css`. They follow the rules of SVG files above, and are drawn on a grid: one unit of their `viewBox` per pixel, shown at 4 screen pixels per pixel, or 2 for icons and small signs.
 
 ## Preview
 
@@ -94,16 +100,16 @@ Then open <http://localhost:8000/>. Pages use root-relative links, so opening a 
 
 ## Adding a gem
 
-Give it a card on `index.html`: in `section#fix` if it extends Fix, in `section#tools` if it is a command to run rather than a library to build on, in `section#libraries` otherwise, right after the gem it extends, if any. Its description says which gems of the project it is built on, and its status which version is released or being prepared. If the gem has icons, its `icon.svg` goes in the card's `h4`, before the name, at a whole number of screen pixels per pixel of the icon: 62 × 64 for matchi and 64 × 64 for brutal, two per pixel; aw's, 104 pixels wide, at 64 × 64, smoothed.
+Give it a card on `index.html`: in `section#fix` if it extends Fix, in `section#tools` if it is a command to run rather than a library to build on, in `section#libraries` otherwise, right after the gem it extends, if any. Its description says which gems of the project it is built on, and its status which version is released or being prepared. Its `icon.svg` goes in the card's `h4`, before the name, at a whole number of screen pixels per pixel of the icon: 64 × 64 for a 32 × 32 icon, two per pixel, and 62 × 64 for matchi's; aw's, 104 pixels wide, at 64 × 64, smoothed. A gem without a page of its own, such as test_tube, still has its icon in `gems/NAME/img/`.
 
 ## Adding a gem page
 
 Write `gems/NAME/index.html` from `gems/matchi/index.html`: what the gem does, how to install it, examples from `examples/NAME/`, the version the page documents, and links to its README, API reference and source at that version. Link it from the gem's card on `index.html`, and add it to `sitemap.xml`.
 
-A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, which `bin/check` requires a page to use:
+A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, which `bin/check` requires a page or `style.css` to use:
 
 - A pixel drawing, shown in the header with `alt=""`, its `width` and `height` set to a whole number of screen pixels per pixel of the drawing: 4 for the jester of matchi, 2 for the hero of aw, whose pixels are finer. At 288 pixels wide at most, it keeps that size on a 320-pixel screen. Its pixels fall on whole units of its `viewBox`, which keeps every pixel whole on screen. Letters, if any, are set in Pixelify Sans, at its regular weight: its strokes are one pixel wide, where the bold of the titles is wider than a pixel.
-- An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. It shrinks with narrow screens. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is shown at 603 × 363; the scene of brutal, 1280 × 960 at 4 pixels per pixel, at 640 × 480.
+- An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is the screen of its page: 402 × 242 on a phone (cropped at the sides below 402px), 603 × 363 from 40rem and 804 × 484 from 56rem; the scene of brutal, 1280 × 960 at 4 pixels per pixel, is shown at 320 × 240 on a phone and 640 × 480 from 44rem.
 - `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head; without them, the page uses the site's icons. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
 
   ```sh
@@ -150,3 +156,4 @@ The site, its code and its text are released under the [MIT License](LICENSE.md)
   ```
 
   Only kerning is kept: the font's `fi` ligature looks like an `A` at small sizes.
+- The drawings of the site's design (`img/`, the icons of the gems that had none, and the decors of `gems/matchi/img/`, `gems/aw/img/`, `gems/brutal/img/` and `gems/fix/img/` but for the drawings credited above): drawn with Claude, Anthropic's AI model, for this site in November 2026, under the MIT License like the rest of the site. The scene of brutal and the hero of aw lend them their colours.

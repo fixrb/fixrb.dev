@@ -5,8 +5,8 @@
 # repository, the markup rules, the head and layout shared by every page,
 # internal links and anchors, code examples kept identical to their files
 # under examples/ and highlighted as Ripper reads them (a YAML manifest of
-# brutal is shown as it is), the feed, the sitemap, robots.txt and the SVG
-# drawings.
+# brutal is shown as it is), the files the stylesheet loads, the feed, the
+# sitemap, robots.txt and the SVG drawings.
 #
 #   bin/check         checks, and changes nothing
 #   bin/check --fix   first rewrites every <pre><code> from its example file
@@ -31,6 +31,7 @@ FILES = [
   %r{\Aexamples(?:/[a-z0-9_-]+)+\.(?:rb|yaml)\z},
   %r{\Afonts/[a-z0-9-]+\.woff2\z},
   %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
+  %r{\Aimg/[a-z0-9_-]+\.svg\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
   %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|
          card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
@@ -52,6 +53,14 @@ SVG = "http://www.w3.org/2000/svg"
 SVG_ELEMENTS = %w[svg title g rect path].freeze
 SVG_ATTRIBUTES = %w[xmlns version width height viewBox shape-rendering xml:space transform fill stroke-width x y d].freeze
 SVG_VALUE = /\A[#a-zA-Z0-9.,() -]*\z/
+
+# The stylesheet loads files through url() only, each a path from the root
+# in double quotes, to a file of the repository. The other ways a stylesheet
+# can load a file, and escapes, which could hide a url(), are not allowed;
+# a url() written in a comment is checked like any other.
+CSS_FORBIDDEN = /\\|@import|image-set\(|src\(/i
+CSS_URL = /url\(([^)]*)\)/i
+CSS_PATH = %r{\A"/([a-z0-9_-]+(?:/[a-z0-9_-]+)*\.[a-z0-9]+)"\z}
 
 ATOM = "http://www.w3.org/2005/Atom"
 SITEMAP = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -136,7 +145,8 @@ TOKEN_CLASSES = {
 }.flat_map { |css, types| types.map { |type| [type, css] } }.to_h.freeze
 
 @errors = []
-# Files of the site that pages link to, load or announce as their image.
+# Files of the site that pages link to, load or announce as their image, and
+# those the stylesheet loads.
 @linked = []
 
 def error(path, message)
@@ -320,6 +330,20 @@ def check_head(path, html)
   return error(path, "og:image must be a file of the site, at #{ORIGIN}/") unless image.start_with?("#{ORIGIN}/") && @files.include?(file)
 
   @linked << file
+end
+
+# The files style.css loads: fonts, and images that only the stylesheet
+# shows.
+def check_stylesheet
+  css = read("style.css")
+  error("style.css", "holds an escape, @import, image-set() or src(), which are not allowed") if css.match?(CSS_FORBIDDEN)
+  css.scan(CSS_URL).flatten.each do |value|
+    path = value.strip[CSS_PATH, 1]
+    next error("style.css", "url(#{value}) must be a path from /, in double quotes") unless path
+    next error("style.css", "url(#{value}) leads nowhere") unless @files.include?(path)
+
+    @linked << path
+  end
 end
 
 def check_shared(path, html, home)
@@ -584,7 +608,8 @@ blog = read("blog/index.html")
 posts.each { |post| error("blog/index.html", "#{post} is missing") unless blog.include?(%(href="/#{post}")) }
 (ARCHIVED - posts).each { |post| error("bin/check", "archived post #{post} does not exist") }
 (@files.grep(%r{\Aexamples/}) - used).each { |example| error(example, "no page shows it") }
-(@files.grep(%r{\Agems/[^/]+/img/}) - @linked).each { |image| error(image, "no page uses it") }
+check_stylesheet
+(@files.grep(%r{\A(?:gems/[^/]+/)?img/}) - @linked).each { |image| error(image, "neither a page nor style.css uses it") }
 check_feed(posts)
 check_sitemap(pages)
 check_robots(pages)
