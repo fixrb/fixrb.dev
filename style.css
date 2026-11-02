@@ -12,9 +12,9 @@
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
- * matchi, aw, brutal, Fix and the guide of Fix. The drawings are the SVG
- * files of img/ and gems/NAME/img/. The markup this relies on is described
- * in README.md, under Markup.
+ * matchi, aw, brutal, Fix, the guide of Fix and spectus. The drawings are
+ * the SVG files of img/ and gems/NAME/img/. The markup this relies on is
+ * described in README.md, under Markup.
  */
 @font-face {
   font-family: "Pixelify Sans";
@@ -2927,6 +2927,530 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
     top: 1.5rem;
     grid-column: 1;
     grid-row: 1;
+  }
+}
+
+/* spectus: the movement. Fix is the jewel; spectus, its engine, is the
+   watch movement under it, and a movement turns on rubies. The header is
+   the plate, turned in perlage, the same in both themes: the train of the
+   three levels, each wheel on a stone of its colour (a ruby for MUST, a
+   rose stone for SHOULD, a lilac one for MAY), and the balance, which beats
+   the second. The rest of the page is steel, blued screws and jewels. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) {
+  --steel-0: #150c1e;
+  --steel-1: #241833;
+  --steel-2: #6d5c80;
+  --steel-3: #a597b3;
+  --steel-4: #e2daf0;
+  --steel-5: #f4f0fa;
+  --groove: #c3b8d4;
+  --tile: #33264a;
+  --tile-fail: #4a1534;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2rem 3rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3rem 1rem 2.5rem;
+  color: var(--paper);
+  text-align: center;
+  background:
+    linear-gradient(var(--steel-1), var(--steel-1)) 0 100% / 100% 8px no-repeat,
+    url("/gems/spectus/img/plate.svg") 0 0 / 96px 80px,
+    var(--steel-1);
+}
+
+/* Under the plate, the teeth of a rack, where other pages have a fringe. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 12px;
+  background: url("/gems/spectus/img/rack.svg") 0 0 / 32px 12px repeat-x;
+}
+
+/* The movement, at --mp screen pixels per pixel: 4, then 6 from 62rem. The
+   balance is the background of the image itself, seen through it under its
+   cock; its two beats are drawn 64 pixels apart, so that only one falls
+   within the image, and a step of the animation swaps them. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > img {
+  --mp: 4px;
+  order: 1;
+  width: calc(72 * var(--mp));
+  height: calc(48 * var(--mp));
+  max-width: none;
+  background:
+    url("/gems/spectus/img/balance.svg")
+    calc(52 * var(--mp)) calc(22 * var(--mp)) / calc(17 * var(--mp)) calc(81 * var(--mp))
+    no-repeat;
+  animation: beat 1s step-end infinite;
+}
+
+@keyframes beat {
+  50% {
+    background-position: calc(52 * var(--mp)) calc(-42 * var(--mp));
+  }
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup {
+  max-width: none;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--paper);
+  font-size: 4.125rem;
+  line-height: .9;
+  text-shadow:
+    4px 4px 0 var(--steel-3),
+    8px 8px 0 var(--steel-2);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > p {
+  max-width: 30ch;
+  margin: 1.5rem auto 0;
+  color: #f3e4ef;
+  font-size: 1.125rem;
+  text-wrap: balance;
+}
+
+/* The three levels, each with its glyph, as on the page of Fix. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p strong {
+  white-space: nowrap;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p strong::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  background: 0 0 / 14px 14px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p strong:nth-of-type(1)::before {
+  background-image: url("/img/level-must.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p strong:nth-of-type(2)::before {
+  background-image: url("/img/level-should.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p strong:nth-of-type(3)::before {
+  background-image: url("/img/level-may.svg");
+}
+
+/* A bridge: light steel turned in perlage, bevelled, outlined in pixels,
+   held by blued screws. The facts and the documentation are bridges, in
+   both themes. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header + p + dl, h2#documentation + ul) {
+  position: relative;
+  margin-left: 4px;
+  margin-right: 4px;
+  color: var(--ink);
+  background: url("/gems/spectus/img/bridge.svg") 0 0 / 96px 80px, var(--steel-4);
+  box-shadow:
+    inset 4px 4px 0 var(--steel-5),
+    inset -4px -4px 0 var(--steel-3),
+    0 -4px 0 var(--steel-0),
+    0 4px 0 var(--steel-0),
+    -4px 0 0 var(--steel-0),
+    4px 0 0 var(--steel-0);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header + p + dl, h2#documentation + ul) a {
+  color: var(--bordeaux);
+  font-weight: 600;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header + p + dl, h2#documentation + ul) a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+/* On the light steel, the coral outline of the dark theme would be too
+   pale: the focus takes the colour of the links. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header + p + dl, h2#documentation + ul) a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+/* The facts: the calibre, engraved on its bridge; a screw at each corner,
+   and a jewel before each gem it turns on. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  margin-top: 2.5rem;
+  padding: 2rem 2.75rem;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  pointer-events: none;
+  background:
+    url("/gems/spectus/img/screw.svg") 0 0 / 14px 14px no-repeat,
+    url("/gems/spectus/img/screw.svg") 100% 0 / 14px 14px no-repeat,
+    url("/gems/spectus/img/screw.svg") 0 100% / 14px 14px no-repeat,
+    url("/gems/spectus/img/screw.svg") 100% 100% / 14px 14px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl > dt {
+  padding: .5rem 1.5rem .5rem 0;
+  color: #57475e;
+  font-size: .875rem;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl > dd {
+  margin: 0;
+  padding: .5rem 0;
+  font-weight: 600;
+}
+
+/* Between two lines, a groove: its shadow, then its light. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl > :is(dt, dd):not(:first-of-type) {
+  padding-top: 1rem;
+  background:
+    linear-gradient(var(--groove), var(--groove)) 0 0 / 100% 4px no-repeat,
+    linear-gradient(var(--steel-5), var(--steel-5)) 0 4px / 100% 4px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl dd a::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: url("/gems/spectus/img/jewel.svg") 0 0 / 16px 16px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl code {
+  background: var(--steel-5);
+  color: var(--ink);
+}
+
+/* Titles: a jewel in its setting in place of the square. The outcomes wear
+   a wheel; the results, frozen, a crystal of frost. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2::before {
+  vertical-align: .08em;
+  background: url("/gems/spectus/img/jewel.svg") 0 0 / 16px 16px no-repeat;
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#outcomes::before {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  vertical-align: -.05em;
+  background-image: url("/gems/spectus/img/gear.svg");
+  background-size: 24px 24px;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#results::before {
+  width: 22px;
+  height: 22px;
+  margin-right: 14px;
+  vertical-align: -.05em;
+  background-image: url("/gems/spectus/img/frost.svg");
+  background-size: 22px 22px;
+}
+
+/* Outcomes: the dial. The table is a board of steel in both themes, each
+   outcome a tile with its sign over its word, the tiles that fail in wine.
+   The rule of the table is in the selectors, as on the page of Fix: SHOULD
+   softens a false match into a warning, MAY a missing method into an
+   info. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table {
+  width: calc(100% - 8px);
+  margin: 2rem 4px 0;
+  padding: 8px;
+  border-collapse: separate;
+  border-spacing: 4px;
+  color: var(--paper);
+  font-size: .75rem;
+  line-height: 1.3;
+  background: url("/gems/spectus/img/plate.svg") 0 0 / 96px 80px, var(--steel-1);
+  box-shadow:
+    0 -4px 0 var(--steel-0),
+    0 4px 0 var(--steel-0),
+    -4px 0 0 var(--steel-0),
+    4px 0 0 var(--steel-0);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table :is(th, td) {
+  padding: .5rem .375rem;
+  border: 0;
+  vertical-align: middle;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th {
+  padding-bottom: .375rem;
+  color: #c9b8cc;
+  font-size: .6875rem;
+  vertical-align: bottom;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th:not(:first-child) {
+  text-align: center;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody th {
+  background: var(--tile);
+  color: var(--paper);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody th::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: 0 0 / 14px 14px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody tr:nth-child(1) th::before {
+  background-image: url("/img/level-must.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody tr:nth-child(2) th::before {
+  background-image: url("/img/level-should.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody tr:nth-child(3) th::before {
+  background-image: url("/img/level-may.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td {
+  background: var(--tile);
+  text-align: center;
+  white-space: nowrap;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0 auto 6px;
+  background: 0 0 / 100% 100% no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td:nth-of-type(1)::before {
+  background-image: url("/gems/fix/img/outcome-success.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td:nth-of-type(2) {
+  background: var(--tile-fail);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td:nth-of-type(2)::before {
+  background-image: url("/gems/fix/img/outcome-failure.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tr:nth-child(2) td:nth-of-type(2) {
+  background: var(--tile);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tr:nth-child(2) td:nth-of-type(2)::before {
+  background-image: url("/gems/fix/img/outcome-warning.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td:nth-of-type(n+3) {
+  background: var(--tile-fail);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td:nth-of-type(n+3)::before {
+  background-image: url("/gems/fix/img/outcome-error.svg");
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tr:nth-child(3) td:nth-of-type(3) {
+  background: var(--tile);
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tr:nth-child(3) td:nth-of-type(3)::before {
+  background-image: url("/gems/fix/img/outcome-info.svg");
+}
+
+/* Documentation: a bridge of screws. Each line is held by one, whose slot
+   turns an eighth when the line is pointed at or reached by the keyboard.
+   The turned screw is already loaded, out of sight beside the other. */
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul {
+  margin-top: 2rem;
+  padding: .5rem 0;
+  list-style: none;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  margin: 0;
+  padding: .875rem 1.75rem .875rem 3.75rem;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li + li {
+  background:
+    linear-gradient(var(--groove), var(--groove)) 1.75rem 0 / calc(100% - 3.5rem) 4px no-repeat,
+    linear-gradient(var(--steel-5), var(--steel-5)) 1.75rem 4px / calc(100% - 3.5rem) 4px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li::before {
+  content: "";
+  position: absolute;
+  left: 1.75rem;
+  top: 1.25rem;
+  width: 14px;
+  height: 14px;
+  background:
+    url("/gems/spectus/img/screw.svg") 0 0 / 14px 14px no-repeat,
+    url("/gems/spectus/img/screw-turned.svg") 14px 0 / 14px 14px no-repeat;
+}
+
+body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li:is(:hover, :focus-within)::before {
+  background-position: -14px 0, 0 0;
+}
+
+@media (max-width: 34rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 2.25rem 1.75rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl > dd:not(:first-of-type) {
+    padding-top: 0;
+    background: none;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li {
+    padding-right: 1.25rem;
+    padding-left: 3.25rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li::before {
+    left: 1.25rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation + ul > li + li {
+    background-position: 1.25rem 0, 1.25rem 4px;
+    background-size: calc(100% - 2.5rem) 4px;
+  }
+}
+
+/* On a screen of 400px or less, the dial tightens and the level gives up
+   its glyph; the tiles keep their signs. */
+@media (max-width: 25rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table {
+    padding: 0;
+    font-size: .6875rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table :is(th, td) {
+    padding: .375rem .125rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody th::before {
+    content: none;
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--steel-3),
+      8px 8px 0 var(--steel-2),
+      12px 12px 0 var(--steel-0);
+  }
+
+  /* Tiles of one width, the level a little wider. */
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table {
+    table-layout: fixed;
+    font-size: .875rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th {
+    font-size: .8125rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th:first-child {
+    width: 24%;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table :is(th, td) {
+    padding: .75rem;
+  }
+}
+
+@media (min-width: 62rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter) 3rem;
+    text-align: left;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > img {
+    --mp: 6px;
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > p {
+    margin-left: 0;
+    font-size: 1.5rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table {
+    font-size: .9375rem;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th,
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody th {
+    font: 400 1.375rem/1.1 var(--display);
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table tbody th::before {
+    vertical-align: 0;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table td::before {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 8px;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table :is(th, td) {
+    padding: 1rem;
+  }
+
+  /* "Exception", at 22px, needs the width of its tile. */
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > table thead th {
+    padding-inline: .5rem;
+  }
+}
+
+/* The title at 132px needs 72rem beside the movement. */
+@media (min-width: 72rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > h1 {
+    font-size: 8.25rem;
   }
 }
 
