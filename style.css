@@ -12,9 +12,9 @@
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
- * matchi, aw, brutal, Fix, the guide of Fix and spectus. The drawings are
- * the SVG files of img/ and gems/NAME/img/. The markup this relies on is
- * described in README.md, under Markup.
+ * matchi, aw, brutal, Fix, the guide of Fix, spectus and defi. The
+ * drawings are the SVG files of img/ and gems/NAME/img/. The markup this
+ * relies on is described in README.md, under Markup.
  */
 @font-face {
   font-family: "Pixelify Sans";
@@ -3451,6 +3451,295 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation +
 @media (min-width: 72rem) {
   body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > h1 {
     font-size: 8.25rem;
+  }
+}
+
+/* defi: the mail. A challenge is a letter: a method and its arguments,
+   sealed with ruby wax, stamped with a dot, the dot of a method call, and
+   sent to any object; what comes back is the reply. The header is a desk
+   of mahogany, the same in both themes, an airmail border under it; the
+   facts are the front of the envelope, the documentation the letter, and
+   the title wears the colours of airmail. */
+body:has(img[src="/gems/defi/img/letter.svg"]) {
+  --mahogany: #431812;
+  --airmail-ruby: var(--button);
+  --airmail-blue: #2f3fa8;
+  --rule: #e2daf0;
+  --letter-margin: var(--rose);
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2rem 3rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3rem 1rem;
+  color: var(--paper);
+  text-align: center;
+  background: url("/gems/defi/img/mahogany.svg") 0 0 / 256px 128px, var(--mahogany);
+}
+
+/* Under the desk, the border of an airmail envelope, where other pages have
+   a fringe. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 12px;
+  background: url("/gems/defi/img/airmail.svg") 0 0 / 64px 64px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+/* The letter and its quill, at --mp screen pixels per pixel: 4, then 6
+   from 62rem. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header > img {
+  --mp: 4px;
+  order: 1;
+  width: calc(72 * var(--mp));
+  height: calc(48 * var(--mp));
+  max-width: none;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup {
+  max-width: none;
+}
+
+/* The title in the colours of airmail: ruby, blue, then ink. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--paper);
+  font-size: 5.5rem;
+  line-height: .85;
+  text-shadow:
+    4px 4px 0 var(--airmail-ruby),
+    8px 8px 0 var(--airmail-blue),
+    12px 12px 0 var(--ink);
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > p {
+  max-width: 30ch;
+  margin: 1.75rem auto 0;
+  color: #f3e4ef;
+  font-size: 1.125rem;
+  text-wrap: balance;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The facts: the front of an airmail envelope, paper in both themes, the
+   stamp in its corner, cancelled; an address line under each fact. Its
+   width and height are multiples of 4px, as long as the root font is 16px
+   or the fact holds on one line, so that the stripes end on whole pixels:
+   the width is rounded down, and every row is 48px high (40px on a phone,
+   where a fact takes two). */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl {
+  position: relative;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  width: round(down, 100% - 8px, 4px);
+  margin: 2.5rem 4px 0;
+  padding: 28px calc(172px + 1.25rem) 28px 2rem;
+  border: 12px solid transparent;
+  break-inside: avoid;
+  color: var(--ink);
+  background:
+    linear-gradient(var(--paper), var(--paper)) padding-box,
+    url("/gems/defi/img/airmail.svg") 0 0 / 64px 64px border-box;
+  box-shadow:
+    0 -4px 0 var(--ink),
+    0 4px 0 var(--ink),
+    -4px 0 0 var(--ink),
+    4px 0 0 var(--ink);
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 160px;
+  height: 104px;
+  background: url("/gems/defi/img/stamp.svg") 0 0 / 160px 104px no-repeat;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > :is(dt, dd) {
+  padding: 12px 0 8px;
+  line-height: 28px;
+}
+
+/* The address line: under the fact only, so that its dashes keep their
+   rhythm. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dd {
+  background: linear-gradient(90deg, var(--rule) 50%, transparent 0) 0 100% / 8px 4px repeat-x;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dt {
+  padding-right: 1.5rem;
+  color: #57475e;
+  font-size: .875rem;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2#documentation + ul) a {
+  color: var(--bordeaux);
+  font-weight: 600;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2#documentation + ul) a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2#documentation + ul) code {
+  background: #f5e3e6;
+  color: var(--ink);
+}
+
+/* On the paper, the focus takes the colour of the links. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2#documentation + ul) a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+/* Titles: a seal of wax in place of the square; what comes back wears the
+   arrow of a return. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2::before {
+  width: 18px;
+  height: 18px;
+  margin-right: 14px;
+  vertical-align: 0;
+  background: url("/gems/defi/img/seal.svg") 0 0 / 18px 18px no-repeat;
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#exceptions::before {
+  width: 28px;
+  height: 22px;
+  margin-right: 12px;
+  vertical-align: 0;
+  background-image: url("/gems/defi/img/return.svg");
+  background-size: 28px 22px;
+}
+
+/* Documentation: the letter itself, ruled paper with its margin, in both
+   themes. A stamp before each line, cancelled when the line is pointed at
+   or reached by the keyboard: sent. The cancelled stamp is already loaded,
+   out of sight beside the other. */
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul {
+  margin: 2rem 4px 0;
+  break-inside: avoid;
+  padding: 1rem 1.75rem 1rem 4.75rem;
+  list-style: none;
+  color: var(--ink);
+  background:
+    linear-gradient(var(--letter-margin), var(--letter-margin)) 3.5rem 0 / 4px 100% no-repeat,
+    var(--paper);
+  box-shadow:
+    0 -4px 0 var(--ink),
+    0 4px 0 var(--ink),
+    -4px 0 0 var(--ink),
+    4px 0 0 var(--ink);
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  margin: 0;
+  padding: .875rem 0;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul > li + li {
+  background: linear-gradient(var(--rule), var(--rule)) 0 0 / 100% 4px no-repeat;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul > li::before {
+  content: "";
+  position: absolute;
+  left: -3.75rem;
+  top: .875rem;
+  width: 22px;
+  height: 26px;
+  background:
+    url("/gems/defi/img/post.svg") 0 0 / 22px 26px no-repeat,
+    url("/gems/defi/img/post-sent.svg") 22px 0 / 22px 26px no-repeat;
+}
+
+body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul > li:is(:hover, :focus-within)::before {
+  background-position: -22px 0, 0 0;
+}
+
+@media (max-width: 34rem) {
+  /* The stamp at 2 screen pixels per pixel, over the facts. */
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 76px 20px 20px;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl::after {
+    width: 80px;
+    height: 52px;
+    background-size: 80px 52px;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dt {
+    padding-bottom: 0;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dd {
+    padding-top: 4px;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul {
+    padding-right: 1.25rem;
+    padding-left: 3.75rem;
+    background-position: 2.75rem 0, 0 0;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul > li::before {
+    left: -3.25rem;
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > h1 {
+    font-size: 8.25rem;
+  }
+}
+
+@media (min-width: 62rem) {
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter) 3.5rem;
+    text-align: left;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header > img {
+    --mp: 6px;
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > h1 {
+    font-size: 11rem;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > p {
+    margin-left: 0;
+    font-size: 1.5rem;
   }
 }
 
