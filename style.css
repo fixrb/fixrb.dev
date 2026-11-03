@@ -12,9 +12,9 @@
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
- * matchi, aw, brutal, Fix, the guide of Fix, spectus and defi. The
- * drawings are the SVG files of img/ and gems/NAME/img/. The markup this
- * relies on is described in README.md, under Markup.
+ * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi and
+ * fix-command. The drawings are the SVG files of img/ and gems/NAME/img/.
+ * The markup this relies on is described in README.md, under Markup.
  */
 @font-face {
   font-family: "Pixelify Sans";
@@ -552,14 +552,14 @@ pre[data-directory]::after {
   left: 16px;
   width: 4px;
   height: 4px;
-  background: var(--coral);
+  background: var(--prompt, var(--coral));
   box-shadow:
-    4px 4px 0 var(--coral),
-    8px 8px 0 var(--coral),
-    4px 12px 0 var(--coral),
-    0 16px 0 var(--coral),
-    12px 16px 0 var(--coral),
-    16px 16px 0 var(--coral);
+    4px 4px 0 var(--prompt, var(--coral)),
+    8px 8px 0 var(--prompt, var(--coral)),
+    4px 12px 0 var(--prompt, var(--coral)),
+    0 16px 0 var(--prompt, var(--coral)),
+    12px 16px 0 var(--prompt, var(--coral)),
+    16px 16px 0 var(--prompt, var(--coral));
 }
 
 pre[data-example] + pre[data-directory] {
@@ -3740,6 +3740,401 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul >
   body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > p {
     margin-left: 0;
     font-size: 1.5rem;
+  }
+}
+
+/* fix-command: the terminal. The header is its screen, of ruby phosphor,
+   the same in both themes: the name of the gem and a cursor, and the tree
+   of the processes the command starts, one after the other, a file on each
+   branch, each with its result: a check when the file is met, a cross when
+   it is not. Under the screen, the lip of the case, its vents and its power
+   lamp. The sessions are the same screen; the facts come out of a line
+   printer; the documentation is a menu on the screen. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) {
+  --screen: #160b14;
+  --phosphor: #ffb3c1;
+  --case: #a597b3;
+  --printer-bar: #fbe6ea;
+  --perforation: #e2c9d0;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2rem 3rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3rem 1rem;
+  color: var(--paper);
+  text-align: center;
+  background: url("/gems/fix-command/img/scanlines.svg") 0 0 / 4px 16px, var(--screen);
+}
+
+/* Under the screen, the lip of the case: its vents, and its power lamp,
+   lit. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 16px;
+  background:
+    url("/gems/fix-command/img/led.svg") calc(100% - var(--gutter)) 0 / 16px 16px no-repeat,
+    url("/gems/fix-command/img/vents.svg") 0 0 / 32px 16px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+/* The tree of the processes, at --mp screen pixels per pixel: 4, then 6
+   from 72rem, where the title still holds on one line beside it. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > img {
+  --mp: 4px;
+  order: 1;
+  width: calc(72 * var(--mp));
+  height: calc(48 * var(--mp));
+  max-width: none;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup {
+  max-width: none;
+}
+
+/* The name of the gem, in phosphor, and a cursor after it; no prompt, since
+   the command to type is fix. At 33px on a phone; whole from 17rem, where
+   it fits (in rem, so that with a larger default font it breaks at its
+   hyphen rather than widen the page). The cursor blinks four times, under
+   five seconds, then stays. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--phosphor);
+  font-size: 2.0625rem;
+  line-height: 1;
+  text-shadow: 4px 4px 0 #b8123f;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1::after {
+  content: "";
+  display: inline-block;
+  width: .5em;
+  height: .8em;
+  margin-left: .1em;
+  vertical-align: -.05em;
+  background: var(--coral);
+  box-shadow: 4px 4px 0 #b8123f;
+  animation: blink 1.1s steps(1) 4;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > p {
+  max-width: 32ch;
+  margin: 1.75rem auto 0;
+  color: #f3e4ef;
+  font-size: 1.125rem;
+  text-wrap: balance;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header code {
+  background: #33122a;
+  color: var(--phosphor);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The facts: a printout, on the paper of a line printer, in both themes: a
+   row of holes and a perforation down each side, a bar behind every other
+   fact, from one perforation to the other, which follows the fact whatever
+   its height. Its rows are 48px high (36px on a phone, where a fact takes
+   two), so that its height is a multiple of 24px and the last holes come
+   out whole, as long as every fact holds on one line; its width is rounded
+   down to 4px, so that the holes and the perforation on the right fall on
+   the same grid as those on the left. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  width: round(down, 100% - 8px, 4px);
+  max-width: calc(var(--measure) - 8px);
+  margin: 2.5rem 4px 0;
+  padding: 24px 48px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: .9375rem;
+  background:
+    url("/gems/fix-command/img/sprocket.svg") 0 0 / 24px 24px repeat-y,
+    url("/gems/fix-command/img/sprocket.svg") 100% 0 / 24px 24px repeat-y,
+    linear-gradient(var(--perforation) 50%, transparent 0) 28px 0 / 4px 8px repeat-y,
+    linear-gradient(var(--perforation) 50%, transparent 0) calc(100% - 28px) 0 / 4px 8px repeat-y,
+    var(--paper);
+  box-shadow:
+    0 -4px 0 var(--ink),
+    0 4px 0 var(--ink),
+    -4px 0 0 var(--ink),
+    4px 0 0 var(--ink);
+  break-inside: avoid;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > :is(dt, dd) {
+  padding: 12px 0 8px;
+  line-height: 28px;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dt {
+  margin-left: -16px;
+  padding-left: 16px;
+  padding-right: 2ch;
+  color: #57475e;
+  font-weight: 400;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
+  margin-right: -16px;
+  padding-right: 16px;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > :is(dt, dd):nth-of-type(odd) {
+  background: var(--printer-bar);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: 1em;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl a {
+  color: var(--bordeaux);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+/* The sessions: the same screen. Its title bar is the case, the prompt on
+   it in ink; what the files write comes out in phosphor. The 4px a session
+   takes on each side and below are a transparent border here, not a shadow,
+   so that the scanlines reach its edges. A session that hangs under its
+   file has its top line painted, square to its sides. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory] {
+  --prompt: var(--ink);
+  max-width: var(--measure);
+  margin-right: 0;
+  margin-left: 0;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 4px solid transparent;
+  background: url("/gems/fix-command/img/scanlines.svg") 0 0 / 4px 16px border-box, var(--screen);
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-example] + pre[data-directory] {
+  border-top-color: transparent;
+  background:
+    linear-gradient(var(--code-bar), var(--code-bar)) 0 0 / 100% 4px no-repeat border-box,
+    url("/gems/fix-command/img/scanlines.svg") 0 0 / 4px 16px border-box,
+    var(--screen);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory]::before {
+  background: var(--case);
+  color: var(--ink);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory] samp {
+  color: var(--phosphor);
+}
+
+/* Titles: the cursor in place of the square; the random order wears a die,
+   showing two, the seed of the session below it (change them together),
+   and the status a lamp. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2::before {
+  width: 16px;
+  height: 24px;
+  vertical-align: -.1em;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#random::before {
+  width: 22px;
+  height: 22px;
+  margin-right: 14px;
+  vertical-align: -.05em;
+  background: url("/gems/fix-command/img/die.svg") 0 0 / 22px 22px no-repeat;
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#status::before {
+  width: 18px;
+  height: 18px;
+  margin-right: 14px;
+  vertical-align: 0;
+  background: url("/gems/fix-command/img/lamp.svg") 0 0 / 18px 18px no-repeat;
+  box-shadow: none;
+}
+
+/* Documentation: a menu on the screen, in its case, in both themes, its
+   case within the column. The cursor waits after the line reached by the
+   keyboard; one cursor only, as on a terminal. */
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul {
+  max-width: calc(var(--measure) - 32px);
+  margin: 2.25rem 16px 0;
+  break-inside: avoid;
+  padding: 1rem 1.5rem;
+  list-style: none;
+  color: var(--phosphor);
+  font-family: var(--mono);
+  background: url("/gems/fix-command/img/scanlines.svg") 0 0 / 4px 16px, var(--screen);
+  box-shadow:
+    0 0 0 12px var(--case),
+    0 0 0 16px var(--ink);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  margin: 0;
+  padding: .375rem 0 .375rem 2ch;
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul > li::before {
+  content: ">";
+  content: ">" / "";
+  position: absolute;
+  left: 0;
+  color: var(--coral);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul a {
+  color: var(--rose);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul a:hover {
+  background: var(--phosphor);
+  color: var(--screen);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul a:focus-visible {
+  outline-color: var(--coral);
+}
+
+body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentation + ul > li:has(:focus-visible)::after {
+  content: "";
+  display: inline-block;
+  width: .6em;
+  height: 1.1em;
+  margin-left: 12px;
+  vertical-align: -.2em;
+  background: var(--coral);
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@media (max-width: 34rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 40px;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > :is(dt, dd) {
+    margin-right: -8px;
+    margin-left: -8px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dt {
+    padding-top: 8px;
+    padding-bottom: 0;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
+    padding-top: 0;
+    padding-bottom: 8px;
+  }
+}
+
+/* On a screen of 400px or less, the printout's type is smaller, so that a
+   fact holds on its line. */
+@media (max-width: 25rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl {
+    font-size: .8125rem;
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+    font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 #b8123f,
+      8px 8px 0 #3d0f2a;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1::after {
+    box-shadow:
+      4px 4px 0 #b8123f,
+      8px 8px 0 #3d0f2a;
+  }
+}
+
+@media (min-width: 62rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter) 3.5rem;
+    text-align: left;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > img {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > p {
+    margin-left: 0;
+    font-size: 1.5rem;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: without their
+   tiles, the screens, the printout and the case take the system's colours,
+   and the focus shows on them. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > :is(header, header + p + dl, h2#documentation + ul),
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header::after,
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory],
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-example] + pre[data-directory] {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory] {
+    border-right-color: Canvas;
+    border-bottom-color: Canvas;
+    border-left-color: Canvas;
+  }
+}
+
+@media (min-width: 17rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 72rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > img {
+    --mp: 6px;
   }
 }
 
