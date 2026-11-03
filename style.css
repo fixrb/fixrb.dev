@@ -12,8 +12,8 @@
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
- * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi and
- * fix-command. The drawings are the SVG files of img/ and gems/NAME/img/.
+ * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi, fix-command
+ * and fix-its. The drawings are the SVG files of img/ and gems/NAME/img/.
  * The markup this relies on is described in README.md, under Markup.
  */
 @font-face {
@@ -4135,6 +4135,413 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentat
 @media (min-width: 72rem) {
   body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > img {
     --mp: 6px;
+  }
+}
+
+/* fix-its: the loupe. Where Fix is the jewel, fix-its looks at it one facet
+   at a time: its(:size) is one method of the subject, under the glass. The
+   header is the open case, its velvet dark bordeaux, the same in both
+   themes; on its satin cushion, pale rose and two pixels larger than the
+   drawing, the ruby, and the loupe of the icon of fix-its over it, whose glass
+   magnifies twice what it covers. Under the velvet, the front of the case
+   and its clasp. The facts are the stone's tag, hung by a red thread; the
+   documentation is a tray of cut stones. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) {
+  --velvet: #300c22;
+  --satin: #f0d0da;
+  --satin-shadow: #ddaebd;
+  --felt: #241833;
+  --felt-dark: #150c1e;
+  --felt-light: #33264a;
+  --tray: #3d2c55;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 2rem 3rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3rem 1rem 3.5rem;
+  color: var(--paper);
+  text-align: center;
+  background: url("/gems/fix-its/img/velvet.svg") 0 0 / 128px 128px, var(--velvet);
+}
+
+/* The front of the case, under the velvet, where other pages have a fringe;
+   its clasp in the middle, across its edge. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 16px;
+  background: url("/gems/fix-its/img/lip.svg") 0 0 / 32px 16px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: calc(50% - 24px);
+  bottom: -20px;
+  width: 48px;
+  height: 24px;
+  background: url("/gems/fix-its/img/clasp.svg") 0 0 / 48px 24px no-repeat;
+}
+
+/* The ruby and the loupe on the cushion, at --mp screen pixels per pixel:
+   4, then 6 from 72rem. The cushion is the satin around the drawing, two
+   pixels wide, lit at its top left, in the shade at its bottom right, and
+   raised from the velvet, on which it casts its shadow; its tile keeps the
+   grid of the drawing. The cushion takes no room of its own on a phone, so
+   that the drawing keeps its size on a 320-pixel screen; beside the title,
+   it lines up with the edge of the site's header. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > img {
+  --mp: 4px;
+  order: 1;
+  box-sizing: content-box;
+  width: calc(72 * var(--mp));
+  height: calc(48 * var(--mp));
+  max-width: none;
+  margin-inline: calc(-2 * var(--mp));
+  padding: calc(2 * var(--mp));
+  background: url("/gems/fix-its/img/satin.svg") 0 0 / calc(32 * var(--mp)) calc(32 * var(--mp)), var(--satin);
+  box-shadow:
+    inset var(--mp) var(--mp) 0 #f9e7ed,
+    inset calc(-1 * var(--mp)) calc(-1 * var(--mp)) 0 var(--satin-shadow),
+    var(--mp) var(--mp) 0 #1c0614;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup {
+  max-width: none;
+}
+
+/* The title in paper on the velvet, cut from a ruby: its extrusion in the
+   colours of the stone. With a larger default font, it breaks at its
+   hyphen on a phone rather than widen the page. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--paper);
+  font-size: 4.125rem;
+  line-height: .9;
+  text-shadow:
+    4px 4px 0 var(--ruby),
+    8px 8px 0 var(--garnet);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > p {
+  max-width: 32ch;
+  margin: 1.75rem auto 0;
+  color: var(--satin);
+  font-size: 1.125rem;
+  text-wrap: balance;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header code {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The facts: the tag of the stone, paper in both themes, narrower than the
+   column, its top corners cut in five steps, hung by a red thread through
+   its eyelet. The corners are cut by layers in the colour of the page and
+   the outline is drawn edge by edge, inside the box, so that nothing clips
+   the thread above the tag; the box takes no side margins. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl {
+  position: relative;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  width: round(down, 100%, 4px);
+  max-width: 32rem;
+  margin-top: 4.5rem;
+  padding: 28px 32px 28px 88px;
+  color: var(--ink);
+  background:
+    url("/gems/fix-its/img/tag-left.svg") 0 0 / 20px 20px no-repeat,
+    url("/gems/fix-its/img/tag-right.svg") 100% 0 / 20px 20px no-repeat,
+    url("/gems/fix-its/img/eyelet.svg") 28px 28px / 32px 32px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 20px 0 / calc(100% - 40px) 4px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 4px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 20px / 4px calc(100% - 20px) no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 100% 20px / 4px calc(100% - 20px) no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 0 0 / 16px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 0 4px / 12px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 0 8px / 8px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 0 12px / 4px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 100% 0 / 16px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 100% 4px / 12px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 100% 8px / 8px 4px no-repeat,
+    linear-gradient(var(--bg), var(--bg)) 100% 12px / 4px 4px no-repeat,
+    var(--paper);
+  break-inside: avoid;
+}
+
+/* The thread, from above the tag down into its eyelet; its twist is laid
+   from the eyelet up, so that it ends there on a whole pixel whatever the
+   size of the font. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl::before {
+  content: "";
+  position: absolute;
+  left: 40px;
+  bottom: calc(100% - 44px);
+  width: 8px;
+  height: calc(3.5rem + 44px);
+  background: url("/gems/fix-its/img/string.svg") 0 100% / 8px 16px;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > :is(dt, dd) {
+  padding: .5rem 0;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dt {
+  padding-right: 1.5rem;
+  color: #57475e;
+  font-size: .875rem;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl code {
+  background: #f5e3e6;
+  color: var(--ink);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl a {
+  color: var(--bordeaux);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+/* Titles: a cut stone in place of the square; the usage, where its looks at
+   a method, wears the loupe. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2::before {
+  width: 18px;
+  height: 16px;
+  margin-right: 14px;
+  vertical-align: .05em;
+  background: url("/gems/fix-its/img/facet.svg") 0 0 / 18px 16px no-repeat;
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#usage::before {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  vertical-align: -.1em;
+  background-image: url("/gems/fix-its/img/loupe-mark.svg");
+  background-size: 24px 24px;
+}
+
+/* Documentation: a tray of cut stones, felt in both themes, a stone in each
+   compartment: a round brilliant, an emerald cut, a pear and a marquise.
+   The stone glints when its link is pointed at or reached by the keyboard;
+   the glint is already loaded, out of sight beside the stone. */
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  max-width: calc(var(--measure) - 32px);
+  margin: 2.25rem 16px 0;
+  padding: 8px;
+  list-style: none;
+  background: var(--felt-dark);
+  box-shadow:
+    0 0 0 12px var(--tray),
+    0 0 0 16px var(--ink);
+  break-inside: avoid;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 80px;
+  margin: 0;
+  padding: 1rem 1rem 1rem 80px;
+  background: var(--felt);
+  box-shadow:
+    inset 4px 4px 0 var(--felt-dark),
+    inset -4px -4px 0 var(--felt-light);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: calc(50% - 24px);
+  width: 48px;
+  height: 48px;
+  background: 0 0 / 48px 48px no-repeat;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li:nth-child(1)::before {
+  background-image: url("/gems/fix-its/img/cut-round.svg");
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li:nth-child(2)::before {
+  background-image: url("/gems/fix-its/img/cut-emerald.svg");
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li:nth-child(3)::before {
+  background-image: url("/gems/fix-its/img/cut-pear.svg");
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li:nth-child(4)::before {
+  background-image: url("/gems/fix-its/img/cut-marquise.svg");
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li::after {
+  content: "";
+  position: absolute;
+  left: 48px;
+  top: calc(50% - 32px);
+  width: 20px;
+  height: 20px;
+  background: url("/gems/fix-its/img/sparkle.svg") 20px 0 / 20px 20px no-repeat;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li:is(:hover, :focus-within)::after {
+  background-position: 0 0;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul a {
+  color: var(--paper);
+  font: 400 1.375rem/1.2 var(--display);
+  overflow-wrap: anywhere;
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul a:hover {
+  background: var(--paper);
+  color: var(--felt);
+}
+
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul a:focus-visible {
+  outline-color: var(--coral);
+}
+
+/* Forced colours drop the colours but keep the images: without the velvet,
+   the cushion, the front of the case and its clasp, they take the system's
+   colours. The tag keeps its eyelet only, its outline drawn inside the box
+   so that the eyelet stays under the thread. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header,
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > img,
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header::before,
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header::after {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl {
+    background: url("/gems/fix-its/img/eyelet.svg") 28px 28px / 32px 32px no-repeat;
+    outline: 4px solid CanvasText;
+    outline-offset: -4px;
+  }
+}
+
+/* In print, the tag stays on the page of the paragraph its thread hangs
+   from. */
+@media print {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p {
+    break-after: avoid;
+  }
+}
+
+@media (max-width: 34rem) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 28px 24px 28px 80px;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dt {
+    padding-bottom: 0;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dd {
+    padding-top: 0;
+  }
+
+  /* On a phone, the stones keep closer to the edge of their compartment,
+     to leave the names of the links whole. */
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li {
+    padding-left: 64px;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li::before {
+    left: 8px;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li::after {
+    left: 40px;
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet),
+      12px 12px 0 var(--bordeaux);
+  }
+}
+
+@media (min-width: 40rem) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 62rem) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter);
+    text-align: left;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > img {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+    margin-inline: 0;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > p {
+    margin-left: 0;
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 72rem) {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > img {
+    --mp: 6px;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > h1 {
+    font-size: 8.25rem;
   }
 }
 
