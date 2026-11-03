@@ -12,8 +12,9 @@
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
- * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi, fix-command
- * and fix-its. The drawings are the SVG files of img/ and gems/NAME/img/.
+ * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi, fix-command,
+ * fix-its and matchi-fix. The drawings are the SVG files of img/ and
+ * gems/NAME/img/.
  * The markup this relies on is described in README.md, under Markup.
  */
 @font-face {
@@ -4542,6 +4543,414 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul
 
   body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > h1 {
     font-size: 8.25rem;
+  }
+}
+
+/* matchi-fix: the puzzle. matchi-fix is the piece between matchi and Fix: a
+   matcher of matchi that tests a value against a specification of Fix. The
+   header is the puzzle, night blue, the same in both themes, its bottom
+   edge a row of knobs; on it, the specification, a piece of ruby, and the
+   matcher, a piece of blue, as in the icon of matchi-fix: a value that
+   meets the specification fits it, as the duck of the example does; the
+   decoy, set apart, fits nothing. The facts are a piece of paper; the
+   documentation, four pieces that fit, ruby and blue in turn. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) {
+  --board: #13223d;
+  --board-cut: #0e1a30;
+  --board-text: #c9dcf0;
+  --matcher: #297eb6;
+  --piece-ruby: var(--garnet);
+  --piece-blue: #1d5784;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 2rem 3rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3rem 1rem 3.5rem;
+  color: var(--paper);
+  text-align: center;
+  background: url("/gems/matchi-fix/img/board.svg") 0 100% / 256px 256px, var(--board);
+}
+
+/* The bottom edge of the puzzle, where other pages have a fringe: a knob
+   under each column of pieces, in line with the board, which is laid from
+   the bottom, so that its grid meets the edge whatever the height of the
+   header. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 20px;
+  background: url("/gems/matchi-fix/img/edge.svg") 0 0 / 64px 20px repeat-x;
+}
+
+/* The pieces, at --mp screen pixels per pixel: 4, then 6 from 72rem. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > img {
+  --mp: 4px;
+  order: 1;
+  width: calc(72 * var(--mp));
+  height: calc(48 * var(--mp));
+  max-width: none;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup {
+  max-width: none;
+}
+
+/* The name of the gem in paper, its extrusion in the two colours it joins:
+   the ruby of Fix, then the blue of matchi. At 44px on a small phone, where
+   it holds on one line, with the ruby alone: at that size a pixel of the
+   font is 4px, and a second step would fill its counters. With a larger
+   default font, it breaks at its hyphen rather than widen the page. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--paper);
+  font-size: 2.75rem;
+  line-height: .9;
+  text-shadow: 4px 4px 0 var(--ruby);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > p {
+  max-width: 32ch;
+  margin: 1.75rem auto 0;
+  color: var(--board-text);
+  font-size: 1.125rem;
+  text-wrap: balance;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The facts: a piece of paper, in both themes, its outline inside the box,
+   in the blue of the matcher, which shows on the paper page and on the
+   night one alike; a knob on its top and on its right, outside it. The box
+   leaves room on its right for its knob, and its width is a whole number of
+   pixels of the drawing (where round() is not known, it keeps the room). Its
+   code keeps the colour of the light theme, on the paper. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl {
+  position: relative;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  width: calc(100% - 28px);
+  width: round(down, 100% - 28px, 4px);
+  max-width: 32rem;
+  margin-top: 4rem;
+  padding: 24px 32px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 4px var(--matcher);
+  break-inside: avoid;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::before,
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::after {
+  content: "";
+  position: absolute;
+  background: 0 0 / 100% 100% no-repeat;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::before {
+  left: 48px;
+  bottom: calc(100% - 4px);
+  width: 48px;
+  height: 32px;
+  background-image: url("/gems/matchi-fix/img/knob-up.svg");
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::after {
+  left: calc(100% - 4px);
+  top: calc(50% - 24px);
+  width: 32px;
+  height: 48px;
+  background-image: url("/gems/matchi-fix/img/knob-right.svg");
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > :is(dt, dd) {
+  padding: .5rem 0;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > dt {
+  padding-right: 1.5rem;
+  color: #57475e;
+  font-size: .875rem;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl code {
+  background: #f5e3e6;
+  color: var(--ink);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl a {
+  color: var(--bordeaux);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+/* Titles: a piece of ruby in place of the square; the usage, where the
+   specification meets the matcher, wears the two that fit. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2::before {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  vertical-align: -.1em;
+  background: url("/gems/matchi-fix/img/piece.svg") 0 0 / 24px 24px no-repeat;
+  box-shadow: none;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#usage::before {
+  width: 32px;
+  background-image: url("/gems/matchi-fix/img/pair.svg");
+  background-size: 32px 24px;
+}
+
+/* Documentation: four pieces that fit, ruby and blue like a checkerboard,
+   each but the last with a knob into a neighbour: in a column on a phone,
+   two by two from 40rem.
+   The knobs are drawn over the pieces they go into, and the text of each
+   piece keeps clear of the knobs that come into it, each centred on the
+   face of its piece, without its cut. The cut is 4px all round, inside the
+   box: on the top and the left, the ground of the list; on the right and
+   the bottom of each piece, its own. */
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 2.25rem 0 0;
+  padding: 4px 0 0 4px;
+  list-style: none;
+  background: var(--board-cut);
+  break-inside: avoid;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 104px;
+  margin: 0;
+  padding: 32px 24px 24px 48px;
+  background: var(--piece-ruby);
+  box-shadow: inset -4px -4px 0 var(--board-cut);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(even) {
+  background: var(--piece-blue);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: calc(50% - 22px);
+  top: calc(100% - 4px);
+  width: 40px;
+  height: 32px;
+  background: url("/gems/matchi-fix/img/tab-ruby-down.svg") 0 0 / 40px 32px no-repeat;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(even)::after {
+  background-image: url("/gems/matchi-fix/img/tab-blue-down.svg");
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:last-child::after {
+  content: none;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul a {
+  color: var(--paper);
+  font: 400 1.375rem/1.2 var(--display);
+  overflow-wrap: anywhere;
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul a:hover {
+  background: var(--paper);
+  color: var(--piece-ruby);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(even) a:hover {
+  color: var(--piece-blue);
+}
+
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul a:focus-visible {
+  outline-color: var(--paper);
+}
+
+/* In print, the facts stay on the page of the paragraph before them, so
+   that the knob on top of them is not left alone, and the documentation
+   on the page of its title. */
+@media print {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > :is(header + p, h2#documentation) {
+    break-after: avoid;
+  }
+}
+
+@media (max-width: 34rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > dt {
+    padding-bottom: 0;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > dd {
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 24rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
+    font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--matcher);
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--matcher),
+      12px 12px 0 var(--piece-blue);
+  }
+}
+
+/* Two by two: ruby, blue, then blue, ruby; the first piece has a knob into
+   the second and into the third, the second into the fourth, and the third
+   into the fourth. */
+@media (min-width: 40rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(3) {
+    background: var(--piece-blue);
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(4) {
+    background: var(--piece-ruby);
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(3) a:hover {
+    color: var(--piece-blue);
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(4) a:hover {
+    color: var(--piece-ruby);
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(3)::after {
+    content: none;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:is(:nth-child(1), :nth-child(3))::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    left: calc(100% - 4px);
+    top: calc(50% - 22px);
+    width: 32px;
+    height: 40px;
+    background: url("/gems/matchi-fix/img/tab-ruby-right.svg") 0 0 / 32px 40px no-repeat;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:nth-child(3)::before {
+    background-image: url("/gems/matchi-fix/img/tab-blue-right.svg");
+  }
+}
+
+@media (min-width: 62rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter);
+    text-align: left;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > img {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > p {
+    margin-left: 0;
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 72rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > img {
+    --mp: 6px;
+  }
+}
+
+/* The name at its largest from 75rem, where it holds on one line beside
+   the pieces at their largest. */
+@media (min-width: 75rem) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
+    font-size: 8.25rem;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: without the board,
+   its edge, the knobs and the tabs, they take the system's colours; the
+   facts take an outline, and the pieces their cut, 4px all round as on
+   screen. It comes last, to win over the tabs of the two by two, with
+   their own selector. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header::after,
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::before,
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl::after,
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li::after,
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li:is(:nth-child(1), :nth-child(3))::before {
+    content: none;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl {
+    outline: 4px solid CanvasText;
+    outline-offset: -4px;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul {
+    padding: 0;
+    border: solid CanvasText;
+    border-width: 4px 0 0 4px;
+  }
+
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li {
+    border: solid CanvasText;
+    border-width: 0 4px 4px 0;
   }
 }
 
