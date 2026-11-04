@@ -2714,6 +2714,73 @@ body:has(article > header > img[src="/logo.svg"]) article > table tr:nth-child(3
   background-image: url("/gems/fix/img/outcome-info.svg");
 }
 
+/* Documentation: the jewel case, lined in ruby like the certificate, a
+   dotted rule between its lines; a jewel before each line, at 2 screen
+   pixels per pixel, level with the middle of its first line (its padding,
+   then half a line of 1.6em). */
+body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul {
+  margin: 2.25rem 4px 0;
+  padding: 20px 28px;
+  list-style: none;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 6px var(--surface),
+    inset 0 0 0 10px var(--ruby),
+    0 -4px 0 var(--rim),
+    0 4px 0 var(--rim),
+    -4px 0 0 var(--rim),
+    4px 0 0 var(--rim);
+  break-inside: avoid;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li {
+  position: relative;
+  margin: 0;
+  padding: .875rem 0 .875rem 48px;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li + li {
+  background: linear-gradient(90deg, var(--rim) 50%, transparent 0) 0 0 / 8px 4px repeat-x;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li::before {
+  content: "";
+  position: absolute;
+  top: calc(.875rem + .8em - 16px);
+  left: 0;
+  width: 32px;
+  height: 32px;
+  background: url("/logo.svg") 0 0 / 32px 32px no-repeat;
+}
+
+/* In the dark theme, the surface is the ink of the jewel's outline: the
+   jewel takes a mount of one pixel. */
+@media screen and (prefers-color-scheme: dark) {
+  body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li::before {
+    filter:
+      drop-shadow(2px 0 0 var(--rim))
+      drop-shadow(-2px 0 0 var(--rim))
+      drop-shadow(0 2px 0 var(--rim))
+      drop-shadow(0 -2px 0 var(--rim));
+  }
+}
+
+/* Below 20rem, the jewel goes above its line. */
+@media (max-width: 19.99rem) {
+  body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul {
+    padding: 16px 20px;
+  }
+
+  body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li {
+    padding-top: calc(.875rem + 40px);
+    padding-left: 0;
+  }
+
+  body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul > li::before {
+    top: .875rem;
+  }
+}
+
 @media (max-width: 34rem) {
   body:has(article > header > img[src="/logo.svg"]) article > table {
     font-size: .8125rem;
@@ -2793,14 +2860,16 @@ body:has(article > header > img[src="/logo.svg"]) article > table tr:nth-child(3
 }
 
 /* Forced colours drop the colours but keep the images: the stars and the
-   halo go; the certificate, whose edge is a shadow, takes an outline. */
+   halo go; the certificate and the jewel case, whose edges are shadows,
+   take an outline. */
 @media (forced-colors: active) {
   body:has(article > header > img[src="/logo.svg"]) article > header,
   body:has(article > header > img[src="/logo.svg"]) article > header > img {
     background-image: none;
   }
 
-  body:has(article > header > img[src="/logo.svg"]) article > header + p + dl {
+  body:has(article > header > img[src="/logo.svg"]) article > header + p + dl,
+  body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + ul {
     outline: 4px solid CanvasText;
   }
 }
