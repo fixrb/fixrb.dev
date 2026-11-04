@@ -5743,18 +5743,47 @@ body > footer a:hover {
     print-color-adjust: exact;
   }
 
-  /* A title stays with what follows it; a box of facts, a figure, a card of
-     the home page or a matcher of matchi, and the footer stay whole. */
+  /* A title stays with what follows it; a box of facts, a figure, a group
+     of gems of the home page and each of its cards, a matcher of matchi,
+     and the footer stay whole. */
   :is(h2, h3, h4) {
     break-after: avoid;
   }
 
   main dl:not(h2#matchers + dl),
   figure,
+  section#gems > section,
   section#gems li,
   section#why li,
   h2#matchers + dl > *,
   body > footer {
     break-inside: avoid;
+  }
+
+  /* A window or a terminal draws its title bar inside its box rather than
+     over it, so that the bar goes to the next page with the first lines; a
+     session hung under its window has no bar. */
+  pre:is([data-example], [data-directory]):not(pre[data-example] + pre[data-directory]) {
+    margin-top: 1.75rem;
+    padding-top: calc(2.5rem + 1.125rem);
+  }
+
+  pre:is([data-example], [data-directory])::before {
+    top: 0;
+    bottom: auto;
+  }
+
+  pre[data-example]::after {
+    top: 16px;
+  }
+
+  pre[data-directory]::after {
+    top: 10px;
+  }
+
+  /* On paper, a page of the guide is read for itself: its shaft and the
+     links to the pages around it stay on the screen. */
+  nav:is([aria-label="Guide"], [aria-label="Pages"]) {
+    display: none;
   }
 }
