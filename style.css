@@ -1305,6 +1305,22 @@ section[aria-labelledby="blog-title"] > p a:hover {
   }
 }
 
+/* Forced colours drop the colours but keep the images: the night, its stars
+   and its crystals go from behind the text, and the room left for the
+   crystals with them; the cards and the panel of the latest post, whose
+   edges are shadows, take an outline. */
+@media (forced-colors: active) {
+  section#fix {
+    padding-bottom: 3.5rem;
+    background-image: none;
+  }
+
+  section#gems li,
+  section[aria-labelledby="blog-title"] li:first-child > article {
+    outline: 4px solid CanvasText;
+  }
+}
+
 /* matchi: a little theatre. The valance hangs over the drapes; the jester
    stands on the boards, on a playing card, as he first came. The rest of
    the page wears his colours. */
@@ -1749,6 +1765,39 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#documentation + ul
   }
 }
 
+/* Forced colours drop the colours but keep the images: the valance, the
+   drapes and the boards go from behind the title; the card of the jester,
+   the ticket and the links of the documentation, whose edges are shadows,
+   take an outline, and each matcher a border shared by its term and its
+   description. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) main::before,
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header::before,
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header::after {
+    content: none;
+  }
+
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header > img,
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl,
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#documentation + ul > li {
+    outline: 4px solid CanvasText;
+  }
+
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt {
+    border: solid CanvasText;
+    border-width: 4px 4px 0;
+  }
+
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dd {
+    border: solid CanvasText;
+    border-width: 0 4px 4px;
+  }
+}
+
 /* aw: a battle screen. The scene is the screen, its caption the battle
    message above it, and the hero speaks the title in a dialogue box; the
    facts and the documentation are windows of the same game. The order of
@@ -2059,6 +2108,14 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > h2#documentation + ul a:foc
   body:has(img[src="/gems/aw/img/hero.svg"]) article > header::after {
     right: 20px;
     bottom: 14px;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: the windows lose
+   their tiles and keep their frames. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/aw/img/hero.svg"]) article :is(figure > figcaption, header, figure + dl, h2#documentation + ul) {
+    background-image: none;
   }
 }
 
@@ -2390,6 +2447,40 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul 
   }
 }
 
+/* Forced colours drop the colours but keep the images: the flannel, its saw
+   and the wood go, and the nails with them, the wood of a sign under the
+   pointer too; the plank, the frame of the scene, the facts and the signs,
+   whose edges are shadows or cuts, take an outline. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure > img,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul a,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul a:hover {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header::after,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p::before,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p::after,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl::before,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl::after {
+    content: none;
+  }
+
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure > img,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl,
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul a {
+    outline: 4px solid CanvasText;
+  }
+
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul a {
+    clip-path: none;
+  }
+}
+
 /* Fix: the gem itself. Where the home page shows the deposit, this page
    shows its jewel: the logo, floating in its glow over a rock, on a night
    without the red of the sky, so that the glow is the only light. The glow
@@ -2669,6 +2760,19 @@ body:has(article > header > img[src="/logo.svg"]) article > table tr:nth-child(3
   body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > p {
     margin-left: 0;
     font-size: 1.5rem;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: the stars and the
+   halo go; the certificate, whose edge is a shadow, takes an outline. */
+@media (forced-colors: active) {
+  body:has(article > header > img[src="/logo.svg"]) article > header,
+  body:has(article > header > img[src="/logo.svg"]) article > header > img {
+    background-image: none;
+  }
+
+  body:has(article > header > img[src="/logo.svg"]) article > header + p + dl {
+    outline: 4px solid CanvasText;
   }
 }
 
@@ -3016,6 +3120,26 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
     top: 1.5rem;
     grid-column: 1;
     grid-row: 1;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: the rock, the sky
+   and the headframe go from behind the title, and on the first page the
+   room left for the headframe with them; the timber stays; the shaft, whose
+   edge is a shadow, takes an outline, and keeps its rails. */
+@media (forced-colors: active) {
+  main:has(> nav[aria-label="Guide"]) > article > header,
+  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+    background-image: none;
+  }
+
+  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+    min-height: 0;
+    padding-bottom: 2.5rem;
+  }
+
+  nav[aria-label="Guide"] {
+    outline: 4px solid CanvasText;
   }
 }
 
@@ -3553,6 +3677,26 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation +
   }
 }
 
+/* Forced colours drop the colours but keep the images: the plate, its rack,
+   the perlage of the bridges and the screws at their corners go; the
+   bridges and the dial, whose edges are shadows, take an outline. The
+   balance stays in the movement, and the screws of the documentation, which
+   mark its lines. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header, header + p + dl, table, h2#documentation + ul) {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header::after,
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl::before {
+    content: none;
+  }
+
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > :is(header + p + dl, table, h2#documentation + ul) {
+    outline: 4px solid CanvasText;
+  }
+}
+
 /* defi: the mail. A challenge is a letter: a method and its arguments,
    sealed with ruby wax, stamped with a dot, the dot of a method call, and
    sent to any object; what comes back is the reply. The header is a desk
@@ -3839,6 +3983,23 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul >
   body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > p {
     margin-left: 0;
     font-size: 1.5rem;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: the mahogany and its
+   airmail edge go; the envelope keeps its border, now the system's, and its
+   stamp; the letter, whose edge is a shadow, takes an outline. */
+@media (forced-colors: active) {
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header, header + p + dl, h2#documentation + ul) {
+    background-image: none;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > header::after {
+    content: none;
+  }
+
+  body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul {
+    outline: 4px solid CanvasText;
   }
 }
 
