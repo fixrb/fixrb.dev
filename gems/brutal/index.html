@@ -141,7 +141,7 @@ actual = <span class="keyword">begin</span>
       <p>A test file is written whole or not at all, through a temporary file renamed over it, and only over a file brutal wrote, whose first line says so: a test file written by hand, or by brutal 1, is an error. <code>brutal --check PATH...</code> generates every test file in memory and compares it with the one in place: run it in CI, so that a test file cannot drift from its manifest.</p>
 
       <h2 id="limits">Limits</h2>
-      <ul>
+      <ul role="list">
         <li>A test file written by brutal describes the code as it is. If the code is wrong, every check passes: the file is to be read, like any code under review.</li>
         <li>A value that happens to be the same in brutal’s two runs but not in yours (the current minute, a small random number) is not caught: do not observe it, nor <code>__FILE__</code> and <code>$0</code>.</li>
         <li>A check is <code>::Kernel.raise … unless (expected).eql?((actual))</code>: code that redefines <code>Kernel.raise</code> or <code>eql?</code> on core classes, ends the process from an <code>at_exit</code> handler, or behaves differently when it finds brutal changes the checks. Brutal does not guard against code that sets out to defeat it.</li>
@@ -151,7 +151,7 @@ actual = <span class="keyword">begin</span>
       <p>The README details the YAML rules, what the code sees in the child, the literals, the command, and the changes in 2.0: a test file written by brutal 1 must be deleted once, <code>%%</code> becomes <code>%</code>, and contexts combine in the order of the file.</p>
 
       <h2 id="documentation">Documentation</h2>
-      <ul>
+      <ul role="list">
         <li><a href="https://github.com/fixrb/brutal/blob/v2.0.0/README.md">README</a>: the manifest, how the code runs, the expected values, the command, things to know, and the changes in 2.0.</li>
         <li><a href="https://rubydoc.info/gems/brutal/2.0.0">API reference</a></li>
         <li><a href="https://rubygems.org/gems/brutal/versions/2.0.0">RubyGems</a></li>
@@ -162,7 +162,7 @@ actual = <span class="keyword">begin</span>
 
   <footer>
     <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
-    <ul>
+    <ul role="list">
       <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
       <li><a href="/feed.xml">Feed</a></li>
       <li><a href="https://github.com/fixrb">GitHub</a></li>

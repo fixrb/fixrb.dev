@@ -112,6 +112,10 @@ ATTRIBUTE_NAMES = %w[
   title id role datetime aria-label aria-labelledby aria-current data-example data-directory scope
 ].freeze
 REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home prev next].freeze
+# The roles a page may give, and the elements that may take each: a note at
+# the head of a post, and a list whose markers style.css removes, which Safari
+# would no longer announce as a list without it.
+ROLES = { "note" => %w[p], "list" => %w[ul ol] }.freeze
 LOCAL_LINKS = %w[stylesheet icon apple-touch-icon preload].freeze
 ID_REFERENCES = %w[aria-labelledby].freeze
 
@@ -272,6 +276,9 @@ def check_tag(path, name, attributes)
   error(path, "<#{name}> is not allowed") if FORBIDDEN_ELEMENTS.include?(name)
   (attributes.keys - ATTRIBUTE_NAMES).each { |key| error(path, "<#{name}> has the attribute #{key}, which is not allowed") }
   (attributes["rel"].to_s.split - REL_VALUES).each { |rel| error(path, "<#{name}> has rel=\"#{rel}\", which is not allowed") }
+  if attributes.key?("role") && !ROLES.fetch(attributes["role"], []).include?(name)
+    error(path, "<#{name}> has role=\"#{attributes["role"]}\", which is not allowed")
+  end
   error(path, "<img> needs alt, width and height") if name == "img" && !(%w[alt width height] - attributes.keys).empty?
 end
 

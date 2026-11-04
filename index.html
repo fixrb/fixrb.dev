@@ -45,7 +45,7 @@
         <p>Specifications for Ruby, in the words of RFC 2119, tested against any subject.</p>
       </hgroup>
       <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them.</p>
-      <ul>
+      <ul role="list">
         <li><a href="/gems/fix/">Read about Fix</a></li>
       </ul>
       <dl>
@@ -89,7 +89,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
     <section id="why" aria-labelledby="why-title">
       <h2 id="why-title">What makes Fix different</h2>
-      <ul>
+      <ul role="list">
         <li>
           <h3>A specification is a document</h3>
           <p>It is read once, when the file is loaded: no setup, no mock, no logic, and anything wrong in it raises before a test runs. It names no class; the test picks the subject.</p>
@@ -112,7 +112,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
       <section id="extensions">
         <h3>Around Fix</h3>
         <p>Gems that extend Fix, or bring its specifications to other test frameworks.</p>
-        <ul>
+        <ul role="list">
           <li>
             <h4><img src="/gems/fix-its/img/icon.svg" alt="" width="64" height="64"><a href="/gems/fix-its/">fix-its</a></h4>
             <p>Adds the word <code>its</code> to specifications: a method of the subject and its expectation on one line.</p>
@@ -134,7 +134,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
       <section id="libraries">
         <h3>Libraries</h3>
         <p>Building blocks that do not depend on Fix: use them on their own, with any test framework, or to build one. Fix 1.0 is built on spectus, matchi and aw.</p>
-        <ul>
+        <ul role="list">
           <li>
             <h4><img src="/gems/matchi/img/icon.svg" alt="" width="62" height="64"><a href="/gems/matchi/">matchi</a></h4>
             <p>Matchers for any test framework, in which the expected value makes the comparison, not the object under test.</p>
@@ -171,7 +171,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
       <section id="tools">
         <h3>Tools</h3>
         <p>A command to run as it is, rather than a library to build on.</p>
-        <ul>
+        <ul role="list">
           <li>
             <h4><img src="/gems/brutal/img/icon.svg" alt="" width="64" height="64"><a href="/gems/brutal/">brutal</a></h4>
             <p>Writes plain Ruby test files from a YAML manifest, by recording what the code returns in every combination of contexts. Built on aw.</p>
@@ -183,7 +183,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
     <section aria-labelledby="blog-title">
       <h2 id="blog-title">From the blog</h2>
-      <ul>
+      <ul role="list">
         <li>
           <article>
             <h3><a href="/framework/release/2026/10/31/fix-1.html">Fix 1.0 is here</a></h3>
@@ -212,7 +212,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
   <footer>
     <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
-    <ul>
+    <ul role="list">
       <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
       <li><a href="/feed.xml">Feed</a></li>
       <li><a href="https://github.com/fixrb">GitHub</a></li>
