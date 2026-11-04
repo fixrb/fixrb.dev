@@ -1339,10 +1339,29 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) {
   --jester-red: #dd5050;
   --jester-blue: #297eb6;
   --card-face: #f8e3e8;
+  --card-paper: var(--paper);
   --card-text: #3b2c40;
+  --card-slot: var(--card-face);
+  --card-slot-text: var(--ink);
+  --card-rim: var(--jester-ink);
   --perforation: var(--paper-rim);
   --mark: var(--jester-blue);
   --mark-shadow: var(--jester-red);
+}
+
+/* In the dark theme, the deck does not light the night: the face of a card
+   is dimmed but stays light, since its emblem is outlined in the jester's
+   ink, and its description takes the surface, the text, the slot and the rim
+   of the other cards of the site. */
+@media screen and (prefers-color-scheme: dark) {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) {
+    --card-face: var(--paper-rim);
+    --card-paper: var(--surface);
+    --card-text: var(--muted);
+    --card-slot: var(--slot);
+    --card-slot-text: var(--text);
+    --card-rim: var(--rim);
+  }
 }
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) main {
@@ -1521,9 +1540,9 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt
   padding: 1rem 1.25rem .875rem;
   background: var(--card-face);
   box-shadow:
-    0 -4px 0 var(--jester-ink),
-    -4px 0 0 var(--jester-ink),
-    4px 0 0 var(--jester-ink);
+    0 -4px 0 var(--card-rim),
+    -4px 0 0 var(--card-rim),
+    4px 0 0 var(--card-rim);
 }
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt:first-of-type {
@@ -1590,19 +1609,19 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dd {
   margin: 0;
   padding: .875rem 1.25rem 1.25rem;
-  background: var(--paper);
+  background: var(--card-paper);
   color: var(--card-text);
   font-size: .9375rem;
   line-height: 1.55;
   box-shadow:
-    0 4px 0 var(--jester-ink),
-    -4px 0 0 var(--jester-ink),
-    4px 0 0 var(--jester-ink);
+    0 4px 0 var(--card-rim),
+    -4px 0 0 var(--card-rim),
+    4px 0 0 var(--card-rim);
 }
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dd code {
-  background: var(--card-face);
-  color: var(--ink);
+  background: var(--card-slot);
+  color: var(--card-slot-text);
 }
 
 /* The rule of matchi wears the crown. */
@@ -1666,17 +1685,17 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#documentation + ul
   body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt {
     margin: 0;
     box-shadow:
-      0 -4px 0 var(--jester-ink),
-      0 4px 0 var(--jester-ink),
-      -4px 0 0 var(--jester-ink);
+      0 -4px 0 var(--card-rim),
+      0 4px 0 var(--card-rim),
+      -4px 0 0 var(--card-rim);
   }
 
   body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dd {
     padding-top: 1.125rem;
     box-shadow:
-      0 -4px 0 var(--jester-ink),
-      0 4px 0 var(--jester-ink),
-      4px 0 0 var(--jester-ink);
+      0 -4px 0 var(--card-rim),
+      0 4px 0 var(--card-rim),
+      4px 0 0 var(--card-rim);
   }
 }
 
@@ -1694,17 +1713,17 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#documentation + ul
     padding: 1.5rem 1rem 1rem;
     text-align: center;
     box-shadow:
-      0 -4px 0 var(--jester-ink),
-      -4px 0 0 var(--jester-ink),
-      4px 0 0 var(--jester-ink);
+      0 -4px 0 var(--card-rim),
+      -4px 0 0 var(--card-rim),
+      4px 0 0 var(--card-rim);
   }
 
   body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dd {
     padding-top: .875rem;
     box-shadow:
-      0 4px 0 var(--jester-ink),
-      -4px 0 0 var(--jester-ink),
-      4px 0 0 var(--jester-ink);
+      0 4px 0 var(--card-rim),
+      -4px 0 0 var(--card-rim),
+      4px 0 0 var(--card-rim);
   }
 
   body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt:nth-of-type(-n+5) {
