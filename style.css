@@ -50,6 +50,16 @@
   --rose: #ff8da2;
   --lilac: #c9b3ff;
   --button: #e2013b;
+  /* Colours that keep their value in both themes, shared by several pages:
+     the pale text under the title of a dark band, the edge at the foot of a
+     band of night, the rims of the night and of the paper, the terms of a
+     box of facts on a light ground, and the slot of code on paper. */
+  --band-text: #f3e4ef;
+  --night-edge: #2c1d3f;
+  --night-rim: #3d2c55;
+  --paper-rim: #e2c9d0;
+  --fact-label: #57475e;
+  --paper-slot: #f5e3e6;
   --must: var(--coral);
   --should: var(--rose);
   --may: var(--lilac);
@@ -57,8 +67,8 @@
   --text: var(--ink);
   --muted: #5b4a5e;
   --surface: #fbf1ee;
-  --slot: #f5e3e6;
-  --rim: #e2c9d0;
+  --slot: var(--paper-slot);
+  --rim: var(--paper-rim);
   --link: var(--bordeaux);
   --accent: var(--ruby);
   --lift: var(--wine);
@@ -90,7 +100,7 @@
     --muted: #c9b8cc;
     --surface: var(--ink);
     --slot: #2e2042;
-    --rim: #3d2c55;
+    --rim: var(--night-rim);
     --link: #ff7a92;
     --accent: var(--coral);
     --lift: var(--abyss);
@@ -731,7 +741,7 @@ section#fix {
   color: var(--paper);
   background:
     url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
-    linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
+    linear-gradient(var(--night-edge) 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
     url("/img/sky.svg") 0 calc(100% + 4px) / 16px 436px repeat-x,
     var(--night);
@@ -771,7 +781,7 @@ section#fix h1 {
 section#fix > hgroup > p:last-child {
   max-width: 28ch;
   margin-top: 1.75rem;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.375rem;
   line-height: 1.35;
   text-wrap: balance;
@@ -892,7 +902,7 @@ section#fix > dl {
 section#fix > dl > :is(dt, dd) {
   margin: 0;
   padding: .75rem 0;
-  background: linear-gradient(90deg, #3d2c55 50%, transparent 0) 0 0 / 8px 4px repeat-x;
+  background: linear-gradient(90deg, var(--night-rim) 50%, transparent 0) 0 0 / 8px 4px repeat-x;
 }
 
 section#fix > dl > dt {
@@ -1330,7 +1340,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) {
   --jester-blue: #297eb6;
   --card-face: #f8e3e8;
   --card-text: #3b2c40;
-  --perforation: #e2c9d0;
+  --perforation: var(--paper-rim);
   --mark: var(--jester-blue);
   --mark-shadow: var(--jester-red);
 }
@@ -2499,7 +2509,7 @@ body:has(article > header > img[src="/logo.svg"]) article > header {
   color: var(--paper);
   text-align: center;
   background:
-    linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
+    linear-gradient(var(--night-edge) 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
     var(--night);
 }
@@ -2535,7 +2545,7 @@ body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > h1
 body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > p {
   max-width: 30ch;
   margin: 1.75rem auto 0;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.25rem;
   text-wrap: balance;
 }
@@ -2586,7 +2596,7 @@ body:has(article > header > img[src="/logo.svg"]) article > header + p + dl > dd
 }
 
 body:has(article > header > img[src="/logo.svg"]) article > header + p + dl > :is(dt, dd):not(:first-of-type) {
-  background: linear-gradient(90deg, #e2c9d0 50%, transparent 0) 0 0 / 8px 4px repeat-x;
+  background: linear-gradient(90deg, var(--paper-rim) 50%, transparent 0) 0 0 / 8px 4px repeat-x;
 }
 
 body:has(article > header > img[src="/logo.svg"]) article > header + p + dl a {
@@ -2599,7 +2609,7 @@ body:has(article > header > img[src="/logo.svg"]) article > header + p + dl a:ho
 }
 
 body:has(article > header > img[src="/logo.svg"]) article > header + p + dl code {
-  background: #f5e3e6;
+  background: var(--paper-slot);
   color: var(--ink);
 }
 
@@ -3235,7 +3245,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > 
 body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > p {
   max-width: 30ch;
   margin: 1.5rem auto 0;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.125rem;
   text-wrap: balance;
 }
@@ -3329,7 +3339,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl::b
 
 body:has(img[src="/gems/spectus/img/movement.svg"]) article > header + p + dl > dt {
   padding: .5rem 1.5rem .5rem 0;
-  color: #57475e;
+  color: var(--fact-label);
   font-size: .875rem;
 }
 
@@ -3763,7 +3773,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > h1 {
 body:has(img[src="/gems/defi/img/letter.svg"]) article > header > hgroup > p {
   max-width: 30ch;
   margin: 1.75rem auto 0;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.125rem;
   text-wrap: balance;
 }
@@ -3822,7 +3832,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dd {
 
 body:has(img[src="/gems/defi/img/letter.svg"]) article > header + p + dl > dt {
   padding-right: 1.5rem;
-  color: #57475e;
+  color: var(--fact-label);
   font-size: .875rem;
 }
 
@@ -3842,7 +3852,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2
 }
 
 body:has(img[src="/gems/defi/img/letter.svg"]) article > :is(header + p + dl, h2#documentation + ul) code {
-  background: #f5e3e6;
+  background: var(--paper-slot);
   color: var(--ink);
 }
 
@@ -4015,7 +4025,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) {
   --phosphor: #ffb3c1;
   --case: #a597b3;
   --printer-bar: #fbe6ea;
-  --perforation: #e2c9d0;
+  --perforation: var(--paper-rim);
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header {
@@ -4085,7 +4095,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgro
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > p {
   max-width: 32ch;
   margin: 1.75rem auto 0;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.125rem;
   text-wrap: balance;
 }
@@ -4141,7 +4151,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + 
   margin-left: -16px;
   padding-left: 16px;
   padding-right: 2ch;
-  color: #57475e;
+  color: var(--fact-label);
   font-weight: 400;
 }
 
@@ -4561,7 +4571,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > :is
 
 body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dt {
   padding-right: 1.5rem;
-  color: #57475e;
+  color: var(--fact-label);
   font-size: .875rem;
 }
 
@@ -4571,7 +4581,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl > dd 
 }
 
 body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header + p + dl code {
-  background: #f5e3e6;
+  background: var(--paper-slot);
   color: var(--ink);
 }
 
@@ -4940,7 +4950,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl >
 
 body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl > dt {
   padding-right: 1.5rem;
-  color: #57475e;
+  color: var(--fact-label);
   font-size: .875rem;
 }
 
@@ -4950,7 +4960,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl >
 }
 
 body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header + p + dl code {
-  background: #f5e3e6;
+  background: var(--paper-slot);
   color: var(--ink);
 }
 
@@ -5528,7 +5538,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) {
   background:
     url("/img/setting.svg") 50% 3rem / 192px 192px no-repeat,
     url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
-    linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
+    linear-gradient(var(--night-edge) 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
     url("/img/sky.svg") 0 calc(100% + 4px) / 16px 436px repeat-x,
     var(--night);
@@ -5549,7 +5559,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
 main:has(> h1 + p + ul > li > a[href="/"]) > p {
   max-width: 30ch;
   margin-top: 1.5rem;
-  color: #f3e4ef;
+  color: var(--band-text);
   font-size: 1.25rem;
   text-wrap: balance;
 }
@@ -5572,7 +5582,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) > ul li {
 }
 
 main:has(> h1 + p + ul > li > a[href="/"]) > ul a {
-  --slab: #3d2c55;
+  --slab: var(--night-rim);
   --drop: var(--abyss);
   display: inline-block;
   margin: 4px;
