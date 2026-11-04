@@ -11,7 +11,7 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 | `index.html` | Home: Fix, the gems, the latest posts |
 | `gems/NAME/index.html` | One page per gem |
 | `gems/NAME/img/` | A gem's drawing, illustration and icons, used by a page or by `style.css` |
-| `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels, the print shop of the blog |
+| `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels, the print shop of the blog, the empty setting of the 404 |
 | `blog/index.html`, `feed.xml` | The list of posts and its Atom feed |
 | `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files kept out of results |
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
@@ -85,6 +85,7 @@ The stylesheet relies on this structure, which every page follows.
 - Guides, `gems/NAME/vN/` (the guide of Fix 1 is `gems/fix/v1/`): `main > article`, then `nav[aria-label="Guide"]`, which holds a `p > a` to the first page of the guide, its `index.html`, and an `ol` of its pages, a page not yet written being named without a link. That nav is the same on every page of the guide, but for the `aria-current` of the page's own link. The `hgroup` of the article starts with an eyebrow, `p > a` to the guide, and the article ends with `nav[aria-label="Pages"] > ul`, the links `rel="prev"` and `rel="next"` to the pages around it in the order of the guide; `bin/check` keeps both navs in order. From 62rem, the nav of the guide takes a column on the left, and stays in view.
 - Lists of posts: `ul > li > article`, with a title `h2 > a` or `h3 > a`, a date `p > time`, and a description `p`.
 - Posts: `article > header` (the `h1`, then `p` with the date and author), `p[role="note"]` for a note, `article > footer`. The design of the blog finds the list of posts by its structure, `main:has(> ul > li > article)`, and a post by the date in its header, `main > article:has(> header > p > time)`; from 34rem, the first letter of the first paragraph of the text, after the note and a title if there are, is set as an initial.
+- The 404: `main` holds the `h1`, a `p` and a `ul` of links, one of them to `/`; the design of the 404 finds it by that structure, `main:has(> h1 + p + ul > li > a[href="/"])`, and shows its ring, the empty setting, at 4 screen pixels per pixel, 6 from 62rem.
 - Pixelify Sans sets `h1`, the `h2` of sections and posts, the site name, menus, gem names and short labels (eyebrows, buttons, the numbers of the guide's stations) and the initial of a post only, at multiples of 11px and its regular weight: at small sizes its C reads as an O. Titles in lists of posts, `h3`, dates and running text use the system font.
 - The drawings of the design are SVG files of `img/` (shared by several pages) and `gems/NAME/img/`, loaded by `style.css`. They follow the rules of SVG files above, and are drawn on a grid: one unit of their `viewBox` per pixel, shown at 4 screen pixels per pixel, or 2 for icons and small signs.
 

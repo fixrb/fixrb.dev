@@ -13,8 +13,8 @@
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
  * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi, fix-command,
- * fix-its, matchi-fix, and the blog. The drawings are the SVG files of img/
- * and gems/NAME/img/.
+ * fix-its, matchi-fix, the blog and the 404. The drawings are the SVG files
+ * of img/ and gems/NAME/img/.
  * The markup this relies on is described in README.md, under Markup.
  */
 @font-face {
@@ -5248,6 +5248,167 @@ main > article:has(> header > p > time) > footer {
   main > article:has(> header > p > time) > p[role="note"] {
     outline: 4px solid CanvasText;
     outline-offset: -4px;
+  }
+}
+
+/* The 404: the empty setting. Nothing lives at the address: under the
+   night of the home page, over the gems of Fixrb, a ring whose setting
+   holds no stone, its claws closed on nothing, the outline of the ruby that
+   is not there dotted where it would sit. The whole page is the night, the
+   same in both themes; the way back is the buttons of the home page. The
+   page is found by its structure: a title, a paragraph, then a list of
+   links, one of them to the home page. */
+main:has(> h1 + p + ul > li > a[href="/"]) {
+  padding: calc(3rem + 192px + 2.5rem) var(--gutter) 17rem;
+  color: var(--paper);
+  text-align: center;
+  background:
+    url("/img/setting.svg") 50% 3rem / 192px 192px no-repeat,
+    url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
+    linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
+    url("/img/stars.svg") 0 0 / 480px 320px,
+    url("/img/sky.svg") 0 100% / 16px 432px repeat-x,
+    var(--night);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
+  margin-inline: auto;
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+  margin-bottom: 0;
+  line-height: 1;
+  text-shadow:
+    4px 4px 0 var(--ruby),
+    8px 8px 0 var(--garnet);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > p {
+  max-width: 30ch;
+  margin-top: 1.5rem;
+  color: #f3e4ef;
+  font-size: 1.25rem;
+  text-wrap: balance;
+}
+
+/* The way back: the link to the home page a ruby slab, as on the home
+   page; those to the blog and the guide slabs of the night. Each sinks a pixel when pressed; the
+   border shows in forced colours only. */
+main:has(> h1 + p + ul > li > a[href="/"]) > ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul li {
+  margin: 0;
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul a {
+  --slab: #3d2c55;
+  --drop: var(--abyss);
+  display: inline-block;
+  margin: 4px;
+  padding: .875rem 1.25rem;
+  border: 2px solid transparent;
+  background: var(--slab);
+  color: var(--paper);
+  font: 400 1.375rem/1 var(--display);
+  text-decoration: none;
+  box-shadow:
+    0 -4px 0 var(--slab),
+    0 4px 0 var(--slab),
+    -4px 0 0 var(--slab),
+    4px 0 0 var(--slab),
+    8px 8px 0 var(--drop);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul a[href="/"] {
+  --slab: var(--button);
+  --drop: var(--wine);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul a:hover {
+  --slab: var(--coral);
+  color: var(--night);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul a:active {
+  translate: 4px 4px;
+  box-shadow:
+    0 -4px 0 var(--slab),
+    0 4px 0 var(--slab),
+    -4px 0 0 var(--slab),
+    4px 0 0 var(--slab),
+    4px 4px 0 var(--drop);
+}
+
+main:has(> h1 + p + ul > li > a[href="/"]) > ul a:focus-visible {
+  outline-color: var(--paper);
+}
+
+/* The night meets the footer without the gap of other pages; the footer
+   is the abyss in both themes, the browser's own parts are dark, and on a
+   screen taller than the page, the page under the footer takes its
+   colour. */
+main:has(> h1 + p + ul > li > a[href="/"]) + footer {
+  margin-top: 0;
+}
+
+html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
+  --foot: var(--abyss);
+  color-scheme: dark;
+}
+
+@media screen {
+  html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
+    background: var(--foot);
+  }
+}
+
+/* From 62rem, the words on the left and the ring on the right, at 6
+   screen pixels per pixel; the gems where the home page has them. */
+@media (min-width: 62rem) {
+  main:has(> h1 + p + ul > li > a[href="/"]) {
+    min-height: calc(288px + 23rem);
+    padding: 5rem var(--gutter) 17rem;
+    text-align: left;
+    background-position: right calc(var(--gutter) + 4rem) top 3rem, 50% 100%, 0 100%, 0 0, 0 100%;
+    background-size: 288px 288px, 1440px 256px, 100% 24px, 480px 320px, 16px 432px;
+  }
+
+  main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
+    margin-inline: 0;
+  }
+
+  main:has(> h1 + p + ul > li > a[href="/"]) > ul {
+    justify-content: start;
+  }
+}
+
+/* The title at 88px from 72rem, where it holds beside the ring. */
+@media (min-width: 72rem) {
+  main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet),
+      12px 12px 0 var(--wine);
+  }
+}
+
+/* Forced colours drop the colours but keep the images: the night and the
+   gems go, and the room left for the gems with them; the ring stays; the
+   slabs keep their border. */
+@media (forced-colors: active) {
+  main:has(> h1 + p + ul > li > a[href="/"]) {
+    min-height: calc(288px + 9rem);
+    padding-bottom: 6rem;
+    background-image: url("/img/setting.svg"), none, none, none, none;
   }
 }
 
