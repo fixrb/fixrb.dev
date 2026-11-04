@@ -146,6 +146,8 @@ body > header {
   justify-content: space-between;
   gap: .75rem 2rem;
   padding: 1rem var(--gutter);
+  padding-block: round(1rem, 1px);
+  row-gap: round(.75rem, 1px);
   background: var(--wine);
   color: var(--paper);
 }
@@ -164,6 +166,7 @@ body > header > a {
   gap: .75rem;
   color: inherit;
   font: 400 2.0625rem/1 var(--display);
+  line-height: round(1em, 1px);
   text-decoration: none;
 }
 
@@ -182,6 +185,7 @@ body > header nav ul {
   display: flex;
   flex-wrap: wrap;
   gap: .25rem;
+  gap: round(.25rem, 1px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -190,8 +194,10 @@ body > header nav ul {
 body > header nav a {
   display: block;
   padding: .625rem .875rem;
+  padding-block: round(.625rem, 1px);
   color: var(--paper);
   font: 400 1.375rem/1 var(--display);
+  line-height: round(1em, 1px);
   text-decoration: none;
 }
 
@@ -721,7 +727,7 @@ section#fix {
     url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
     linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
-    url("/img/sky.svg") 0 100% / 16px 432px repeat-x,
+    url("/img/sky.svg") 0 calc(100% + 4px) / 16px 436px repeat-x,
     var(--night);
 }
 
@@ -918,7 +924,7 @@ section#fix > dl code::after {
   margin-left: .15em;
   vertical-align: -.2em;
   background: var(--ruby);
-  animation: blink 1.1s steps(1) infinite;
+  animation: blink 1.1s steps(1) 4;
 }
 
 @keyframes blink {
@@ -948,7 +954,7 @@ section#fix > figure > figcaption {
     grid-template-rows: auto auto auto auto 1fr;
     column-gap: 4.5rem;
     padding-top: 4.5rem;
-    background-position: 50% 100%, 0 100%, 0 0, 0 100%;
+    background-position: 50% 100%, 0 100%, 0 0, 0 calc(100% + 4px);
   }
 
   section#fix h1 {
@@ -1827,7 +1833,8 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > p {
   font-size: 1.125rem;
 }
 
-/* The arrow that says there is more to read, a pixel lower every second. */
+/* The arrow that says there is more to read, a pixel lower every second,
+   four times, then still. */
 body:has(img[src="/gems/aw/img/hero.svg"]) article > header::after {
   content: "";
   position: absolute;
@@ -1836,7 +1843,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > header::after {
   width: 28px;
   height: 20px;
   background: url("/gems/aw/img/arrow.svg") 0 0 / 28px 20px no-repeat;
-  animation: bob 1s steps(1) infinite;
+  animation: bob 1s steps(1) 4;
 }
 
 @keyframes bob {
@@ -2195,6 +2202,10 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl a:hover {
   color: var(--pine);
 }
 
+body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl a:focus-visible {
+  outline-color: var(--ink);
+}
+
 body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl code {
   background: var(--pine-code);
   color: var(--pine-ink);
@@ -2259,8 +2270,9 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul 
 }
 
 body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul > li {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-items: start;
   align-items: center;
   gap: .25rem 1rem;
   margin: 0;
@@ -2658,9 +2670,20 @@ main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child {
   text-wrap: balance;
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header code {
+main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p code {
   background: var(--abyss);
   color: var(--paper);
+}
+
+/* A link under the title of a page of the guide, in the rose of the
+   eyebrow over it. */
+main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child a {
+  color: var(--rose);
+}
+
+main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child a:hover {
+  background: var(--rose);
+  color: var(--abyss);
 }
 
 /* The first page: the surface at night, the headframe over the shaft, and
@@ -2676,7 +2699,7 @@ main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
     linear-gradient(#463457 0 0) 0 calc(100% - 92px) / 100% 4px no-repeat,
     url("/gems/fix/img/rock.svg") 0 calc(100% + 96px) / 256px 192px repeat-x,
     url("/img/stars.svg") 0 0 / 480px 320px,
-    url("/img/sky.svg") 0 calc(100% - 96px) / 16px 432px repeat-x,
+    url("/img/sky.svg") 0 calc(100% - 92px) / 16px 436px repeat-x,
     var(--night);
 }
 
@@ -2893,14 +2916,14 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
       0 calc(100% - 92px),
       0 calc(100% + 96px),
       0 0,
-      0 calc(100% - 96px);
+      0 calc(100% - 92px);
     background-size:
       144px 192px,
       42px 96px,
       100% 4px,
       256px 192px,
       480px 320px,
-      16px 432px;
+      16px 436px;
   }
 
   main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header > hgroup {
@@ -2936,7 +2959,8 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
    the plate, turned in perlage, the same in both themes: the train of the
    three levels, each wheel on a stone of its colour (a ruby for MUST, a
    rose stone for SHOULD, a lilac one for MAY), and the balance, which beats
-   the second. The rest of the page is steel, blued screws and jewels. */
+   the second, four times, then rests. The rest of the page is steel, blued
+   screws and jewels. */
 body:has(img[src="/gems/spectus/img/movement.svg"]) {
   --steel-0: #150c1e;
   --steel-1: #241833;
@@ -2976,7 +3000,8 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header::after {
 /* The movement, at --mp screen pixels per pixel: 4, then 6 from 62rem. The
    balance is the background of the image itself, seen through it under its
    cock; its two beats are drawn 64 pixels apart, so that only one falls
-   within the image, and a step of the animation swaps them. */
+   within the image, and a step of the animation swaps them; four beats,
+   under five seconds, as no motion should run longer. */
 body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > img {
   --mp: 4px;
   order: 1;
@@ -2987,7 +3012,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > img {
     url("/gems/spectus/img/balance.svg")
     calc(52 * var(--mp)) calc(22 * var(--mp)) / calc(17 * var(--mp)) calc(81 * var(--mp))
     no-repeat;
-  animation: beat 1s step-end infinite;
+  animation: beat 1s step-end 4;
 }
 
 @keyframes beat {
@@ -3887,7 +3912,6 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + 
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
-  margin-right: -16px;
   padding-right: 16px;
 }
 
@@ -3896,7 +3920,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + 
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
-  margin: 0;
+  margin: 0 -16px 0 0;
   font-weight: 700;
 }
 
@@ -4033,7 +4057,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentat
   margin-left: 12px;
   vertical-align: -.2em;
   background: var(--coral);
-  animation: blink 1.1s steps(1) infinite;
+  animation: blink 1.1s steps(1) 4;
 }
 
 @media (max-width: 34rem) {
@@ -5267,7 +5291,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) {
     url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
     linear-gradient(#2c1d3f 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
-    url("/img/sky.svg") 0 100% / 16px 432px repeat-x,
+    url("/img/sky.svg") 0 calc(100% + 4px) / 16px 436px repeat-x,
     var(--night);
 }
 
@@ -5292,8 +5316,8 @@ main:has(> h1 + p + ul > li > a[href="/"]) > p {
 }
 
 /* The way back: the link to the home page a ruby slab, as on the home
-   page; those to the blog and the guide slabs of the night. Each sinks a pixel when pressed; the
-   border shows in forced colours only. */
+   page; those to the blog and the guide slabs of the night. Each sinks a
+   pixel when pressed; the border shows in forced colours only. */
 main:has(> h1 + p + ul > li > a[href="/"]) > ul {
   display: flex;
   flex-wrap: wrap;
@@ -5361,11 +5385,11 @@ main:has(> h1 + p + ul > li > a[href="/"]) + footer {
 
 html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
   --foot: var(--abyss);
-  color-scheme: dark;
 }
 
 @media screen {
   html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
+    color-scheme: dark;
     background: var(--foot);
   }
 }
@@ -5377,8 +5401,8 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
     min-height: calc(288px + 23rem);
     padding: 5rem var(--gutter) 17rem;
     text-align: left;
-    background-position: right calc(var(--gutter) + 4rem) top 3rem, 50% 100%, 0 100%, 0 0, 0 100%;
-    background-size: 288px 288px, 1440px 256px, 100% 24px, 480px 320px, 16px 432px;
+    background-position: right calc(var(--gutter) + 4rem) top 3rem, 50% 100%, 0 100%, 0 0, 0 calc(100% + 4px);
+    background-size: 288px 288px, 1440px 256px, 100% 24px, 480px 320px, 16px 436px;
   }
 
   main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
@@ -5478,5 +5502,20 @@ body > footer a:hover {
   html {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* A title stays with what follows it; a box of facts, a figure, a card of
+     the home page or a matcher of matchi, and the footer stay whole. */
+  :is(h2, h3, h4) {
+    break-after: avoid;
+  }
+
+  main dl:not(h2#matchers + dl),
+  figure,
+  section#gems li,
+  section#why li,
+  h2#matchers + dl > *,
+  body > footer {
+    break-inside: avoid;
   }
 }
