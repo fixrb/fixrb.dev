@@ -5753,6 +5753,14 @@ body > footer a:hover {
     print-color-adjust: exact;
   }
 
+  /* A page prints at rest, as it is once its animations have ended,
+     whenever it is printed: a cursor lit, an arrow and a balance still. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+
   /* A title stays with what follows it; a box of facts, a figure, a group
      of gems of the home page and each of its cards, a matcher of matchi,
      and the footer stay whole. */
