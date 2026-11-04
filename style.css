@@ -4068,16 +4068,19 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgro
 }
 
 /* The name of the gem, in phosphor, and a cursor after it; no prompt, since
-   the command to type is fix. At 33px on a phone; whole from 17rem, where
-   it fits (in rem, so that with a larger default font it breaks at its
-   hyphen rather than widen the page). The cursor blinks four times, under
-   five seconds, then stays. */
+   the command to type is fix. At 33px on a phone, 66px from 34rem and 88px
+   from 48rem, a step of its extrusion more each time, the cursor with the
+   same steps as the letters. Whole from 17rem, where it fits (in rem, so
+   that with a larger default font it breaks at its hyphen rather than widen
+   the page). The cursor blinks four times, under five seconds, then
+   stays. */
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+  --extrusion: 4px 4px 0 #b8123f;
   margin: 0;
   color: var(--phosphor);
   font-size: min(2.0625rem, (100cqw - 2 * var(--gutter)) / 6.25);
   line-height: 1;
-  text-shadow: 4px 4px 0 #b8123f;
+  text-shadow: var(--extrusion);
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1::after {
@@ -4088,7 +4091,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgro
   margin-left: .1em;
   vertical-align: -.05em;
   background: var(--coral);
-  box-shadow: 4px 4px 0 #b8123f;
+  box-shadow: var(--extrusion);
   animation: blink 1.1s steps(1) 4;
 }
 
@@ -4338,16 +4341,18 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentat
 
 @media (min-width: 34rem) {
   body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+    --extrusion: 4px 4px 0 #b8123f, 8px 8px 0 #3d0f2a;
     font-size: 4.125rem;
-    text-shadow:
-      4px 4px 0 #b8123f,
-      8px 8px 0 #3d0f2a;
   }
+}
 
-  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1::after {
-    box-shadow:
-      4px 4px 0 #b8123f,
-      8px 8px 0 #3d0f2a;
+/* The name at 88px from 48rem, where it leaves room on each side; it stays
+   at 88px beside the processes, where 132px would not hold on one line,
+   even with the processes at 4px a pixel. */
+@media (min-width: 48rem) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
+    --extrusion: 4px 4px 0 #b8123f, 8px 8px 0 #7a1034, 12px 12px 0 #3d0f2a;
+    font-size: 5.5rem;
   }
 }
 
@@ -4379,8 +4384,16 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentat
 
 /* Forced colours drop the colours but keep the images: without their
    tiles, the screens, the printout and the case take the system's colours,
-   and the focus shows on them. */
+   and the focus shows on them. The cursor, a block of colour, would vanish
+   and leave its room after the name: it takes the colour of the text,
+   without its extrusion. */
 @media (forced-colors: active) {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1::after {
+    forced-color-adjust: none;
+    background: CanvasText;
+    box-shadow: none;
+  }
+
   body:has(img[src="/gems/fix-command/img/processes.svg"]) article > :is(header, header + p + dl, h2#documentation + ul),
   body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header::after,
   body:has(img[src="/gems/fix-command/img/processes.svg"]) pre[data-directory],
