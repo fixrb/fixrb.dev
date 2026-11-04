@@ -650,12 +650,18 @@ article > footer {
   color: var(--muted);
 }
 
-/* On a phone, a title of one long word, such as "Documentation", stays
-   whole at 33px. */
+/* On a phone, a title is set at 33px, and smaller when the reader's font
+   is larger, so that its longest word still holds on the column: up to
+   8.7em for an h1, such as "Requirements", and 7.7em for an h2 after its
+   square, such as "Documentation". At the default size, the cap only acts
+   below 320px. */
 @media (max-width: 34rem) {
-  h1,
+  h1 {
+    font-size: min(2.0625rem, (100cqw - 2 * var(--gutter)) / 8.7);
+  }
+
   h2 {
-    font-size: 2.0625rem;
+    font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 32px) / 7.7);
   }
 }
 
@@ -896,6 +902,7 @@ section#fix > dl > dt {
 
 section#fix > dl a {
   color: var(--rose);
+  overflow-wrap: anywhere;
 }
 
 section#fix > dl a:hover {
@@ -1043,6 +1050,7 @@ section#gems > p {
 
 section#gems > section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   margin-top: 3.5rem;
   padding-top: 2.5rem;
@@ -1109,6 +1117,13 @@ section#gems h4 {
   gap: 1rem;
   margin: 0 0 1rem;
   font: 400 1.375rem/1.1 var(--display);
+}
+
+/* Below 20rem, a long name goes under its icon. */
+@media (max-width: 19.99rem) {
+  section#gems h4 {
+    flex-wrap: wrap;
+  }
 }
 
 section#gems h4 img {
@@ -1360,6 +1375,14 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > header::after {
 }
 
 /* The card: paper, a red line, the jester's hat in two corners. */
+/* Below 20rem, the stage loses its sides, so that the card of the jester,
+   288 pixels wide with its shadow, still holds on a phone of 320px. */
+@media (max-width: 19.99rem) {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header {
+    padding-inline: 0;
+  }
+}
+
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > header > img {
   position: relative;
   z-index: 1;
@@ -1392,7 +1415,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > header > hgroup {
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
-  font-size: 5.5rem;
+  font-size: min(5.5rem, (100cqw - 3rem) / 3.4);
   line-height: .85;
   text-shadow:
     4px 4px 0 var(--jester-red),
@@ -1441,6 +1464,17 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl > dd 
   font-weight: 700;
 }
 
+/* Below 20rem, the ticket gives each value the line under its term. */
+@media (max-width: 19.99rem) {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl > dt {
+    padding-bottom: 0;
+  }
+}
+
 /* The matchers: a deck of cards. Each card is a term and its description,
    an emblem on its face: stacked on a phone, in rows from 40rem, five
    abreast from 62rem. */
@@ -1454,6 +1488,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl {
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#matchers + dl > dt {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   margin-top: 1.75rem;
@@ -1816,6 +1851,15 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > header > img {
   height: 104px;
 }
 
+/* Below 20rem, which a phone of 320px or more only reaches when the reader's
+   font is larger than the default, the portrait goes above the name. */
+@media (max-width: 19.99rem) {
+  body:has(img[src="/gems/aw/img/hero.svg"]) article > header {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1rem;
+  }
+}
+
 body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
@@ -2069,7 +2113,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup {
 body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
-  font-size: 5.5rem;
+  font-size: min(5.5rem, (100cqw - 2 * var(--gutter)) / 3.25);
   line-height: .85;
   text-shadow:
     4px 4px 0 var(--suspender),
@@ -2279,6 +2323,13 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul 
   color: var(--muted);
 }
 
+/* Below 20rem, the description of a sign goes under it. */
+@media (max-width: 19.99rem) {
+  body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul > li:focus-within {
   outline: 4px solid var(--accent);
   outline-offset: 4px;
@@ -2291,6 +2342,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul 
   padding: 0 2.25rem 0 1.25rem;
   color: var(--pine-ink);
   font: 400 1.375rem/1 var(--display);
+  font-size: min(1.375rem, (100cqw - 2 * var(--gutter) - 3.5rem) / 6.9);
   text-decoration: none;
   background: url("/gems/brutal/img/wood.svg") 0 0 / 128px 48px, var(--pine);
   clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 20px) 0, calc(100% - 20px) 4px, calc(100% - 16px) 4px, calc(100% - 16px) 8px, calc(100% - 12px) 8px, calc(100% - 12px) 12px, calc(100% - 8px) 12px, calc(100% - 8px) 16px, calc(100% - 4px) 16px, calc(100% - 4px) 20px, 100% 20px, 100% 28px, calc(100% - 4px) 28px, calc(100% - 4px) 32px, calc(100% - 8px) 32px, calc(100% - 8px) 36px, calc(100% - 12px) 36px, calc(100% - 12px) 40px, calc(100% - 16px) 40px, calc(100% - 16px) 44px, calc(100% - 20px) 44px, calc(100% - 20px) 48px, 4px 48px, 4px 44px, 0 44px);
@@ -2657,8 +2709,20 @@ main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:first-child 
 main:has(> nav[aria-label="Guide"]) > article > header h1 {
   margin: .75rem 0 0;
   color: var(--paper);
-  font-size: 2.0625rem;
+  font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 48px - 3rem) / 7.15);
   text-shadow: 4px 4px 0 var(--ruby), 8px 8px 0 var(--garnet);
+}
+
+/* Below 20rem, the gallery is narrower inside its frame, to leave its title
+   room. */
+@media (max-width: 19.99rem) {
+  main:has(> nav[aria-label="Guide"]) > article > header {
+    padding-inline: .75rem;
+  }
+
+  main:has(> nav[aria-label="Guide"]) > article > header h1 {
+    font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 48px - 1.5rem) / 7.15);
+  }
 }
 
 main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child {
@@ -2704,7 +2768,7 @@ main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
 }
 
 main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
-  font-size: 4.125rem;
+  font-size: min(4.125rem, (100cqw - 2 * var(--gutter) - 3rem) / 2.55);
   text-shadow:
     4px 4px 0 var(--ruby),
     8px 8px 0 var(--garnet),
@@ -2830,6 +2894,7 @@ nav[aria-label="Pages"] a {
   background: var(--surface);
   color: var(--text);
   font: 400 1.375rem/1.15 var(--display);
+  font-size: min(1.375rem, (100cqw - 2 * var(--gutter) - 44px - 3.125rem) / 7.15);
   text-decoration: none;
   box-shadow:
     0 -4px 0 var(--rim),
@@ -3002,6 +3067,14 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header::after {
    cock; its two beats are drawn 64 pixels apart, so that only one falls
    within the image, and a step of the animation swaps them; four beats,
    under five seconds, as no motion should run longer. */
+/* Below 20rem, the plate loses its sides, so that the movement, 288 pixels
+   wide, still holds on a phone of 320px. */
+@media (max-width: 19.99rem) {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) article > header {
+    padding-inline: 0;
+  }
+}
+
 body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > img {
   --mp: 4px;
   order: 1;
@@ -3028,7 +3101,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup {
 body:has(img[src="/gems/spectus/img/movement.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
-  font-size: 4.125rem;
+  font-size: min(4.125rem, (100cqw - 2rem) / 4.15);
   line-height: .9;
   text-shadow:
     4px 4px 0 var(--steel-3),
@@ -3831,7 +3904,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgro
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--phosphor);
-  font-size: 2.0625rem;
+  font-size: min(2.0625rem, (100cqw - 2 * var(--gutter)) / 6.25);
   line-height: 1;
   text-shadow: 4px 4px 0 #b8123f;
 }
@@ -4249,7 +4322,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup {
 body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
-  font-size: 4.125rem;
+  font-size: min(4.125rem, (100cqw - 2 * var(--gutter)) / 3.2);
   line-height: .9;
   text-shadow:
     4px 4px 0 var(--ruby),
@@ -4503,9 +4576,14 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul
   }
 
   /* On a phone, the stones keep closer to the edge of their compartment,
-     to leave the names of the links whole. */
+     to leave the names of the links whole; with a larger font, the names
+     get smaller, so that "reference" still holds. */
   body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li {
     padding-left: 64px;
+  }
+
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul a {
+    font-size: min(1.375rem, (100cqw - 2 * var(--gutter) - 112px - 1rem) / 5.1);
   }
 
   body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul > li::before {
@@ -4633,7 +4711,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup {
 body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
-  font-size: 2.75rem;
+  font-size: min(2.75rem, (100cqw - 2 * var(--gutter)) / 5.12);
   line-height: .9;
   text-shadow: 4px 4px 0 var(--ruby);
 }
