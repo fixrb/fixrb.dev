@@ -13,8 +13,8 @@
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
  * matchi, aw, brutal, Fix, the guide of Fix, spectus, defi, fix-command,
- * fix-its and matchi-fix. The drawings are the SVG files of img/ and
- * gems/NAME/img/.
+ * fix-its, matchi-fix, and the blog. The drawings are the SVG files of img/
+ * and gems/NAME/img/.
  * The markup this relies on is described in README.md, under Markup.
  */
 @font-face {
@@ -4951,6 +4951,303 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation 
   body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation + ul > li {
     border: solid CanvasText;
     border-width: 0 4px 4px 0;
+  }
+}
+
+/* The blog: the print shop. The blog is where the project writes, and what
+   it writes is set in type and printed. The list and each post open on the
+   forme, type locked up and seen from above, dark in both themes, ruled
+   under it by the thick and thin rule of the printer. The list shows the
+   sorts, their faces inked in ruby, and the proof they pull; a post is set
+   like a page: its first letter an initial, its titles after the pilcrow,
+   its note after the pointing hand, its end under a tail-piece. Dates are
+   set as the dateline of a paper, in capitals of the system font. The list
+   is found by its structure, a post by the date in its header. */
+main:has(> ul > li > article),
+main > article:has(> header > p > time) {
+  --forme: var(--ink);
+  --forme-text: #ffb3c1;
+}
+
+/* The forme and its rule, for the band of the list and of a post. */
+main:has(> ul > li > article) > h1,
+main > article:has(> header > p > time) > header {
+  position: relative;
+  max-width: none;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  color: var(--paper);
+  background: url("/img/blog-forme.svg") 0 100% / 128px 128px, var(--forme);
+}
+
+main:has(> ul > li > article) > h1::after,
+main > article:has(> header > p > time) > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 16px;
+  background: linear-gradient(var(--ruby) 8px, transparent 0 12px, var(--ruby) 0);
+}
+
+/* The list: its name over the sorts and the proof, at 4 screen pixels per
+   pixel, under the name on a phone, beside it from 62rem, at 6 from
+   72rem; its line a whole number of pixels high, so that the forme and
+   the drawing fall on whole pixels. */
+main:has(> ul > li > article) > h1 {
+  padding: 3rem var(--gutter) calc(192px + 6rem);
+  font-size: 5.5rem;
+  line-height: 1;
+  line-height: round(1em, 1px);
+  text-shadow:
+    4px 4px 0 var(--ruby),
+    8px 8px 0 var(--garnet);
+  background:
+    url("/img/blog-sorts.svg") 50% calc(100% - 3rem) / 288px 192px no-repeat,
+    url("/img/blog-forme.svg") 0 100% / 128px 128px,
+    var(--forme);
+}
+
+main:has(> ul > li > article) > h1 + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The feed, marked by its sign. */
+main:has(> ul > li > article) > h1 + p a[href="/feed.xml"]::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -.1em;
+  background: url("/img/blog-feed.svg") 0 0 / 16px 16px no-repeat;
+}
+
+/* Pointed at, the link takes its colour: the sign keeps the page under
+   it. */
+main:has(> ul > li > article) > h1 + p a[href="/feed.xml"]:hover::before {
+  background-color: var(--bg);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+/* The posts: the dateline over each title; a fleuron between two, on a
+   rule level with its middle row. The list is an even number of pixels
+   wide, so that the fleuron and the two halves of the rule fall on whole
+   pixels, the same gap on each side. */
+main:has(> ul > li > article) > ul {
+  width: round(down, 100%, 2px);
+  margin-top: 3rem;
+}
+
+main:has(> ul > li > article) > ul > li + li {
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  background:
+    url("/img/blog-fleuron.svg") 50% 0 / 18px 14px no-repeat,
+    linear-gradient(var(--rim), var(--rim)) 0 6px / calc(50% - 20px) 2px no-repeat,
+    linear-gradient(var(--rim), var(--rim)) 100% 6px / calc(50% - 20px) 2px no-repeat;
+}
+
+main:has(> ul > li > article) > ul > li > article {
+  display: flex;
+  flex-direction: column;
+}
+
+main:has(> ul > li > article) > ul > li > article > p:first-of-type:has(> time) {
+  order: -1;
+  margin: 0 0 .5rem;
+  color: var(--link);
+  font: 700 .8125rem/1.4 var(--body);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* The latest post, which the pointing hand shows. */
+main:has(> ul > li > article) > ul > li:first-child h2 {
+  font-size: 1.75rem;
+}
+
+main:has(> ul > li > article) > ul > li:first-child h2::before {
+  content: "";
+  display: inline-block;
+  width: 32px;
+  height: 20px;
+  margin-right: 12px;
+  vertical-align: .05em;
+  background: url("/img/blog-manicule.svg") 0 0 / 32px 20px no-repeat;
+  box-shadow: none;
+}
+
+main:has(> ul > li > article) > ul > li:first-child article > p:last-child {
+  font-size: 1.125rem;
+}
+
+/* A post: its title in paper on the forme, its dateline under it. Its
+   lines are whole pixels high, so that the forme and its rule fall on
+   whole pixels under them (where round() is not known, they keep their
+   ratios, and the forme may soften). */
+main > article:has(> header > p > time) > header {
+  padding: 3rem var(--gutter);
+}
+
+main > article:has(> header > p > time) > header > h1 {
+  margin: 0;
+  line-height: round(1.1em, 1px);
+  text-shadow: 4px 4px 0 var(--ruby);
+}
+
+main > article:has(> header > p > time) > header > p {
+  margin-top: 1.5rem;
+  color: var(--forme-text);
+  font: 700 .875rem/1.6 var(--body);
+  line-height: round(1.6em, 1px);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* The note of an old post: a slip, the pointing hand beside it, on its
+   first line. */
+main > article:has(> header > p > time) > p[role="note"] {
+  position: relative;
+  margin-top: 3.5rem;
+  padding: 1rem 1.25rem 1rem 64px;
+  border-left: 0;
+}
+
+main > article:has(> header > p > time) > p[role="note"]::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: calc(1rem + .8em - 10px);
+  width: 32px;
+  height: 20px;
+  background: url("/img/blog-manicule.svg") 0 0 / 32px 20px no-repeat;
+}
+
+main > article:has(> header > p > time) > header + p:not([role]) {
+  margin-top: 3.5rem;
+}
+
+/* Titles: the pilcrow of the printer in place of the square. */
+main > article:has(> header > p > time) > h2::before {
+  width: 16px;
+  height: 24px;
+  margin-right: 14px;
+  vertical-align: -.05em;
+  background: url("/img/blog-pilcrow.svg") 0 0 / 16px 24px no-repeat;
+  box-shadow: none;
+}
+
+/* The end of a post: a tail-piece over what it is filed under. */
+main > article:has(> header > p > time) > footer {
+  max-width: var(--measure);
+  margin-top: 5rem;
+  padding-top: calc(26px + 1.5rem);
+  border-top: 0;
+  text-align: center;
+  background: url("/img/blog-tailpiece.svg") 50% 0 / 50px 26px no-repeat;
+}
+
+/* On a phone, the note leaves more of its width to its text. */
+@media (max-width: 34rem) {
+  main > article:has(> header > p > time) > p[role="note"] {
+    padding-left: 52px;
+  }
+
+  main > article:has(> header > p > time) > p[role="note"]::before {
+    left: 12px;
+  }
+}
+
+/* In print, a title stays with what follows it, and a post of the list
+   stays whole. */
+@media print {
+  main > article:has(> header > p > time) > :is(h2, h3) {
+    break-after: avoid;
+  }
+
+  main:has(> ul > li > article) > ul > li {
+    break-inside: avoid;
+  }
+}
+
+/* "Blog" stays whole on the narrowest screen, with a larger default font. */
+@media (max-width: 22rem) {
+  main:has(> ul > li > article) > h1 {
+    font-size: 4.125rem;
+  }
+}
+
+/* The initial, from 34rem: the first letter of the text, after the note
+   and a title if there are, cut in a block of the ruby of the buttons,
+   three lines deep; its paragraph holds it, however short. */
+@media (min-width: 34rem) {
+  main > article:has(> header > p > time) > :is(header + p:not([role]), header + h2 + p, header + p[role="note"] + p, header + p[role="note"] + h2 + p) {
+    display: flow-root;
+  }
+
+  main > article:has(> header > p > time) > :is(header + p:not([role]), header + h2 + p, header + p[role="note"] + p, header + p[role="note"] + h2 + p)::first-letter {
+    float: left;
+    margin: 6px 12px 0 0;
+    padding: 10px 12px 8px;
+    color: var(--paper);
+    background: var(--button);
+    font: 400 4.125rem/.8 var(--display);
+  }
+}
+
+@media (min-width: 42rem) {
+  main > article:has(> header > p > time) > header > h1 {
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet);
+  }
+}
+
+@media (min-width: 62rem) {
+  main:has(> ul > li > article) > h1 {
+    display: flex;
+    align-items: center;
+    min-height: calc(192px + 8rem);
+    padding: 4rem var(--gutter);
+    font-size: 8.25rem;
+    background-position: right var(--gutter) center, 0 100%, 0 0;
+  }
+
+  main > article:has(> header > p > time) > header {
+    padding: 4rem var(--gutter);
+  }
+}
+
+@media (min-width: 72rem) {
+  main:has(> ul > li > article) > h1 {
+    min-height: calc(288px + 8rem);
+    background-size: 432px 288px, 128px 128px, auto;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: without the forme
+   and its rule, they take the system's colours, the band an edge under
+   it; the list keeps its drawing where it is, and the note takes an
+   outline. */
+@media (forced-colors: active) {
+  main > article:has(> header > p > time) > header,
+  main:has(> ul > li > article) > h1::after,
+  main > article:has(> header > p > time) > header::after {
+    background-image: none;
+  }
+
+  main:has(> ul > li > article) > h1 {
+    background-image: url("/img/blog-sorts.svg"), none;
+  }
+
+  main:has(> ul > li > article) > h1,
+  main > article:has(> header > p > time) > header {
+    border-bottom: 4px solid CanvasText;
+  }
+
+  main > article:has(> header > p > time) > p[role="note"] {
+    outline: 4px solid CanvasText;
+    outline-offset: -4px;
   }
 }
 
