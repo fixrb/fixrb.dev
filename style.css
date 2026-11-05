@@ -761,6 +761,7 @@ section#fix > hgroup {
 }
 
 section#fix > hgroup > p:first-child {
+  width: fit-content;
   margin: 0 0 1.25rem;
   color: var(--coral);
   font-size: 1.375rem;
@@ -791,6 +792,17 @@ section#fix > p {
   max-width: 34rem;
   margin: 0;
   color: #d9c6dc;
+}
+
+/* Behind the running text on the plain night, the night itself, a pixel
+   wider than its box: a star beside a word would read as a dot or an
+   accent. The eyebrow takes the width of its words. The title, too large for
+   that, keeps its stars, and so do the facts and the caption, which can come
+   down onto the red of the sky. */
+section#fix > hgroup > p,
+section#fix > p {
+  background: var(--night);
+  box-shadow: 0 0 0 4px var(--night);
 }
 
 /* The three levels, each with its glyph. */
@@ -2561,12 +2573,15 @@ body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > h1
     12px 12px 0 var(--wine);
 }
 
+/* The subtitle: as on the home page, the night itself behind its words. */
 body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > p {
   max-width: 30ch;
   margin: 1.75rem auto 0;
   color: var(--band-text);
   font-size: 1.25rem;
   text-wrap: balance;
+  background: var(--night);
+  box-shadow: 0 0 0 4px var(--night);
 }
 
 body:has(article > header > img[src="/logo.svg"]) article > header + p {
