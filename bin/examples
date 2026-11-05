@@ -20,6 +20,10 @@
 # session of `fix --random` runs the command its output writes first. An
 # example a session runs is checked by the session, whatever its status, and is
 # run on its own only for its `# =>` lines, if it has any.
+#
+# A few examples are files of another repository, shown as they are there, where
+# they run inside an application the site does not have: ELSEWHERE lists them,
+# and they are skipped, with a line saying so.
 
 require "cgi/escape"
 require "open3"
@@ -75,6 +79,14 @@ paths = roots.flat_map { |root| File.file?(root) ? [root] : Dir.glob("#{root}/**
              .map { |path| path.delete_prefix("#{Dir.pwd}/") }.sort
 abort "No example found in #{roots.join(', ')}" if paths.empty?
 
+# The files of fixrb/microblog that the guide of Fix shows: they run in that
+# Rails application, not here.
+ELSEWHERE = %w[
+  examples/fix/v1/in-a-rails-application/fix/controllers/posts_fix.rb
+  examples/fix/v1/in-a-rails-application/fix/models/post_fix.rb
+  examples/fix/v1/in-a-rails-application/fix/support/rails.rb
+].freeze
+
 SESSION = %r{<pre data-directory="([^"]+)"><kbd>([^<]*)</kbd>\n<samp>(.*?)</samp></pre>}m
 FIX = 'require "fix/command"; exit(Fix::Command.run(ARGV))'
 
@@ -106,7 +118,9 @@ covered = sessions.flat_map { |session| session[:files] }.reject do |path|
   File.read(path, encoding: "UTF-8").each_line.any? { |line| EXPECTATION.match?(line.chomp) }
 end
 
-failures = (paths - covered).reject do |path|
+(paths & ELSEWHERE).each { |path| puts "skip #{path}: runs in fixrb/microblog" }
+
+failures = (paths - covered - ELSEWHERE).reject do |path|
   if path.end_with?(".yaml")
     output, status = Open3.capture2e(RbConfig.ruby, "-e", BRUTAL, path, binmode: true)
   else

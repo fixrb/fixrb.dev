@@ -65,6 +65,8 @@ Runs the examples, each in its own Ruby process, with the gems found on the load
 
 It then runs the terminal sessions of the pages that run one of these examples, in their directory, and compares what the command writes, standard output and error together, with the `<samp>` of the page, character for character. `fix` is run with the fix-command found on the load path. An example a session runs is checked by it, whatever its status, so that a page can show a specification that is not met; it is run on its own as well when it has `# =>` lines. The output is the one of the Ruby in `.ruby-version`: messages of Ruby, such as `undefined method 'peek'`, change from one version to another.
 
+A few examples are files of another repository, shown as they are there, where they run inside an application the site does not have: the files of [fixrb/microblog](https://github.com/fixrb/microblog) that the guide page *In a Rails application* shows. `bin/examples` lists them, skips them and says so; the page says where they come from.
+
 `bin/examples` runs the code of the examples, and `bin/check --fix` copies it into pages: run neither on a branch you have not read.
 
 ## Markup

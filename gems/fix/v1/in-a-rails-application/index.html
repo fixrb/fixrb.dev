@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>In a Rails application · Fix guide, version 1 · Fixrb</title>
+  <meta name="description" content="What a Rails application needs for Fix to test its models and controllers: a helper that loads it, a database each subject empties, Rack::Test for the responses, and where the files go.">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="In a Rails application · Fix guide, version 1">
+  <meta property="og:description" content="What a Rails application needs for Fix to test its models and controllers: a helper that loads it, a database each subject empties, Rack::Test for the responses, and where the files go.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
+  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>In a Rails application</h1>
+          <p>What a Rails application needs for Fix to test its models and its controllers, and where the files go.</p>
+        </hgroup>
+      </header>
+      <p>This page takes a Rails application: <a href="https://github.com/fixrb/microblog">fixrb/microblog</a>, a small microblog whose only test framework is Fix. Users pick a handle, post short texts, follow one another and read a timeline. Its domain, a handle and the body of a post, is plain Ruby in <code>lib</code>, tested as <a href="/gems/fix/v1/in-a-project/">In a project</a> showed. This page is about the rest: the models, which need a database, and the controllers, which need the application.</p>
+      <p>The files shown here are those of the application, as they are in its repository, where they run with it. The repository of this site runs its examples before a page is published; it has no Rails, so these are the ones it shows without running.</p>
+
+      <h2 id="gemfile">The Gemfile</h2>
+      <p>Fix and its command go in the test group, with <code>require: false</code>: <code>gem "fix", require: false</code> and <code>gem "fix-command", require: false</code>. Rails requires the gems of the group of its environment when the application boots, and the files of <code>fix</code> require Fix themselves: the application never loads it.</p>
+
+      <h2 id="layout">Layout</h2>
+      <p>The specification of a model or of a controller names nothing of Rails: <code>eq 302</code>, <code>eq ["Body can't be blank"]</code>. So this application keeps its specifications apart from its tests, as <a href="/gems/fix/v1/patterns/#implementations">Patterns</a> does for a shared one. <code>spec</code> holds the specifications, one <code>Fix :Name do … end</code> document per file, each requiring Fix and nothing else: no Rails, no database, not even the class it specifies. <code>fix</code> holds the tests, the files the <code>fix</code> command runs: each loads what its subject needs, requires its specification and ends with <code>exit(Fix[:Name].test { … })</code>, the block building the subject. A result then points at the line of the specification.</p>
+      <p>The <code>let</code> of a specification is the interface between the two files: the specification declares a parameter of the subject, with its default and the <code>with</code> that vary it, and the block of the test reads it by name. Writing both halves in one file, as the pages before did, works just as well. An application that also uses RSpec keeps <code>spec</code> for it, and puts the documents in <code>fix/specs</code>, say.</p>
+
+      <h2 id="loading">Loading the application</h2>
+      <p>The tests of the models and of the controllers share a helper, <code>fix/support/rails.rb</code>, which <code>fix</code> does not run on its own, since its name does not end with <code>_fix.rb</code>:</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/support/rails.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+<span class="comment"># Loads the application in its test environment, for the tests of the</span>
+<span class="comment"># models and of the controllers. Those of the domain, in fix/microblog,</span>
+<span class="comment"># need none of this: they run on plain Ruby. The specifications, in</span>
+<span class="comment"># spec, need nothing but Fix.</span>
+<span class="comment">#</span>
+<span class="comment"># The tests empty the database, so they run in the test environment and</span>
+<span class="comment"># nowhere else, whatever the shell says.</span>
+<span class="constant">ENV</span>[<span class="string">"RAILS_ENV"</span>] = <span class="string">"test"</span>
+
+require_relative <span class="string">"../../config/environment"</span>
+require <span class="string">"rack/test"</span>
+
+<span class="comment"># Keeps the test database in step with db/schema.rb, as rails/test_help</span>
+<span class="comment"># does.</span>
+<span class="constant">ActiveRecord</span>::<span class="constant">Migration</span>.maintain_test_schema!
+
+<span class="comment"># Fix builds the subject anew for every expectation, in a child process</span>
+<span class="comment"># of its own, which gets a connection of its own: Active Record forgets</span>
+<span class="comment"># the pool of the parent after a fork. The database itself is outside</span>
+<span class="comment"># the processes, so a subject starts by emptying it. Nothing is rolled</span>
+<span class="comment"># back; nothing needs to be.</span>
+<span class="keyword">def</span> empty_database
+  <span class="constant">Follow</span>.delete_all
+  <span class="constant">Post</span>.delete_all
+  <span class="constant">User</span>.delete_all
+<span class="keyword">end</span>
+
+<span class="comment"># A browser for the application, with its cookies, signed in as the user</span>
+<span class="comment"># of that handle when one is given. Its requests return a</span>
+<span class="comment"># Rack::MockResponse, with a status, a body and a location.</span>
+<span class="keyword">def</span> browser(<span class="string">as:</span> <span class="keyword">nil</span>)
+  visitor = <span class="constant">Rack</span>::<span class="constant">Test</span>::<span class="constant">Session</span>.new(<span class="constant">Rails</span>.application)
+  visitor.post(<span class="string">"/session"</span>, <span class="string">handle:</span> as) <span class="keyword">if</span> as
+  visitor
+<span class="keyword">end</span>
+</code></pre>
+      <p>Four things happen here.</p>
+      <ul>
+        <li>The environment is forced to <code>test</code>, rather than defaulted to it as a <code>test_helper.rb</code> of Rails does: the tests empty the database, so a shell that exports <code>RAILS_ENV=development</code> must not send them to the development one.</li>
+        <li>The application boots, and <code>maintain_test_schema!</code> keeps the test database in step with <code>db/schema.rb</code>, as <code>rails/test_help</code> does for minitest.</li>
+        <li>Fix builds the subject anew for every expectation, in a child process of its own. A child starts as a copy of its parent, open connections included; Active Record discards the connection pools of the parent in a forked child, which connects on its own when it first needs the database. The database is outside the processes, though, and keeps what a subject writes, so a subject starts by emptying it. Nothing is wrapped in a transaction, nothing is rolled back, and nothing is shared between two expectations.</li>
+        <li>A browser for the controllers: a <code>Rack::Test::Session</code> on the application, with its cookies, signed in when a handle is given. Rack::Test is a dependency of Action Pack; its requests return a <code>Rack::MockResponse</code>, with a <code>status</code>, a <code>body</code> and a <code>location</code>.</li>
+      </ul>
+      <p>The two methods are defined at the top level, where the subject block sees them, as it sees <code>Kernel</code>. A name defined that way can no longer be the name of a <code>let</code>.</p>
+
+      <h2 id="models">A model</h2>
+      <p>A post has a body, which must not be blank and may not exceed 280 characters. The specification, <code>spec/models/post_spec.rb</code>, says so in terms of the methods of a record, <code>valid?</code>, <code>errors</code> and <code>mentions</code>, with the body as a parameter:</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/spec/models/post_spec.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+require <span class="string">"fix"</span>
+
+<span class="comment"># A post, built from a body: it mentions the handles of the body, and</span>
+<span class="comment"># says why an empty or an overlong body is refused.</span>
+<span class="constant">Fix</span> <span class="string">:Post</span> <span class="keyword">do</span>
+  let(<span class="string">:body</span>) { <span class="string">"Good morning, @bob and @carol."</span> }
+
+  on <span class="string">:valid?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:mentions</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">%w[bob carol]</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">""</span> <span class="keyword">do</span>
+    on <span class="string">:valid?</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_false
+    <span class="keyword">end</span>
+
+    on <span class="string">:errors</span> <span class="keyword">do</span>
+      on <span class="string">:full_messages</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq [<span class="string">"Body can't be blank"</span>]
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">"a"</span> * <span class="number">281</span> <span class="keyword">do</span>
+    on <span class="string">:valid?</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_false
+    <span class="keyword">end</span>
+
+    on <span class="string">:errors</span> <span class="keyword">do</span>
+      on <span class="string">:full_messages</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq [<span class="string">"Body is too long (maximum is 280 characters)"</span>]
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>The test, <code>fix/models/post_fix.rb</code>, builds a post of a user with that body, validated so that <code>errors</code> is filled:</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/models/post_fix.rb"><code><span class="comment">#!/usr/bin/env ruby</span>
+<span class="comment"># frozen_string_literal: true</span>
+
+require_relative <span class="string">"../support/rails"</span>
+require_relative <span class="string">"../../spec/models/post_spec"</span>
+
+<span class="comment"># The subject is a new post of Alice with the body, a parameter of the</span>
+<span class="comment"># specification, validated.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:Post</span>].test <span class="keyword">do</span>
+  empty_database
+  <span class="constant">User</span>.create!(<span class="string">handle:</span> <span class="string">"alice"</span>).posts.new(<span class="string">body:</span>).tap(&amp;<span class="string">:validate</span>)
+<span class="keyword">end</span>)
+</code></pre>
+      <p>The user is created inside the block, for each expectation, in a database just emptied: a record a test needs is built where the subject is, never in the file around it, which runs once in the parent. A test that needs a row to exist already, a handle taken or a user followed, creates it there too.</p>
+
+      <h2 id="controllers">A controller</h2>
+      <p>The subject of a controller test is a response. The specification, <code>spec/controllers/posts_spec.rb</code>, judges its status, its location and its body, for a signed-in visitor and for one who is not:</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/spec/controllers/posts_spec.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+require <span class="string">"fix"</span>
+
+<span class="comment"># The response to posting the body, for the visitor signed in with the</span>
+<span class="comment"># handle: home when the post is saved, the form again with the reason</span>
+<span class="comment"># when it is not, the sign-in page for a visitor who is not signed in.</span>
+<span class="constant">Fix</span> <span class="string">:CreatePost</span> <span class="keyword">do</span>
+  let(<span class="string">:handle</span>) { <span class="string">"alice"</span> }
+  let(<span class="string">:body</span>) { <span class="string">"Hello, world!"</span> }
+
+  on <span class="string">:status</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">302</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:location</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"http://example.org/"</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">"a"</span> * <span class="number">281</span> <span class="keyword">do</span>
+    on <span class="string">:status</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">422</span>
+    <span class="keyword">end</span>
+
+    on <span class="string">:body</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> match(<span class="string">/Body is too long/</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">handle:</span> <span class="keyword">nil</span> <span class="keyword">do</span>
+    on <span class="string">:status</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">302</span>
+    <span class="keyword">end</span>
+
+    on <span class="string">:location</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="string">"http://example.org/session/new"</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>The test, <code>fix/controllers/posts_fix.rb</code>, creates the user, signs the browser in with the handle, posts the body and gives the response:</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/controllers/posts_fix.rb"><code><span class="comment">#!/usr/bin/env ruby</span>
+<span class="comment"># frozen_string_literal: true</span>
+
+require_relative <span class="string">"../support/rails"</span>
+require_relative <span class="string">"../../spec/controllers/posts_spec"</span>
+
+<span class="comment"># The subject is the response to posting the body, for the visitor</span>
+<span class="comment"># signed in with the handle; both are parameters of the specification.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].test <span class="keyword">do</span>
+  empty_database
+  <span class="constant">User</span>.create!(<span class="string">handle:</span> <span class="string">"alice"</span>)
+  browser(<span class="string">as:</span> handle).post(<span class="string">"/posts"</span>, <span class="string">post:</span> { <span class="string">body:</span> })
+<span class="keyword">end</span>)
+</code></pre>
+      <p>The host of a Rack::Test request is <code>example.org</code>, hence the locations. Signing in is a request, as a visitor would make it; in this application a handle is enough, with no password, and an application with passwords signs its browser in the same way, with the request its sign-in form sends. Forgery protection is off in the test environment, as the <code>config/environments/test.rb</code> that Rails generates sets it, and <code>show_exceptions</code> is <code>:rescuable</code>, so that a record not found gives a 404 to judge, not an exception.</p>
+
+      <h2 id="running">Running</h2>
+      <pre><kbd>bin/rails db:prepare</kbd>
+<kbd>bundle exec fix</kbd></pre>
+      <p><code>db:prepare</code> creates the development and the test databases. <code>fix</code> then runs the files of <code>fix</code>, each in a process of its own, which boots the application once: that is where the time of a run goes. Each line points at an expectation of <code>spec</code>, and the status is 0 when every file is met. A task of the Rakefile, <code>task(:fix) { sh "fix" }</code>, runs it with <code>rake</code>; the continuous integration of the application runs <code>bin/rails db:prepare</code>, then <code>bundle exec fix</code>, and since the environment sets <code>CI</code>, the application is eager loaded there, as Rails recommends.</p>
+      <p>The files of <code>fix</code> are executable, with <code>#!/usr/bin/env ruby</code> on their first line: one of them runs on its own, <code>fix/models/post_fix.rb</code>, and finds its gems through <code>config/boot.rb</code>.</p>
+
+      <h2 id="processes">What a process does not isolate</h2>
+      <p><a href="/gems/fix/v1/in-a-project/#outside-the-process">In a project</a> listed what a child process leaves behind. In a Rails application, that is the database, hence <code>empty_database</code>, and the log, <code>log/test.log</code>, which the children write to as the parent would. What stays in the process ends with it: a mail that the test environment of Rails keeps in <code>ActionMailer::Base.deliveries</code> instead of sending, say, is read in the subject block, in the process that sent it, and given to the specification.</p>
+      <p>To stop in a subject with a debugger, run its contexts in the process itself, <code>test(fork: false)</code>, as <a href="/gems/fix/v1/in-a-project/#debugging">In a project</a> says; each subject still empties the database first.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/in-a-project/" rel="prev">Previous: In a project</a></li>
+          <li><a href="/gems/fix/v1/patterns/" rel="next">Next: Patterns</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/in-a-rails-application/" aria-current="page">In a Rails application</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
