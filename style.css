@@ -1517,7 +1517,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl {
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) article > header + p + dl > dt {
   padding: .5rem 1rem;
-  color: #7a5a68;
+  color: var(--fact-label);
   font-size: .8125rem;
 }
 
@@ -2182,6 +2182,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) {
   --pine-edge: #3b1d0e;
   --pine-link: #8a1424;
   --pine-code: #d7a764;
+  --pine-veil: rgb(230 189 126 / .6);
   --mark: var(--flannel-red);
   --mark-shadow: var(--suspender);
 }
@@ -2228,7 +2229,8 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > h1 {
     12px 12px 0 var(--flannel-black);
 }
 
-/* The plank: a nail at each end. */
+/* The plank: a nail at each end. Behind its sentence, as behind the facts,
+   the pine veils its grain, which would cross the letters. */
 body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p {
   position: relative;
   max-width: 40rem;
@@ -2238,7 +2240,10 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > header > hgroup > p {
   color: var(--pine-ink);
   font-size: 1.125rem;
   font-weight: 600;
-  background: url("/gems/brutal/img/wood.svg") 0 0 / 128px 48px, var(--pine);
+  background:
+    linear-gradient(var(--pine-veil) 0 0),
+    url("/gems/brutal/img/wood.svg") 0 0 / 128px 48px,
+    var(--pine);
   box-shadow:
     0 -4px 0 var(--pine-edge),
     0 4px 0 var(--pine-edge),
@@ -2304,7 +2309,10 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > figure + dl {
   margin: 2.5rem 4px 0;
   padding: 1rem 2.75rem;
   color: var(--pine-ink);
-  background: url("/gems/brutal/img/wood.svg") 0 0 / 128px 48px, var(--pine);
+  background:
+    linear-gradient(var(--pine-veil) 0 0),
+    url("/gems/brutal/img/wood.svg") 0 0 / 128px 48px,
+    var(--pine);
   box-shadow:
     0 -4px 0 var(--pine-edge),
     0 4px 0 var(--pine-edge),
@@ -2628,7 +2636,7 @@ body:has(article > header > img[src="/logo.svg"]) article > header + p + dl::aft
 
 body:has(article > header > img[src="/logo.svg"]) article > header + p + dl > dt {
   padding: .5rem 1.5rem .5rem 0;
-  color: #6a5a70;
+  color: var(--fact-label);
   font-size: .875rem;
 }
 
@@ -4276,16 +4284,13 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + 
   font-weight: 400;
 }
 
-body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
-  padding-right: 16px;
-}
-
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > :is(dt, dd):nth-of-type(odd) {
   background: var(--printer-bar);
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) article > header + p + dl > dd {
   margin: 0 -16px 0 0;
+  padding-right: 16px;
   font-weight: 700;
 }
 
