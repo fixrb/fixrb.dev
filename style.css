@@ -267,6 +267,9 @@ h2 {
   line-height: 1.1;
 }
 
+/* A title is extruded down and to the right in steps of 4px, never deeper
+   than a pixel of the font and a half: one step up to 44px, two at 66px,
+   three from 88px. */
 h1 {
   margin: 0 0 1rem;
   font-size: 2.75rem;
@@ -678,6 +681,9 @@ article > footer {
 @media (min-width: 42rem) {
   h1 {
     font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 var(--rim),
+      8px 8px 0 var(--rim);
   }
 }
 
@@ -1957,8 +1963,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > h1 {
   line-height: .9;
   text-shadow:
     4px 4px 0 var(--gold),
-    8px 8px 0 var(--bronze),
-    12px 12px 0 var(--gold-ink);
+    8px 8px 0 var(--bronze);
 }
 
 body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > p {
@@ -2139,6 +2144,10 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > h2#documentation + ul a:foc
 
   body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > h1 {
     font-size: 8.25rem;
+    text-shadow:
+      4px 4px 0 var(--gold),
+      8px 8px 0 var(--bronze),
+      12px 12px 0 var(--gold-ink);
   }
 
   body:has(img[src="/gems/aw/img/hero.svg"]) article > header > hgroup > p {
@@ -2927,7 +2936,7 @@ main:has(> nav[aria-label="Guide"]) > article > header h1 {
   margin: .75rem 0 0;
   color: var(--paper);
   font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 48px - 3rem) / 7.15);
-  text-shadow: 4px 4px 0 var(--ruby), 8px 8px 0 var(--garnet);
+  text-shadow: 4px 4px 0 var(--ruby);
 }
 
 /* Below 20rem, the gallery is narrower inside its frame, to leave its title
@@ -2988,8 +2997,7 @@ main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
   font-size: min(4.125rem, (100cqw - 2 * var(--gutter) - 3rem) / 2.55);
   text-shadow:
     4px 4px 0 var(--ruby),
-    8px 8px 0 var(--garnet),
-    12px 12px 0 var(--wine);
+    8px 8px 0 var(--garnet);
 }
 
 /* The shaft: a dark slab in both themes, like the code. */
@@ -3187,6 +3195,9 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
 
   main:has(> nav[aria-label="Guide"]) > article > header h1 {
     font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet);
   }
 
   main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
@@ -3214,6 +3225,10 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
 
   main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
     font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet),
+      12px 12px 0 var(--wine);
   }
 }
 
@@ -4993,8 +5008,9 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup {
 /* The name of the gem in paper, its extrusion in the two colours it joins:
    the ruby of Fix, then the blue of matchi. At 44px on a small phone, where
    it holds on one line, with the ruby alone: at that size a pixel of the
-   font is 4px, and a second step would fill its counters. With a larger
-   default font, it breaks at its hyphen rather than widen the page. */
+   font is 4px, and two steps would be twice as deep as a stroke. With a
+   larger default font, it breaks at its hyphen rather than widen the
+   page. */
 body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > header > hgroup > h1 {
   margin: 0;
   color: var(--paper);
@@ -5388,7 +5404,8 @@ main:has(> ul > li > article) > h1 {
   line-height: round(1em, 1px);
   text-shadow:
     4px 4px 0 var(--ruby),
-    8px 8px 0 var(--garnet);
+    8px 8px 0 var(--garnet),
+    12px 12px 0 var(--wine);
   background:
     url("/img/blog-sorts.svg") 50% calc(100% - 3rem) / 288px 192px no-repeat,
     url("/img/blog-forme.svg") 0 100% / 128px 128px,
@@ -5559,10 +5576,14 @@ main > article:has(> header > p > time) > footer {
   }
 }
 
-/* "Blog" stays whole on the narrowest screen, with a larger default font. */
+/* "Blog" stays whole on the narrowest screen, with a larger default font:
+   at 66px, with two steps. */
 @media (max-width: 22rem) {
   main:has(> ul > li > article) > h1 {
     font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet);
   }
 }
 
@@ -5667,9 +5688,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
 main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
   margin-bottom: 0;
   line-height: 1;
-  text-shadow:
-    4px 4px 0 var(--ruby),
-    8px 8px 0 var(--garnet);
+  text-shadow: 4px 4px 0 var(--ruby);
 }
 
 main:has(> h1 + p + ul > li > a[href="/"]) > p {
@@ -5756,6 +5775,15 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
   html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
     color-scheme: dark;
     background: var(--foot);
+  }
+}
+
+/* The title at 66px from 42rem, with a second step. */
+@media (min-width: 42rem) {
+  main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+    text-shadow:
+      4px 4px 0 var(--ruby),
+      8px 8px 0 var(--garnet);
   }
 }
 
