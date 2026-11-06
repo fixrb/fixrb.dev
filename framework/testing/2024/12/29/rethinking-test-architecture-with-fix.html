@@ -7,6 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Rethinking Test Architecture with Clear Specification Separation · Fixrb</title>
   <meta name="description" content="How Fix’s approach to testing in Ruby keeps specifications apart from their implementations, for a test suite that is easier to maintain and to reuse.">
+  <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
   <meta property="og:type" content="article">
   <meta property="article:published_time" content="2024-12-29">
@@ -15,11 +16,12 @@
   <meta property="og:title" content="Rethinking Test Architecture with Clear Specification Separation">
   <meta property="og:description" content="How Fix’s approach to testing in Ruby keeps specifications apart from their implementations, for a test suite that is easier to maintain and to reuse.">
   <meta property="og:url" content="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
-  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image" content="https://fixrb.dev/img/card-rethinking-test-architecture-with-fix.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta property="og:image:alt" content="Pixel-art type sorts and their proof, spelling FIX, beside the words: Fixrb blog, Rethinking Test Architecture with Clear Specification Separation.">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","@id":"https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html#post","headline":"Rethinking Test Architecture with Clear Specification Separation","description":"How Fix’s approach to testing in Ruby keeps specifications apart from their implementations, for a test suite that is easier to maintain and to reuse.","image":"https://fixrb.dev/img/card-rethinking-test-architecture-with-fix.png","datePublished":"2024-12-29T00:00:00+00:00","dateModified":"2024-12-29T00:00:00+00:00","author":{"@type":"Person","name":"Cyril Kato","url":"https://cyril.email/"},"publisher":{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},"mainEntityOfPage":"https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://fixrb.dev/blog/"},{"@type":"ListItem","position":3,"name":"Rethinking Test Architecture with Clear Specification Separation","item":"https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html"}]}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.png">
@@ -45,7 +47,7 @@
         <h1>Rethinking Test Architecture with Clear Specification Separation</h1>
         <p><time datetime="2024-12-29">December 29, 2024</time> · Cyril Kato</p>
       </header>
-      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems.</p>
+      <p role="note">Published before Fix 1.0. The post is kept as it was written, and its examples may refer to earlier versions of the gems: for Fix 1.0, see <a href="/gems/fix/v1/">the guide</a>.</p>
       <p>In the Ruby development world, testing frameworks like RSpec or Minitest have become industry standards. However, Fix proposes a radically different approach that deserves our attention: a clean separation between specifications and their implementation.</p>
       <h2 id="traditional-architecture-a-mix-of-concerns">Traditional Architecture: A Mix of Concerns</h2>
       <p>Traditionally, Ruby testing frameworks mix the definition of expected behaviors and the concrete examples that verify them in the same file. Let’s look at a classic example with RSpec:</p>

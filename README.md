@@ -2,7 +2,7 @@
 
 The website of the Fixrb project: Fix, Matchi and the gems around them.
 
-Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing loaded from another site. Only the highlighting of Ruby code is written by a script, `bin/check --fix`, with the standard library.
+Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing loaded from another site. Only the highlighting of Ruby code and the structured data of the pages are written by a script, `bin/check --fix`, with the standard library.
 
 ## Layout
 
@@ -11,13 +11,13 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 | `index.html` | Home: Fix, the gems, the latest posts |
 | `gems/NAME/index.html` | One page per gem |
 | `gems/NAME/img/` | A gem's drawing, illustration and icons, used by a page or by `style.css` |
-| `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels, the print shop of the blog, the empty setting of the 404 |
+| `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels, the print shop of the blog, the empty setting of the 404; and `card-SLUG.png`, the card of each post before Fix 1.0 |
 | `blog/index.html`, `feed.xml` | The list of posts and its Atom feed |
-| `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files kept out of results |
+| `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files crawlers are kept out of |
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
 | `examples/` | Every code example shown on a page, as a Ruby file or a manifest of brutal |
 | `404.html` | Served by GitHub Pages for any unknown address |
-| `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png`, `card.png` | Style, images, and the card shown where the home or a post is shared |
+| `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png`, `card.png` | Style, images, and the card shown where the home or the blog is shared |
 | `bin/check`, `bin/examples` | The checks, and the runner of the examples |
 | `.github/` | CI, which runs `bin/check`, and Dependabot, for the actions |
 | `.ruby-version` | The Ruby of CI and of the highlighting |
@@ -29,15 +29,16 @@ GitHub Pages publishes every file of the repository, so `bin/check` accepts only
 
 ## Rules
 
-- Semantic HTML5, element names in lowercase: no `div`, no `span`, no `class`, no inline style or script. The stylesheet targets elements, ids, ARIA attributes, the values of a few other attributes (`src`, `href`, `rel`, `role` and `data-*`) and, in code blocks only, the five token classes below.
+- Semantic HTML5, element names in lowercase: no `div`, no `span`, no `class`, no inline style or script: the one `<script>` of an indexed page is its structured data, which no browser runs, and the 404 has none. The stylesheet targets elements, ids, ARIA attributes, the values of a few other attributes (`src`, `href`, `rel`, `role` and `data-*`) and, in code blocks only, the five token classes below.
 - One exception: inside `<pre><code>`, Ruby tokens are wrapped in `<span>` elements with one of five classes, `comment`, `keyword`, `constant`, `string` and `number`. They are never written by hand: `bin/check --fix` writes them from Ruby's own tokenizer, Ripper, and `bin/check` fails if they differ in any way from what it would write.
 - A list whose markers `style.css` removes, outside a `nav`, carries `role="list"`: without it, Safari no longer announces it as a list. `bin/check` allows two roles only, `note` on a `p` and `list` on a `ul` or an `ol`.
 - A `<pre>` holds either a file of `examples/`, in one `<code>` (Ruby code highlighted, or a manifest of brutal as it is), or a terminal session: `<kbd>` for what is typed, `<samp>` for what the computer prints, text, and no other element. A `<pre>` never contains another.
 - A terminal session that shows output is run by `bin/examples`, so that the page shows what the command writes: `<pre data-directory="examples/gem"><kbd>COMMAND</kbd>` then a line break and `<samp>OUTPUT</samp></pre>`. COMMAND is `ruby FILE` or `fix` with its options and paths, plain ones (letters, digits, `_`, `-`, `/`), and runs in the directory named; a session of `fix --random` shows first the command that runs the files in the same order again, `fix --random=SEED`. The examples a session runs count as shown. A session without output, such as `gem install fix`, takes no attribute.
-- Every page starts with the same lines, up to the content security policy (`default-src 'none'`, then `'self'` for styles, images and fonts) and the referrer policy. Except `404.html`, each has a description, a canonical URL, the Open Graph tags that repeat them, `og:site_name`, and an `og:image` served by the site.
+- Every page starts with the same lines, up to the content security policy (`default-src 'none'`, then `'self'` for styles, images and fonts) and the referrer policy. Except `404.html`, each has a description, `<meta name="robots" content="max-image-preview:large">`, a canonical URL, the Open Graph tags that repeat them, `og:site_name`, an `og:image` served by the site, whose `og:image:width` and `og:image:height` are its size, and one `twitter:card`. Its `<title>` is its `og:title` followed by ` · Fixrb`, the home page's being its `og:title` alone; a post's `og:title` is its `h1`, and it has an `article:author`. Right after `twitter:card` comes its structured data, `<script type="application/ld+json">`, for search engines: on the home page, the organization and the site; on every other page, the trail of pages from the home page, through the blog for a post; on a post, the post too, with its times from the feed; the organization behind them has the links of the footer's list as its profiles. `bin/check --fix` writes it from the pages, the feed and the footer, and `bin/check` fails if a page differs from what it would write; it is data, which no browser runs, and the content security policy does not apply to it. A post's `<time>`, its `article:published_time` and its `published` in the feed are the same day, YYYY-MM-DD, and the feed's summary of a post is its description.
 - The site header and footer are the same on every page; only the menu link to the page itself carries `aria-current="page"`.
+- Text is written as characters (`’`, `“`, a no-break space), never as named entities other than `&amp;`, `&lt;`, `&gt;` and `&quot;`: the structured data and the feed take titles and descriptions as they are written.
 - Element and attribute names are in lowercase, and no attribute appears twice. Attributes and `rel` values come from a short list in `bin/check`: nothing that would contact another site (`preconnect`, `ping`, `srcset`) or open a window (`target`).
-- `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`) out of search results, never a page, the feed, the style, a font or an image.
+- `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps crawlers out of the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`), never a page, the feed, the style, a font or an image.
 - Files a browser could run when opened directly are checked too. An SVG file may only hold `svg`, `title`, `g`, `rect` and `path`, with attributes from a short list and values without a colon or a slash, so that none holds a URL; `logo.svg` is also pinned by its SHA-256, as fixrb/logo publishes it. `feed.xml` may only hold Atom elements, from a short list, linking to the site. A `CNAME` file contains `fixrb.dev`.
 - Links inside the site start with `/` and lead to a file of the repository, and so does every `url()` of `style.css`, written as a path in double quotes, `url("/gems/NAME/img/FILE.svg")`, in a comment or not; `style.css` holds no `@import`, `image-set()`, `src()` or backslash, which could load a file another way. Stylesheets, images and fonts are served by the site. No file is a symbolic link.
 - A code block shows a file of `examples/`, character for character: `<pre data-example="examples/gem/name.rb"><code>…</code></pre>`, with `<` and `&` escaped. To add or change one, edit the file, write `<pre data-example="…"><code></code></pre>` the first time, and run `bin/check --fix`. Examples end their lines with LF. A line that ends with `# => VALUE` must evaluate to an object whose `inspect` is `VALUE`. A manifest of brutal, `NAME_brutal.yaml`, is shown without highlighting, and the test file next to it, `test_NAME.rb`, is the one brutal writes from it.
@@ -55,7 +56,7 @@ Checks the rules above, the internal links and anchors, the feed, and that every
 bin/check --fix
 ```
 
-Rewrites the code blocks of every page, and nothing else, then checks. A block that is not well formed, or code that Ripper cannot read back exactly (such as data after `__END__`), is left as it is and reported. Ripper may split some code differently from one version of Ruby to another, so the highlighting is the one of the Ruby in `.ruby-version`, which CI uses too: run `bin/check --fix` with it.
+Rewrites the code blocks and the structured data of every page, and nothing else, then checks. A block that is not well formed, or code that Ripper cannot read back exactly (such as data after `__END__`), is left as it is and reported, as is a page without exactly one `twitter:card`. Ripper may split some code differently from one version of Ruby to another, so the highlighting is the one of the Ruby in `.ruby-version`, which CI uses too: run `bin/check --fix` with it.
 
 ```sh
 RUBYLIB=../matchi/lib bin/examples examples/matchi
@@ -106,10 +107,12 @@ Then open <http://localhost:8000/>. Pages use root-relative links, so opening a 
 
 ## Adding a post
 
-1. Write the page at `/CATEGORIES/YYYY/MM/DD/SLUG.html`, starting from an existing post, without the note about Fix 1.0.
+1. Write the page at `/CATEGORIES/YYYY/MM/DD/SLUG.html`, starting from an existing post, without the note about Fix 1.0. Its `og:image` is the card of the gem it is about, `gems/NAME/img/card.png`, or `/card.png`, and its `og:image:alt` describes that card.
 2. Add it at the top of `blog/index.html` and of the latest posts on `index.html` (three at most), and to `sitemap.xml`.
 3. Add an entry at the top of `feed.xml`: `id` is the URL without `.html`, as for the former posts. Update the feed's `updated`.
 4. Put its code in `examples/`, then run `bin/check --fix` and `bin/examples`.
+
+To update a post, change its `updated` in `feed.xml`, and the feed's if it is later, then run `bin/check --fix`: it is the post's date of modification in its structured data.
 
 ## Adding a gem
 
@@ -122,6 +125,8 @@ Write `gems/NAME/index.html` from `gems/matchi/index.html`: what the gem does, h
 A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, which `bin/check` requires a page or `style.css` to use:
 
 - A pixel drawing, shown in the header with `alt=""`, its `width` and `height` set to a whole number of screen pixels per pixel of the drawing: 4 for the jester of matchi, which `style.css` sets to 8 from 72rem, and for the movement of spectus, the letter of defi, the processes of fix-command, the loupe of fix-its and the pieces of matchi-fix, which `style.css` sets to 6 from 62rem (from 72rem for fix-command, fix-its and matchi-fix; for spectus, the movement and its balance alike); 2 for the hero of aw, whose pixels are finer. At 288 pixels wide at most, it keeps that size on a 320-pixel screen. Its pixels fall on whole units of its `viewBox`, which keeps every pixel whole on screen. Letters, if any, are set in Pixelify Sans, at its regular weight: its strokes are one pixel wide, where the bold of the titles is wider than a pixel.
+- `card.png`, 1200 × 630, the card shown where the gem's page is shared (the pages of the guide of Fix show Fix's): a drawing of the gem at a whole number of screen pixels per pixel (6 for the drawings of the headers, the logo at 24 for Fix, the hero at 4 for aw, the icon at 12 for brutal, the jester at 7 for matchi), beside its name in DejaVu Sans Mono Bold and a line about it in Inter, on paper, in the layout of the card of the home page. A post before Fix 1.0 has its own, `img/card-SLUG.png`: the sorts of the blog at 6, beside "Fixrb blog" and its title; Fix 1.0 shows Fix's. A card is drawn on paper, `#fffef8`, in ink, `#211630`: the drawing centred in the left 540 pixels, 40 from the edge at least; the text from 552 to 1144, centred in height. The name is at 144px, or less so that it holds on one line, and the line about it in Inter at 38px, 1.3 high, 28px below; for a post, "Fixrb blog" is in DejaVu Sans Mono Bold at 40px, in `#b8123f`, and its title in Inter Bold at 52px, 1.18 high, 24px below, broken after a colon. Then strip the file of anything but its image, for example with `convert card.png -strip card.png`.
+- A PNG holds its image only: `IHDR`, `PLTE` and `tRNS` if any, `IDAT` and `IEND`. `bin/check` refuses any other chunk, such as the text an export writes or a C2PA manifest a transfer adds.
 - An illustration, if any, with an `alt` that says what it shows, and a `figcaption`. It may be a PNG, shown at half its width and height: a screen with 2 physical pixels per screen pixel then shows the file pixel for pixel, and `style.css` draws it with `image-rendering: pixelated`, which keeps it sharp at any other scale, at the cost of pixels one physical pixel wider than others. The scene of aw, 1206 × 726 and drawn at 3 pixels per pixel, is the screen of its page: 402 × 242 on a phone (cropped at the sides below 402px), 603 × 363 from 40rem and 804 × 484 from 56rem; the scene of brutal, 1280 × 960 at 4 pixels per pixel, is shown at 320 × 240 on a phone and 640 × 480 from 44rem.
 - `favicon.ico`, `icon.svg` and `apple-touch-icon.png`, which replace the site's three icons in the page's head; without them, the page uses the site's icons. The Apple icon is opaque, since iOS fills transparency with black, and keeps a margin for the rounded corners. For matchi, whose icon is 31 × 32 pixels drawn 8 times larger, it was exported with Inkscape at 4 screen pixels per pixel:
 

@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
-  <title>In a Rails application · Fix guide, version 1 · Fixrb</title>
+  <title>Testing a Rails application with Fix · Fix 1 guide · Fixrb</title>
   <meta name="description" content="What a Rails application needs for Fix to test its models and controllers: a helper to load it, a database each subject empties, Rack::Test, where files go.">
+  <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
-  <meta property="og:title" content="In a Rails application · Fix guide, version 1">
+  <meta property="og:title" content="Testing a Rails application with Fix · Fix 1 guide">
   <meta property="og:description" content="What a Rails application needs for Fix to test its models and controllers: a helper to load it, a database each subject empties, Rack::Test, where files go.">
   <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
-  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: fix, a Ruby testing framework: specifications in the words of RFC 2119.">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fix guide","item":"https://fixrb.dev/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"In a Rails application","item":"https://fixrb.dev/gems/fix/v1/in-a-rails-application/"}]}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.png">
@@ -76,11 +78,11 @@ require <span class="string">"rack/test"</span>
 <span class="comment"># does.</span>
 <span class="constant">ActiveRecord</span>::<span class="constant">Migration</span>.maintain_test_schema!
 
-<span class="comment"># Fix builds the subject anew for every expectation, in a child process</span>
-<span class="comment"># of its own, which gets a connection of its own: Active Record forgets</span>
-<span class="comment"># the pool of the parent after a fork. The database itself is outside</span>
-<span class="comment"># the processes, so a subject starts by emptying it. Nothing is rolled</span>
-<span class="comment"># back; nothing needs to be.</span>
+<span class="comment"># Fix builds the subject anew for every expectation, in the child</span>
+<span class="comment"># process of its context, which gets a connection of its own: Active</span>
+<span class="comment"># Record forgets the pool of the parent after a fork. The database</span>
+<span class="comment"># itself is outside the processes, so a subject starts by emptying it.</span>
+<span class="comment"># Nothing is rolled back; nothing needs to be.</span>
 <span class="keyword">def</span> empty_database
   <span class="constant">Follow</span>.delete_all
   <span class="constant">Post</span>.delete_all
@@ -100,7 +102,7 @@ require <span class="string">"rack/test"</span>
       <ul>
         <li>The environment is forced to <code>test</code>, rather than defaulted to it as a <code>test_helper.rb</code> of Rails does: the tests empty the database, so a shell that exports <code>RAILS_ENV=development</code> must not send them to the development one.</li>
         <li>The application boots, and <code>maintain_test_schema!</code> keeps the test database in step with <code>db/schema.rb</code>, as <code>rails/test_help</code> does for minitest.</li>
-        <li>Fix builds the subject anew for every expectation, in a child process of its own. A child starts as a copy of its parent, open connections included; Active Record discards the connection pools of the parent in a forked child, which connects on its own when it first needs the database. The database is outside the processes, though, and keeps what a subject writes, so a subject starts by emptying it. Nothing is wrapped in a transaction, nothing is rolled back, and nothing is shared between two expectations.</li>
+        <li>Fix builds the subject anew for every expectation, in the child process of its context, which the other expectations of that context share. A child starts as a copy of its parent, open connections included; Active Record discards the connection pools of the parent in a forked child, which connects on its own when it first needs the database. The database is outside the processes, though, and keeps what a subject writes, so a subject starts by emptying it. Nothing is wrapped in a transaction and nothing is rolled back; what an expectation leaves in its process, a cached value or a mail in <code>ActionMailer::Base.deliveries</code>, the next expectations of its context find.</li>
         <li>A browser for the controllers: a <code>Rack::Test::Session</code> on the application, with its cookies, signed in when a handle is given. Rack::Test is a dependency of Action Pack; its requests return a <code>Rack::MockResponse</code>, with a <code>status</code>, a <code>body</code> and a <code>location</code>.</li>
       </ul>
       <p>The two methods are defined at the top level, where the subject block sees them, as it sees <code>Kernel</code>. A name defined that way can no longer be the name of a <code>let</code>.</p>

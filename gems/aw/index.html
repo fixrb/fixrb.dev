@@ -7,17 +7,19 @@
   <meta name="referrer" content="no-referrer">
   <title>aw: run a Ruby block in a forked process · Fixrb</title>
   <meta name="description" content="Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.">
+  <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/gems/aw/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
   <meta property="og:title" content="aw: run a Ruby block in a forked process">
   <meta property="og:description" content="Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.">
   <meta property="og:url" content="https://fixrb.dev/gems/aw/">
-  <meta property="og:image" content="https://fixrb.dev/gems/aw/img/scene.png">
-  <meta property="og:image:width" content="1206">
-  <meta property="og:image:height" content="726">
-  <meta property="og:image:alt" content="A pixel-art hero shouting “Aw, fork!” while his forked clone strikes a golem.">
+  <meta property="og:image" content="https://fixrb.dev/gems/aw/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The hero of aw, a pixel-art portrait in a gold frame, beside the words: aw, runs a Ruby block in a forked process and brings back what it returned.">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"aw","item":"https://fixrb.dev/gems/aw/"}]}]}</script>
   <link rel="icon" href="/gems/aw/img/favicon.ico" sizes="32x32">
   <link rel="icon" href="/gems/aw/img/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/gems/aw/img/apple-touch-icon.png">
@@ -46,7 +48,7 @@
           <p>Runs a Ruby block in a forked process.</p>
         </hgroup>
       </header>
-      <p>What the block returns comes back to the parent, and what it raises is raised again there. What it does to the process stays in the child: mutations, globals, constants, the current directory, <code>ENV</code>, a crash. What it does outside, to files or to other processes, does not.</p>
+      <p>What the block returns comes back to the parent, and what it raises is raised again there. What it does to the process stays in the child: mutations, globals, constants, the current directory, <code>ENV</code>, a crash. What it does outside, to files or to other processes, happens. <a href="/gems/fix/">Fix</a> runs each context of a specification in such a child, and <a href="/gems/brutal/">brutal</a> the code of a manifest, to record what it returns.</p>
       <figure>
         <img src="/gems/aw/img/scene.png" alt="A pixel-art hero shouting “Aw, fork!” while his forked clone strikes a golem." width="603" height="363">
         <figcaption>The forked clone, PID 12345, does the fighting: Ken keeps his 24 HP.</figcaption>
@@ -55,13 +57,13 @@
         <dt>Version</dt>
         <dd>1.0.1</dd>
         <dt>Ruby</dt>
-        <dd>3.3 or later, with <code>fork(2)</code>: CRuby on Linux, macOS and the BSDs</dd>
+        <dd>3.3 or later, with <code>fork(2)</code>: CRuby, tested on Linux and macOS</dd>
         <dt>Dependencies</dt>
         <dd>None</dd>
         <dt>License</dt>
         <dd>MIT</dd>
         <dt>Used by</dt>
-        <dd>Fix 1.0</dd>
+        <dd>Fix 1.0, brutal 2.0</dd>
       </dl>
 
       <h2 id="install">Install</h2>

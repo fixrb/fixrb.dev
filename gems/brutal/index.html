@@ -6,18 +6,20 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>brutal: plain Ruby tests written from what the code does · Fixrb</title>
-  <meta name="description" content="Brutal writes plain Ruby test files from YAML manifests: it runs every combination of contexts in a child process and checks what the code returns with eql?.">
+  <meta name="description" content="Brutal writes plain Ruby test files from YAML manifests, runs every combination of contexts in one child process and checks each observed value with eql?.">
+  <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/gems/brutal/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
   <meta property="og:title" content="brutal: plain Ruby tests written from what the code does">
-  <meta property="og:description" content="Brutal writes plain Ruby test files from YAML manifests: it runs every combination of contexts in a child process and checks what the code returns with eql?.">
+  <meta property="og:description" content="Brutal writes plain Ruby test files from YAML manifests, runs every combination of contexts in one child process and checks each observed value with eql?.">
   <meta property="og:url" content="https://fixrb.dev/gems/brutal/">
-  <meta property="og:image" content="https://fixrb.dev/gems/brutal/img/scene.png">
-  <meta property="og:image:width" content="1280">
-  <meta property="og:image:height" content="960">
-  <meta property="og:image:alt" content="A pixel-art lumberjack splits a ruby on a tree stump with an axe; red chips fly off.">
+  <meta property="og:image" content="https://fixrb.dev/gems/brutal/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The lumberjack of brutal, a laughing pixel-art face, beside the words: brutal, plain Ruby test files, written from what the code does.">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"brutal","item":"https://fixrb.dev/gems/brutal/"}]}]}</script>
   <link rel="icon" href="/gems/brutal/img/favicon.ico" sizes="32x32">
   <link rel="icon" href="/gems/brutal/img/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/gems/brutal/img/apple-touch-icon.png">
@@ -45,7 +47,7 @@
           <p>Writes plain Ruby test files from what the code does.</p>
         </hgroup>
       </header>
-      <p>A manifest, in YAML, gives a subject, contexts to combine and actuals to observe. Brutal runs every combination in a child process, records what the code returns, and writes a test file that checks each of these values with <code>eql?</code>, without any framework: <code>ruby test_greeter.rb</code> runs it. The test file is a picture of what the code does, not of what it should do: read it before you trust it, as you would read any code under review.</p>
+      <p>A manifest, in YAML, gives a subject, contexts to combine and actuals to observe. Brutal runs every combination in one child process, records what the code returns, and writes a test file that checks each of these values with <code>eql?</code>, without any framework: <code>ruby test_greeter.rb</code> runs it. The test file is a picture of what the code does, not of what it should do: read it before you trust it, as you would read any code under review.</p>
       <figure>
         <img src="/gems/brutal/img/scene.png" alt="A pixel-art lumberjack splits a ruby on a tree stump with an axe; red chips fly off." width="640" height="480">
         <figcaption>Brutal-driven development: the lumberjack of brutal’s README at work.</figcaption>

@@ -7,17 +7,19 @@
   <meta name="referrer" content="no-referrer">
   <title>fix-command: the fix command, one process per file · Fixrb</title>
   <meta name="description" content="The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.">
+  <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/gems/fix-command/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
   <meta property="og:title" content="fix-command: the fix command, one process per file">
   <meta property="og:description" content="The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.">
   <meta property="og:url" content="https://fixrb.dev/gems/fix-command/">
-  <meta property="og:image" content="https://fixrb.dev/card.png">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix-command/img/card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: Fixrb, testing libraries for Ruby: Fix, Matchi, and the gems around them.">
+  <meta property="og:image:alt" content="A pixel-art terminal starting three processes, two met and one not, beside the words: fix-command, the fix command: each specification file in a process of its own.">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix-command","item":"https://fixrb.dev/gems/fix-command/"}]}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.png">
@@ -46,7 +48,7 @@
           <p>The <code>fix</code> command: a process per specification file, and the count of those met.</p>
         </hgroup>
       </header>
-      <p>The <code>fix</code> command runs each specification file of <a href="/gems/fix/">fix</a> in a process of its own, lets their results through, and tells how many files were met. A file is met when its process exits with 0, which is what <code>exit(Fix[:Name].test { … })</code> gives at the end of a file: the status is the one thing a subject cannot forge, so the command reads nothing else.</p>
+      <p>The <code>fix</code> command runs each specification file of <a href="/gems/fix/">fix</a> in a process of its own, lets their results through, and tells how many files were met. A file is met when its process exits with 0, which is what <code>exit(Fix[:Name].test { … })</code> gives at the end of a file: the status is the one thing a subject cannot forge, so the command reads nothing else. The guide shows how to run a whole project with it: <a href="/gems/fix/v1/running-specifications/">Running specifications</a>.</p>
       <dl>
         <dt>Version</dt>
         <dd>1.0.0</dd>
