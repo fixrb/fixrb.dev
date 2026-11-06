@@ -412,7 +412,11 @@ result.result.class <span class="comment"># => Spectus::Result</span>
       <p>The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an <code>exit</code> included, is an error of its expectation alone. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.</p>
 
       <h2 id="scope">What Fix leaves out</h2>
-      <p>No mocks, no <code>before</code> and <code>after</code>, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs <code>fork</code>: it is tested on Linux and macOS, and does not run on Windows or JRuby. A test suite that needs fixtures, doubles or an application framework keeps its framework; Fix specifies the behaviour the pieces agree on, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher. <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> shows what each RSpec idiom becomes.</p>
+      <p>No mocks, no <code>before</code> and <code>after</code>, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs <code>fork</code>: it is tested on Linux and macOS, and does not run on Windows or JRuby.</p>
+
+      <h2 id="fits">Where Fix fits</h2>
+      <p>Ruby has long kept a few specifications apart from what implements them: <code>Rack::Lint</code> checks any application and any server against the Rack specification, ruby/spec describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as <a href="/gems/fix/v1/patterns/#shipped">Patterns</a> shows.</p>
+      <p>It does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher. <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> shows what each RSpec idiom becomes, and <a href="/gems/fix/v1/questions/">Questions</a> answers what comes up when the two live together.</p>
 
       <h2 id="extensions">Extensions</h2>
       <p><a href="/gems/fix-its/">fix-its</a> adds the word <code>its</code>, a method and its expectation on one line. <a href="/gems/matchi-fix/">matchi-fix</a> brings a specification of Fix to any framework that takes a matcher of matchi. The block of <code>Fix</code> runs on an instance of <code>Fix::Dsl</code>, where a gem may add a word of its own.</p>
@@ -420,9 +424,9 @@ result.result.class <span class="comment"># => Spectus::Result</span>
       <h2 id="documentation">Documentation</h2>
       <ul role="list">
         <li><a href="/gems/fix/v1/">The guide</a>: Fix 1 one step at a time, from a first specification to the tests of a project.</li>
-        <li><a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md">README</a>: the language, outcomes, results and processes in full.</li>
-        <li><a href="https://rubydoc.info/gems/fix/1.0.0">API reference</a></li>
-        <li><a href="https://rubygems.org/gems/fix/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md">README</a>: the language, outcomes, results and processes in full, and the changes in 1.0.1.</li>
+        <li><a href="https://rubydoc.info/gems/fix/1.0.1">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/fix/versions/1.0.1">RubyGems</a></li>
         <li><a href="https://github.com/fixrb/fix/tree/v1.0.1">Source code</a></li>
         <li><a href="/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">Rethinking test architecture with clear specification separation</a> and <a href="/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">The three levels of requirements, inspired by RFC 2119</a>, on the blog.</li>
       </ul>

@@ -6,13 +6,13 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Patterns: contracts in Ruby · Fix 1 guide · Fixrb</title>
-  <meta name="description" content="Three uses of a specification of Fix: one specification for several implementations, the contract of a dependency, and a contract in three levels for plugins.">
+  <meta name="description" content="Four uses of a Fix specification: one interface, several implementations; the contract of a dependency; three levels; a specification shipped with a gem.">
   <meta name="robots" content="max-image-preview:large">
   <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/patterns/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Fixrb">
   <meta property="og:title" content="Patterns: contracts in Ruby · Fix 1 guide">
-  <meta property="og:description" content="Three uses of a specification of Fix: one specification for several implementations, the contract of a dependency, and a contract in three levels for plugins.">
+  <meta property="og:description" content="Four uses of a Fix specification: one interface, several implementations; the contract of a dependency; three levels; a specification shipped with a gem.">
   <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/patterns/">
   <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
   <meta property="og:image:width" content="1200">
@@ -45,10 +45,10 @@
         <hgroup>
           <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
           <h1>Patterns</h1>
-          <p>A specification apart from any implementation, put to work three ways.</p>
+          <p>A specification apart from any implementation, put to work four ways.</p>
         </hgroup>
       </header>
-      <p>A specification of Fix names no class: it says what a subject does, and the test picks the subject. These three patterns follow from that.</p>
+      <p>A specification of Fix names no class: it says what a subject does, and the test picks the subject. These four patterns follow from that.</p>
 
       <h2 id="implementations">One specification, several implementations</h2>
       <p>When two classes do the same job, one specification describes the job, and each implementation is tested against it. The specification goes in a file of its own, <code>fix/specs/stack.rb</code>, which <code>fix</code> does not run, since its name does not end with <code>_fix.rb</code>:</p>
@@ -180,6 +180,53 @@ plugin_fix.rb:9: Success: expected "reverse" to match /\A[a-z]+\z/
 plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/</samp></pre>
       <p>The first three lines are those of <code>Upcase</code>: its name is not in lowercase, a warning, and it has no version, an info. Both pass, so both plugins meet the contract, and the status is 0. A plugin without <code>call</code> would get an error, and not pass.</p>
 
+      <h2 id="shipped">A specification shipped with a gem</h2>
+      <p>A gem that defines an interface, a store, an adapter, a plugin, can ship the specification of that interface, as rack ships <code>Rack::Lint</code>: those who implement the interface test their implementation against it, and an upgrade of the gem brings them its new specification. The gem keeps it in a file of <code>lib</code>, <code>lib/kvstore/specification.rb</code>, which requires Fix: only the implementers load it, so fix is a dependency of their projects, not of the gem.</p>
+      <pre data-example="examples/fix/v1/patterns/shipped/kvstore/lib/kvstore/specification.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># What the kvstore gem asks of a store, shipped with the gem for those</span>
+<span class="comment"># who write one.</span>
+<span class="constant">Fix</span> <span class="string">:KVStore</span> <span class="keyword">do</span>
+  on <span class="string">:fetch</span>, <span class="string">:missing</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:store</span>, <span class="string">:answer</span>, <span class="number">42</span> <span class="keyword">do</span>
+    on <span class="string">:fetch</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">42</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:delete</span>, <span class="string">:missing</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>An implementation, in a project of its own, requires that file and tests itself: with the gem in its Gemfile, <code>require "kvstore/specification"</code>. Here the two projects sit side by side, and the implementation is in the test file, to keep the example short:</p>
+      <pre data-example="examples/fix/v1/patterns/shipped/hash_store/fix/hash_store_fix.rb"><code><span class="comment"># With the gem in a Gemfile, this is require "kvstore/specification";</span>
+<span class="comment"># here the two projects sit side by side.</span>
+require_relative <span class="string">"../../kvstore/lib/kvstore/specification"</span>
+
+<span class="keyword">class</span> <span class="constant">HashStore</span>
+  <span class="keyword">def</span> initialize = @entries = {}
+  <span class="keyword">def</span> fetch(key) = @entries[key]
+  <span class="keyword">def</span> store(key, value) = tap { @entries[key] = value }
+  <span class="keyword">def</span> delete(key) = @entries.delete(key)
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:KVStore</span>].test { <span class="constant">HashStore</span>.new })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns/shipped"><kbd>ruby hash_store/fix/hash_store_fix.rb</kbd>
+<samp>kvstore/lib/kvstore/specification.rb:7: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:12: Success: expected 42 to eq 42
+kvstore/lib/kvstore/specification.rb:17: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:21: Info: NoMethodError: undefined method 'size' for an instance of HashStore</samp></pre>
+      <p>The lines point into the gem, at the specification: an implementer reads what is asked where it is written. The store has no <code>size</code>, which the specification leaves optional: an info, and the store meets the contract.</p>
+
       <nav aria-label="Pages">
         <ul>
           <li><a href="/gems/fix/v1/in-a-rails-application/" rel="prev">Previous: In a Rails application</a></li>
@@ -201,6 +248,7 @@ plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/</samp></pre>
         <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
         <li><a href="/gems/fix/v1/patterns/" aria-current="page">Patterns</a></li>
         <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/questions/">Questions</a></li>
       </ol>
     </nav>
   </main>

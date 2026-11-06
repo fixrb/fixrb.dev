@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Questions about Fix: short answers · Fix 1 guide · Fixrb</title>
+  <meta name="description" content="Questions on Fix, answered in short: eq and eql?, lets in expectations, outcomes, exit status, random order, SimpleCov, Windows, RSpec or minitest beside it.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/questions/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Questions about Fix: short answers · Fix 1 guide">
+  <meta property="og:description" content="Questions on Fix, answered in short: eq and eql?, lets in expectations, outcomes, exit status, random order, SimpleCov, Windows, RSpec or minitest beside it.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/questions/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: fix, a Ruby testing framework: specifications in the words of RFC 2119.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fix guide","item":"https://fixrb.dev/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"Questions","item":"https://fixrb.dev/gems/fix/v1/questions/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Questions</h1>
+          <p>What comes up with a first specification, in short answers.</p>
+        </hgroup>
+      </header>
+      <p>The guide teaches each of these in turn; this page is for finding one by its keyword, with the short answer and the page that has the long one. Every answer was checked against Fix 1.0.1, whose README is itself run by its test suite.</p>
+
+      <h2 id="writing">Writing</h2>
+
+      <h3 id="eq">Why does <code>it MUST eq 42</code> fail for a subject that returns <code>42.0</code>?</h3>
+      <p><code>eq</code> is <code>eql?</code>: the same value and the same class, for every value, not only numbers. <code>1.eql?(1.0)</code> is false, and so is <code>"a".eql?(:a)</code>. Compare with <code>be_within(delta).of(42)</code> for a number near 42, whatever its class, or with <code>be_a_kind_of Numeric</code> for the class alone. <a href="/gems/fix/v1/matchers/#eq">Matchers</a> has each one.</p>
+
+      <h3 id="let-in-expectation">Why can’t I write <code>it MUST eq name</code> when <code>name</code> is a let?</h3>
+      <p>A let is a parameter of the subject, visible from the block of <code>test</code> and from the other lets only. Named in an expectation, it would be read while the file loads, before any subject exists, so Fix raises <code>NameError</code> at load: <code>name is a let, visible in the subject block and in other lets only</code>. Write the value in the expectation, and let the subject block read the let: <code>with name: "Alice" do it MUST eq "Hello, Alice!" end</code>, against <code>test { "Hello, #{name}!" }</code>. See <a href="/gems/fix/v1/writing-specifications/#let-and-with">let and with</a>.</p>
+
+      <h3 id="let-name"><code>let(:format)</code> raises <code>ArgumentError</code>. Why?</h3>
+      <p>A let becomes a method of the object the subject block runs on, and that object sees <code>Kernel</code> and the methods of the top level. A let named like one of them, public or private (<code>format</code>, <code>p</code>, <code>test</code>, <code>open</code>, <code>select</code>, <code>method</code>, <code>class</code>, <code>hash</code>…), or like a word of the language (<code>let</code>, <code>with</code>, <code>on</code>, <code>it</code>, and <code>its</code> with fix-its), or like a matcher or a level (<code>eq</code>, <code>match</code>, <code>change</code>, <code>fix</code>, <code>MUST</code>), would redefine it in silence. The message names the owner or the word: <code>format is already a method of Kernel</code>. Pick another name.</p>
+
+      <h3 id="let-or-with">What is the difference between <code>let(:items) { [] }</code> and <code>with items: []</code>?</h3>
+      <p>A <code>let</code> is a block, called anew for each expectation: every expectation gets a new array. A <code>with</code> is a value, the very object given, shared by the expectations of its context: <code>with items: []</code> gives them all the same array. Two contexts are two child processes, so the sharing never crosses a context.</p>
+
+      <h3 id="with-new-name">Can a <code>with</code> name a let that was never declared?</h3>
+      <p>Yes. A <code>with</code> declares the lets it names; a key no <code>let</code> declared is a new parameter, not an error. So a misspelt key is a new let, in silence: check the spelling against the subject block.</p>
+
+      <h3 id="block">How do I test a method that takes a block?</h3>
+      <p><code>on</code> sends its method without a block, since the <code>do … end</code> of <code>on</code> is the context. Either call the method in the subject block, <code>test { list.map { |x| x * 2 } }</code>, or judge the subject with <code>satisfy { |value| value.map { … } == … }</code>.</p>
+
+      <h3 id="predicates">Is there a <code>be_empty</code>, a <code>have_key</code>, a <code>be_valid</code>?</h3>
+      <p>Not as words of Fix. The idiom is <code>on(:empty?) { it MUST be_true }</code>: the method is sent by <code>on</code>, and the line reads <code>expected true to be true</code>; <code>run</code> keeps the method in the <code>chain</code> of the result, <code>.empty?</code>. Any object with <code>match?</code> and <code>to_s</code> is a matcher, though, so <code>it MUST Matchi::Predicate.new(:be_empty)</code> works, with the matcher of matchi written in full. See <a href="/gems/fix/v1/matchers/#your-own-matcher">Your own matcher</a>.</p>
+
+      <h3 id="change-let">Can <code>change</code> observe a let?</h3>
+      <p>No. The object of <code>change(object, :method)</code> must exist when the file loads, since the matcher is built then, and a let lives with the subject, later: naming one there raises the <code>NameError</code> of a let read in an expectation. Observe an object of the file, a constant say.</p>
+
+      <h3 id="fix-key-error"><code>it MUST fix(:Other)</code> raises <code>KeyError</code>.</h3>
+      <p><code>fix(:Name)</code> finds its specification when the document is read, so <code>Fix :Other</code> must come earlier in the file, or in a file required earlier. The message is <code>no specification named :Other</code>; when a registered name is near, <code>:Positive</code> for a <code>fix(:Positiv)</code>, Ruby adds <code>Did you mean?  :Positive</code> below it. See <a href="/gems/fix/v1/composing-specifications/#fix">Composing specifications</a>.</p>
+
+      <h3 id="class-methods">How do I test a class method, or a constructor?</h3>
+      <p>Return the class from the subject block, and send the method with <code>on</code>: <code>Fix[:Calculator].test { Calculator }</code> with <code>on :new, 2 do … end</code>. An <code>on</code> inside that one is sent to the new instance.</p>
+
+      <h3 id="bare-it">On Ruby 3.4, <code>its(:size) { MUST eq it }</code> builds <code>eq nil</code>.</h3>
+      <p>In Ruby 3.4 and later, a bare <code>it</code> in a block is the implicit parameter of the block; <code>it</code> with a requirement is still the word of Fix. On 3.3, the bare <code>it</code> is the word of Fix, and raises for want of a requirement. Write the value. A <code>satisfy</code> meant for both Rubies names its parameter: <code>satisfy { |value| … }</code>. <a href="/gems/fix/v1/its/">The word its</a> has the detail.</p>
+
+      <h2 id="outcomes">Outcomes</h2>
+
+      <h3 id="other-exception">My <code>raise_exception ArgumentError</code> is a Failure, not an Error. The subject raised <code>TypeError</code>.</h3>
+      <p>The exception is what <code>raise_exception</code> judges: another class is a match that is false, so a failure under MUST and MAY, a warning under SHOULD. An error is an exception that reached a matcher not made to judge one: with <code>eq</code>, the same <code>TypeError</code> is an error.</p>
+
+      <h3 id="info-or-error">Why is a missing method an Info under MAY, but an Error under MUST?</h3>
+      <p>Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. A duck that does not <code>speak</code> meets <code>on :speak do it MAY … end</code>. The table of the five outcomes is in <a href="/gems/fix/v1/writing-specifications/#it">Writing specifications</a>.</p>
+
+      <h3 id="warning">Does a warning make the run fail?</h3>
+      <p>No. A success, a warning and an info pass; a failure and an error do not. <code>test</code> returns <code>true</code> for a run with warnings, and the status of the process is 0.</p>
+
+      <h3 id="quotes">I see <code>undefined method 'speak'</code> on Ruby 3.4, but <code>undefined method `speak'</code> on 3.3.</h3>
+      <p>Ruby changed the quote in 3.4, and a frame of a backtrace now names the class of its method. The texts are those of Ruby; Fix does not rewrite them.</p>
+
+      <h2 id="running">Running</h2>
+
+      <h3 id="exit">Why <code>exit(Fix[:Duck].test { Duck.new })</code>, with parentheses?</h3>
+      <p>Without them, <code>exit Fix[:Duck].test do … end</code> gives the <code>do … end</code> block to <code>exit</code>, not to <code>test</code>, and <code>test</code> raises <code>ArgumentError</code>: <code>a block must be given</code>. Keep the parentheses, or use braces.</p>
+
+      <h3 id="two-specifications">A file with two specifications: how does it exit?</h3>
+      <p>Test them all, then exit once: <code>exit([Fix[:A].test { … }, Fix[:B].test { … }].all?)</code>.</p>
+
+      <h3 id="status">Nothing failed, but the process exits 1. Something failed, but it exits 0.</h3>
+      <p>Look at the last line of the file: it passes the result of <code>test</code> to <code>exit</code>, and nothing else. <code>test</code> never calls <code>exit</code>, so a file that forgets it exits 0 whatever happened, and the command <code>fix</code> reads that status and nothing else. See <a href="/gems/fix/v1/running-specifications/#a-file">Running specifications</a>.</p>
+
+      <h3 id="one-file">How do I run one file? All of them?</h3>
+      <p><code>ruby fix/duck_fix.rb</code> runs one, as any Ruby file. <code>fix</code>, from the fix-command gem, runs the <code>*_fix.rb</code> files of <code>fix/</code>, each in a new process, or the files and directories given: <code>fix fix/duck_fix.rb fix/models</code>.</p>
+
+      <h3 id="load-path">My subject needs <code>lib/</code> on the load path.</h3>
+      <p>The command passes its environment to every file: <code>RUBYOPT=-Ilib fix</code>, or <code>bundle exec fix</code> for the gems of a Gemfile. <code>bundle exec</code> puts the gems on the load path; it does not require them, the file does. See <a href="/gems/fix/v1/in-a-project/#loading-the-code">Loading the code</a>.</p>
+
+      <h3 id="parallel">Does <code>fix</code> run files in parallel? Does it have a timeout?</h3>
+      <p>No and no, in 1.0. Files run one after the other, each in its own process; Ctrl-C ends the command and, through the terminal, the file being run.</p>
+
+      <h3 id="order">Is the order random?</h3>
+      <p>Within a file, no: the contexts run in the order written, a context before those inside it, every time. Between files, on request: <code>fix --random</code> shuffles the files, and writes first the command that runs them in the same order again, <code>fix --random=2</code>. See <a href="/gems/fix/v1/running-specifications/#random-order">Random order</a>.</p>
+
+      <h3 id="subject-output">Where does the subject’s own output go?</h3>
+      <p>It comes out as it is, on the same standard output, before the lines of its context. A text left without a line break joins the first of them. A runner reads the exit status, not the lines, for that reason.</p>
+
+      <h3 id="simplecov">SimpleCov reports nothing for the code my subjects ran.</h3>
+      <p>Each context runs in a child that ends with <code>exit!</code>, which runs no <code>at_exit</code> handler, so SimpleCov never writes the child’s result. Either store the result before the child ends, as the tests of Fix do, or run with <code>test(fork: false)</code> for the measurement. See <a href="/gems/fix/v1/in-a-project/#debugging">Debugging</a>.</p>
+
+      <h3 id="platforms">Does Fix work on Windows? On JRuby?</h3>
+      <p>No. Fix forks a child per context and needs <code>fork(2)</code>: a context with expectations raises <code>NotImplementedError</code> on a Ruby without it. Linux and macOS are tested in CI, on Ruby 3.3, 3.4, 4.0 and head.</p>
+
+      <h2 id="beside">Beside RSpec and minitest</h2>
+
+      <h3 id="replace">Do I have to replace my test suite?</h3>
+      <p>No. Fix needs nothing from another framework and changes nothing in it: a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. <a href="/gems/fix/v1/in-a-project/#other-tests">Next to other tests</a> says how, and <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> what each idiom becomes.</p>
+
+      <h3 id="matcher">Can I check a specification of Fix from RSpec or minitest?</h3>
+      <p>As a matcher of matchi: <code>Matchi::Fix.new(:Duck).match? { Duck.new }</code>, from the <a href="/gems/matchi-fix/">matchi-fix</a> gem, answers <code>true</code> or <code>false</code>, forking the contexts as Fix does. In RSpec, <code>expect(Matchi::Fix.new(:Duck).match? { duck }).to be true</code>; in minitest, <code>assert Matchi::Fix.new(:Duck).match? { duck }</code>. The message of a failure then says <code>false</code>, no more: <code>Fix[:Duck].test { duck }</code> gives the lines. A specification meant for a matcher is written without <code>with</code>, since the value is given once and the contexts cannot build it anew.</p>
+
+      <h3 id="which-failed">A failed <code>fix(:Other)</code> does not say which expectation failed.</h3>
+      <p>By design: a matcher answers <code>true</code> or <code>false</code>. Test the inner specification on its own, <code>Fix[:Other].test { … }</code>, for the lines.</p>
+
+      <h3 id="data">Can I get the results as data instead of lines?</h3>
+      <p><code>Fix[:Name].run { … }</code> returns an <code>Array</code> of <code>Fix::Result</code>, frozen data with <code>location</code>, <code>chain</code>, <code>outcome</code>, <code>passed?</code>, <code>summary</code>, and the <code>Spectus::Result</code> underneath. <code>test</code> is <code>run</code> plus the printing. See <a href="/gems/fix/v1/running-specifications/#results-as-data">Results as data</a>.</p>
+
+      <h3 id="new-word">How do I add a word to the language, as fix-its does?</h3>
+      <p>Add a method to <code>Fix::Dsl</code> that composes <code>on</code> and <code>it</code>, and pass <code>it</code> the <code>location:</code> of your own caller, <code>caller_locations(1, 1).first</code>, so that the result points at the line of the specification. fix-its, nineteen lines of code, is the reference.</p>
+
+      <h3 id="compared">How does Fix compare with RSpec and minitest?</h3>
+      <p>They do different jobs, and a project may have two of them. Where they differ:</p>
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">Fix</th><th scope="col">RSpec</th><th scope="col">minitest</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">The subject</th><td>chosen by the test, apart from the specification, which names no class</td><td><code>subject</code>, in the spec; shared examples for several classes</td><td>built by the test class; a module included in several classes</td></tr>
+          <tr><th scope="row">Levels</th><td>MUST, SHOULD and MAY; a warning and an info pass</td><td>one, with <code>pending</code> and <code>skip</code></td><td>one, with <code>skip</code></td></tr>
+          <tr><th scope="row">Isolation</th><td>a child process per context</td><td>one process; hooks clean up</td><td>one process; <code>setup</code> and <code>teardown</code> clean up</td></tr>
+          <tr><th scope="row">Hooks</th><td>none: the subject block runs for each expectation</td><td><code>before</code>, <code>after</code>, <code>around</code></td><td><code>setup</code>, <code>teardown</code></td></tr>
+          <tr><th scope="row">Doubles</th><td>none, by design</td><td>rspec-mocks</td><td>minitest/mock</td></tr>
+          <tr><th scope="row">Order</th><td>the order written; files shuffled on request</td><td>defined; random on request</td><td>random by default</td></tr>
+          <tr><th scope="row">Output</th><td>one line per expectation, and the status of the process</td><td>formatters</td><td>reporters</td></tr>
+          <tr><th scope="row">Runs on</th><td>CRuby with <code>fork</code>, tested on Linux and macOS</td><td>every Ruby</td><td>every Ruby</td></tr>
+        </tbody>
+      </table>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/coming-from-rspec/" rel="prev">Previous: Coming from RSpec</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/questions/" aria-current="page">Questions</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

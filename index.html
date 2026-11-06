@@ -44,10 +44,11 @@
       <hgroup>
         <p>The main gem of Fixrb</p>
         <h1 id="fix-title">Fix</h1>
-        <p>Specifications for Ruby, in the words of RFC 2119, tested against any subject.</p>
+        <p>Write once what a Ruby object must do; test every implementation against it.</p>
       </hgroup>
-      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them.</p>
+      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of RFC 2119, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them, beside the RSpec or minitest suite you already have.</p>
       <ul role="list">
+        <li><a href="/gems/fix/v1/getting-started/">Start the guide</a></li>
         <li><a href="/gems/fix/">Read about Fix</a></li>
       </ul>
       <dl>
@@ -57,6 +58,8 @@
         <dd>1.0.1, for Ruby 3.3 or later</dd>
         <dt>Source</dt>
         <dd><a href="https://github.com/fixrb/fix">github.com/fixrb/fix</a>, MIT license</dd>
+        <dt>From RSpec</dt>
+        <dd><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a>: what each idiom becomes, and what is left out</dd>
       </dl>
       <figure>
         <pre data-example="examples/home/stack.rb"><code>require <span class="string">"fix"</span>
@@ -85,7 +88,7 @@ exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test 
 <samp>stack.rb:7: Success: expected 1 to eq 1
 stack.rb:12: Success: expected nil to be nil
 stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Array</samp></pre>
-        <figcaption>One line per expectation, the status of the process for the whole. Under MAY, a method the subject does not have is an info, and the run passes.</figcaption>
+        <figcaption>One line per expectation, the status of the process for the whole. Under MAY, a method the subject does not have is an info, and the run passes. This output was written by running the file, like every output on the pages of the gems and of the guide.</figcaption>
       </figure>
     </section>
 
@@ -94,15 +97,15 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
       <ul role="list">
         <li>
           <h3>A specification is a document</h3>
-          <p>It is read once, when the file is loaded: no setup, no mock, no logic, and anything wrong in it raises before a test runs. It names no class; the test picks the subject.</p>
+          <p>It is read once, when the file is loaded: no setup, no mock, no logic, and anything wrong in it raises before a test runs. It names no class; the test picks the subject, and one specification serves as many implementations as you like.</p>
         </li>
         <li>
           <h3>Three levels of requirement</h3>
-          <p>MUST, SHOULD and MAY tell what is required, what is recommended and what is optional. A SHOULD not met is a warning, a MAY on a method the subject lacks is an info, and both pass.</p>
+          <p>MUST, SHOULD and MAY tell what is required, what is recommended and what is optional, so that a contract between a library and its users, or between two teams, says what blocks a build and what does not. A SHOULD not met is a warning, a MAY on a method the subject lacks is an info, and both pass.</p>
         </li>
         <li>
           <h3>One process per context</h3>
-          <p>Each context runs in a child process. What a subject does to a global, a constant or <code>ENV</code> stays in its context, and the order of the contexts cannot change a result.</p>
+          <p>Each context runs in a child process. What a subject does to a global, a constant or <code>ENV</code> stays in its context, and the order of the contexts cannot change a result. <a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a> shows it with a database, which a process does not isolate.</p>
         </li>
       </ul>
     </section>
@@ -135,7 +138,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
       <section id="libraries">
         <h3>Libraries</h3>
-        <p>Building blocks that do not depend on Fix: use them on their own, with any test framework, or to build one. Fix 1.0 is built on spectus, matchi and aw.</p>
+        <p>Building blocks that do not depend on Fix: use them on their own, with any test framework, or to build one. Fix 1.0 is built on aw, defi, matchi and spectus.</p>
         <ul role="list">
           <li>
             <h4><img src="/gems/matchi/img/icon.svg" alt="" width="62" height="64"><a href="/gems/matchi/">matchi</a></h4>
@@ -159,12 +162,12 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
           </li>
           <li>
             <h4><img src="/gems/test_tube/img/icon.svg" alt="" width="64" height="64"><a href="https://github.com/fixrb/test_tube">test_tube</a></h4>
-            <p>Checks a value, or what a block returns or raises, against a matcher. Built on defi.</p>
+            <p>Checks a value, or what a block returns or raises, against a matcher. Built on defi; not used by Fix 1.0.</p>
             <p><small>Version 4.0</small></p>
           </li>
           <li>
             <h4><img src="/gems/expresenter/img/icon.svg" alt="" width="64" height="64"><a href="https://github.com/fixrb/expresenter">expresenter</a></h4>
-            <p>Presents the result of an expectation: success, warning, info, failure or error.</p>
+            <p>Presents the result of an expectation: success, warning, info, failure or error. Not used by Fix 1.0.</p>
             <p><small>Version 1.5</small></p>
           </li>
         </ul>
