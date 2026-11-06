@@ -140,7 +140,7 @@ fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
 
       <h2 id="debugging">Debugging</h2>
       <p>To stop in a subject with a debugger, run its contexts in the process itself: <code>Fix[:Cart].test(fork: false) { … }</code>. Each context then sees what the ones before it left, so use it only while debugging.</p>
-      <p>Coverage tools such as SimpleCov store what they measure when a process ends normally, and a child of Fix ends with <code>exit!</code>, which skips that: what runs in the children is not counted, unless the tool stores its result before. <a href="https://github.com/fixrb/fix/blob/v1.0.0/README.md#processes">The README of fix</a> details the processes.</p>
+      <p>Coverage tools such as SimpleCov store what they measure when a process ends normally, and a child of Fix ends with <code>exit!</code>, which skips that: what runs in the children is not counted, unless the tool stores its result before. <a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md#processes">The README of fix</a> details the processes.</p>
 
       <nav aria-label="Pages">
         <ul>
