@@ -48,6 +48,22 @@
           <p>What each one compares, and what it writes when it is met and when it is not.</p>
         </hgroup>
       </header>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#eq"><code>eq</code></a></li>
+          <li><a href="#be"><code>be</code></a></li>
+          <li><a href="#be_true"><code>be_true</code>, <code>be_false</code>, <code>be_nil</code></a></li>
+          <li><a href="#be_a_kind_of"><code>be_a_kind_of</code></a></li>
+          <li><a href="#be_an_instance_of"><code>be_an_instance_of</code></a></li>
+          <li><a href="#be_within"><code>be_within</code></a></li>
+          <li><a href="#match"><code>match</code></a></li>
+          <li><a href="#satisfy"><code>satisfy</code></a></li>
+          <li><a href="#raise_exception"><code>raise_exception</code></a></li>
+          <li><a href="#change"><code>change</code></a></li>
+          <li><a href="#fix"><code>fix</code></a></li>
+          <li><a href="#your-own-matcher">Your own matcher</a></li>
+        </ol>
+      </nav>
       <p>A matcher is the second half of a requirement, after the level: <code>it MUST eq 100</code>. The matchers of Fix are those of <a href="/gems/matchi/">Matchi</a>, where the expected value makes the comparison wherever it can, so that the object under test cannot vouch for itself. Each one works with every level, and a negation, <code>MUST_NOT</code> or <code>SHOULD_NOT</code>, writes <code>not</code> in the line.</p>
       <table>
         <thead>

@@ -97,6 +97,12 @@ GUIDE = %r{\A(gems/[a-z0-9_-]+/v\d+/)}
 GUIDE_NAV = %r{<nav aria-label="Guide">.*?</nav>}m
 PAGES_NAV = %r{<nav aria-label="Pages">(.*?)</nav>}m
 
+# A long page lists its sections in a nav, "On this page": a link to each
+# <h2> that carries an id, in the order of the page and with its words.
+CONTENTS_NAV = %r{<nav aria-label="On this page">(.*?)</nav>}m
+CONTENTS_LINK = %r{<li><a href="#([^"]+)">(.*?)</a></li>}m
+SECTION = %r{<h2 id="([^"]+)">(.*?)</h2>}m
+
 # Posts published before Fix 1.0, kept as written: their code is not run.
 ARCHIVED = %w[
   framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html
@@ -550,6 +556,13 @@ def check_guide(path, html)
   error(path, "its nav of pages must link to the pages before and after it in the guide") unless links == around
 end
 
+def check_contents(path, html)
+  nav = html[CONTENTS_NAV, 1]
+  return unless nav
+
+  error(path, "its nav of the page must list every <h2> that has an id, in order and with its words") unless nav.scan(CONTENTS_LINK) == html.scan(SECTION)
+end
+
 # The examples a session runs, as bin/examples finds them: the file of `ruby
 # FILE`; for `fix`, the files given and the *_fix.rb files of the directories
 # given, the fix directory when none is.
@@ -793,6 +806,7 @@ pages.each do |path|
   check_structured_data(path, html, times)
   check_code_blocks(path, html, used)
   check_guide(path, html)
+  check_contents(path, html)
 end
 
 posts = pages.grep(POST)

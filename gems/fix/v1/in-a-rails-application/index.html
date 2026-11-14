@@ -48,6 +48,17 @@
           <p>What a Rails application needs for Fix to test its models and its controllers, and where the files go.</p>
         </hgroup>
       </header>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#gemfile">The Gemfile</a></li>
+          <li><a href="#layout">Layout</a></li>
+          <li><a href="#loading">Loading the application</a></li>
+          <li><a href="#models">A model</a></li>
+          <li><a href="#controllers">A controller</a></li>
+          <li><a href="#running">Running</a></li>
+          <li><a href="#processes">What a process does not isolate</a></li>
+        </ol>
+      </nav>
       <p>This page takes a Rails application: <a href="https://github.com/fixrb/microblog">fixrb/microblog</a>, a small microblog whose only test framework is Fix. Users pick a handle, post short texts, follow one another and read a timeline. Its domain, a handle and the body of a post, is plain Ruby in <code>lib</code>, tested as <a href="/gems/fix/v1/in-a-project/">In a project</a> showed. This page is about the rest: the models, which need a database, and the controllers, which need the application.</p>
       <p>The files shown here are those of the application, as they are in its repository, where they run with it. The repository of this site runs its examples before a page is published; it has no Rails, so these are the ones it shows without running.</p>
 

@@ -65,6 +65,15 @@
         <dt>Used by</dt>
         <dd>Fix 1.0, brutal 2.0</dd>
       </dl>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#usage">Usage</a></li>
+          <li><a href="#errors">Errors</a></li>
+          <li><a href="#limits">Limits</a></li>
+          <li><a href="#documentation">Documentation</a></li>
+        </ol>
+      </nav>
 
       <h2 id="install">Install</h2>
       <p>Add <code>gem "aw"</code> to your Gemfile, or run <code>gem install aw</code>. Without <code>fork(2)</code>, on Windows or JRuby, <code>Aw.supported?</code> answers <code>false</code>, and <code>fork!</code> and <code>fork?</code> raise <code>NotImplementedError</code>.</p>

@@ -48,6 +48,14 @@
           <p>Four words, <code>on</code>, <code>let</code>, <code>with</code> and <code>it</code>, and three levels of requirement.</p>
         </hgroup>
       </header>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#on">Methods: <code>on</code></a></li>
+          <li><a href="#let-and-with">Parameters: <code>let</code> and <code>with</code></a></li>
+          <li><a href="#it">Expectations: <code>it</code></a></li>
+          <li><a href="#processes">One process per context</a></li>
+        </ol>
+      </nav>
       <p>The block of <code>Fix</code> is a document. It is read once, when the file is loaded, and builds the specification before any subject exists: no setup, no teardown, no state. Something wrong in it, such as an <code>it</code> without a requirement or a <code>let</code> declared twice in one context, raises then, before any test.</p>
 
       <h2 id="on">Methods: <code>on</code></h2>
