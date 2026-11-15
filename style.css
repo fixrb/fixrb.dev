@@ -1101,12 +1101,12 @@ section#fix > dl > dt {
   color: #b9a6c0;
 }
 
-section#fix > dl a {
+section#fix > :is(p, dl) a {
   color: var(--rose);
   overflow-wrap: anywhere;
 }
 
-section#fix > dl a:hover {
+section#fix > :is(p, dl) a:hover {
   background: var(--rose);
   color: var(--night);
 }

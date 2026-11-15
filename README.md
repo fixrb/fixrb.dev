@@ -2,7 +2,7 @@
 
 The website of the Fixrb project: Fix, Matchi and the gems around them.
 
-Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing loaded from another site. Only the highlighting of Ruby code and the structured data of the pages are written by a script, `bin/check --fix`, with the standard library.
+Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing loaded from another site. Only the highlighting of Ruby code, the structured data of the pages, and `llms.txt` and `llms-full.txt` are written by a script, `bin/check --fix`, with the standard library.
 
 ## Layout
 
@@ -14,12 +14,14 @@ Hand-written HTML5 and one stylesheet. No build step, no JavaScript, and nothing
 | `img/` | The drawings of the site's own design, in SVG, used by `style.css` or a page: the night, the crystals and the signs of the home page, the levels, the print shop of the blog, the empty setting of the 404, the crystals of the footer; and `card-SLUG.png`, the card of each post before Fix 1.0 |
 | `blog/index.html`, `feed.xml` | The list of posts and its Atom feed |
 | `sitemap.xml`, `robots.txt` | For search engines: every page but the 404, and the files crawlers are kept out of |
+| `llms.txt`, `llms-full.txt` | For language models, in Markdown: every page but the 404, by what it holds; the page of fix and its guide, with the code of their examples |
+| `KEY.txt` | The key of IndexNow, 32 hexadecimal digits, in a file of that name: public by design |
 | `CATEGORIES/YYYY/MM/DD/SLUG.html` | Posts, at the URLs of the former Jekyll blog |
 | `examples/` | Every code example shown on a page, as a Ruby file or a manifest of brutal |
 | `404.html` | Served by GitHub Pages for any unknown address |
 | `style.css`, `fonts/`, `logo.svg`, `favicon.ico`, `icon.png`, `card.png` | Style, images, and the card shown where the home or the blog is shared |
-| `bin/check`, `bin/examples` | The checks, and the runner of the examples |
-| `.github/` | CI, which runs `bin/check`, and Dependabot, for the actions |
+| `bin/check`, `bin/examples`, `bin/indexnow` | The checks, the runner of the examples, and the request to IndexNow |
+| `.github/` | CI, which runs `bin/check`; the workflow that announces the published pages to IndexNow; and Dependabot, for the actions |
 | `.ruby-version` | The Ruby of CI and of the highlighting |
 | `.gitattributes` | LF line endings in every checkout |
 | `.nojekyll` | Tells GitHub Pages to serve the files as they are |
@@ -39,7 +41,8 @@ GitHub Pages publishes every file of the repository, so `bin/check` accepts only
 - A long page lists its sections in `<nav aria-label="On this page">`: an `ol` of links, one to each `h2` that carries an `id`, in the order of the page and with its words. `bin/check` fails when the list and the titles differ: change them together.
 - Text is written as characters (`’`, `“`, a no-break space), never as named entities other than `&amp;`, `&lt;`, `&gt;` and `&quot;`: the structured data and the feed take titles and descriptions as they are written.
 - Element and attribute names are in lowercase, and no attribute appears twice. Attributes and `rel` values come from a short list in `bin/check`: nothing that would contact another site (`preconnect`, `ping`, `srcset`) or open a window (`target`).
-- `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps crawlers out of the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`), never a page, the feed, the style, a font or an image.
+- `sitemap.xml` lists every page but `404.html` by its canonical URL, without dates. `robots.txt` announces it and keeps crawlers out of the tooling (`bin/`, `examples/`, dotfiles, `README.md`, `LICENSE.md`), never a page, the feed, the style, a font, an image or a text file such as `llms.txt`. It keeps no crawler out by its name: the crawlers of AI search, such as OAI-SearchBot, Claude-SearchBot or PerplexityBot, read the site like the others, and a page they cannot read is one a generative engine cannot cite.
+- `llms.txt` and `llms-full.txt`, for language models, are written by `bin/check --fix` from the pages and the feed, and `bin/check` fails if they differ from what it would write. `llms.txt` follows [llmstxt.org](https://llmstxt.org/): every page but the 404, once, in a section that `bin/check` gives it (Fix, the guide of Fix 1, the other gems in the order of the home page, the blog, the posts before Fix 1.0), with its `og:title` and its description; a page in none of them is reported. `llms-full.txt` holds the page of fix and every page of its guide, in the order of the guide, in Markdown: the `<main>` of each, without its navs, the code of each example from its file, and each terminal session as a `console` block. The conversion knows the elements these pages use; another one stops it, to be added to `bin/check`.
 - Files a browser could run when opened directly are checked too. An SVG file may only hold `svg`, `title`, `g`, `rect` and `path`, with attributes from a short list and values without a colon or a slash, so that none holds a URL; `logo.svg` is also pinned by its SHA-256, as fixrb/logo publishes it. `feed.xml` may only hold Atom elements, from a short list, linking to the site. A `CNAME` file contains `fixrb.dev`.
 - Links inside the site start with `/` and lead to a file of the repository, and so does every `url()` of `style.css`, written as a path in double quotes, `url("/gems/NAME/img/FILE.svg")`, in a comment or not; `style.css` holds no `@import`, `image-set()`, `src()` or backslash, which could load a file another way. Stylesheets, images and fonts are served by the site. No file is a symbolic link.
 - A code block shows a file of `examples/`, character for character: `<pre data-example="examples/gem/name.rb"><code>…</code></pre>`, with `<` and `&` escaped. To add or change one, edit the file, write `<pre data-example="…"><code></code></pre>` the first time, and run `bin/check --fix`. Examples end their lines with LF. A line that ends with `# => VALUE` must evaluate to an object whose `inspect` is `VALUE`. A manifest of brutal, `NAME_brutal.yaml`, is shown without highlighting, and the test file next to it, `test_NAME.rb`, is the one brutal writes from it.
@@ -57,7 +60,7 @@ Checks the rules above, the internal links and anchors, the feed, that the nav o
 bin/check --fix
 ```
 
-Rewrites the code blocks and the structured data of every page, and nothing else, then checks. A block that is not well formed, or code that Ripper cannot read back exactly (such as data after `__END__`), is left as it is and reported, as is a page without exactly one `twitter:card`. Ripper may split some code differently from one version of Ruby to another, so the highlighting is the one of the Ruby in `.ruby-version`, which CI uses too: run `bin/check --fix` with it.
+Rewrites the code blocks and the structured data of every page, and `llms.txt` and `llms-full.txt`, and nothing else, then checks. A block that is not well formed, or code that Ripper cannot read back exactly (such as data after `__END__`), is left as it is and reported, as is a page without exactly one `twitter:card`. Ripper may split some code differently from one version of Ruby to another, so the highlighting is the one of the Ruby in `.ruby-version`, which CI uses too: run `bin/check --fix` with it.
 
 ```sh
 RUBYLIB=../matchi/lib bin/examples examples/matchi
@@ -148,6 +151,8 @@ A gem may have its own drawing, illustration and icons, in `gems/NAME/img/`, whi
 
 When a gem is released, update its card on `index.html` (version and status) and its page (the version documented, and its links at that version), check that those links resolve, and run its examples against the release with `bin/examples`.
 
+The site gives the size of the code in a few places, which no check can measure, since the gems are not in this repository: the home page says each gem holds "a few hundred lines of code at most", and Questions gives fix-its in lines. Count them again for the release, and update what has changed. A post keeps the figures of its day, such as "About three hundred lines of code" in the post of Fix 1.0.
+
 ## Hosting
 
 GitHub Pages serves `fixrb.dev` from the `main` branch, root folder: `CNAME` names the domain, and `.nojekyll` makes Pages serve the files as they are. The domain is verified for the `fixrb` organization (organization settings, Pages, verified domains), so that no other repository can claim it. It was served from `docs/` in `fixrb/fix`, by Jekyll, until October 2026.
@@ -155,6 +160,8 @@ GitHub Pages serves `fixrb.dev` from the `main` branch, root folder: `CNAME` nam
 Pages publishes every push to `main`, checked or not. To publish only what passes `bin/check`, protect `main` in the repository settings: changes through pull requests, with the Check status required.
 
 For search engines, `fixrb.dev` is to be a domain property in Google Search Console (a DNS TXT record) and in Bing Webmaster Tools (imported from Search Console), with `https://fixrb.dev/sitemap.xml` submitted to both.
+
+IndexNow tells Bing, Yandex, Naver, Seznam and Yep which pages have changed; Google does not take part, and reads the sitemap. `KEY.txt` at the root holds the key, which the engines fetch to check a request: `bin/check` requires exactly one, holding its own name and nothing else, not even a line break. Once Pages has published a commit of `main` (the workflow *pages build and deployment*), the workflow IndexNow runs `bin/indexnow`, which lists the pages that commit adds, changes or deletes, and sends the list to `api.indexnow.org`; a push of several commits announces the pages of the last one. Run by hand, from the Actions tab, the workflow announces every page of the sitemap: do so once the key is first published. To change the key, replace the file, in a commit that `bin/check` accepts.
 
 ## License
 

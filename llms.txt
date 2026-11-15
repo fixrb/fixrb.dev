@@ -1,0 +1,51 @@
+# Fixrb
+
+> Fix tests Ruby code against specifications in the words of RFC 2119, written once and kept apart from any implementation. Fixrb gathers Fix and its gems.
+
+## Fix
+
+- [Fixrb: Fix, a Ruby testing framework, and the gems around it](https://fixrb.dev/): Fix tests Ruby code against specifications in the words of RFC 2119, written once and kept apart from any implementation. Fixrb gathers Fix and its gems.
+- [fix: a Ruby testing framework for RFC 2119 specifications](https://fixrb.dev/gems/fix/): Fix 1.0 on one page: the four words “on”, “let”, “with” and “it”, the five outcomes of MUST, SHOULD and MAY, results as data, a child process per context.
+
+## Guide of Fix 1
+
+- [Fix guide: testing Ruby with specifications](https://fixrb.dev/gems/fix/v1/): The guide to Fix 1: install it, write and run specifications, compose them, use them in a project or in Rails, come from RSpec. Every example is run.
+- [Getting started with Fix, a Ruby testing framework](https://fixrb.dev/gems/fix/v1/getting-started/): Get started with Fix, a Ruby testing framework: install it, write a first specification, see it fail, make it pass, and run it with the fix command.
+- [Writing Ruby specifications · Fix 1 guide](https://fixrb.dev/gems/fix/v1/writing-specifications/): The four words of a Fix specification, “on”, “let”, “with” and “it”, and the three levels of requirement, MUST, SHOULD and MAY, with their five outcomes.
+- [Matchers: eq, be, raise\_exception, change · Fix 1 guide](https://fixrb.dev/gems/fix/v1/matchers/): Every matcher of Fix, a Ruby testing framework: from eq and be to raise\_exception, change and fix, what each one compares and the lines it writes.
+- [Running Ruby specifications with fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/running-specifications/): Run a specification file with ruby, or a whole project with the fix command, in the order of names or a random one, from a terminal, a Rakefile or a CI.
+- [The word its · Fix 1 guide](https://fixrb.dev/gems/fix/v1/its/): With fix-its, a context of Fix that holds one expectation becomes one line of “its”, inside “on” and “with” too; and mind the bare “it” of Ruby 3.4.
+- [Composing specifications · Fix 1 guide](https://fixrb.dev/gems/fix/v1/composing-specifications/): A specification of Fix is a matcher: require one in another with fix(:Name), test a value with match?, and bring it to any test framework with matchi-fix.
+- [Fix in a Ruby project · Fix 1 guide](https://fixrb.dev/gems/fix/v1/in-a-project/): Where specifications of Fix live in a project, how they load its code, how they sit next to other tests, what a process does not isolate, and how to debug one.
+- [Testing a Rails application with Fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/in-a-rails-application/): What a Rails application needs for Fix to test its models and controllers: a helper to load it, a database each subject empties, Rack::Test, where files go.
+- [Patterns: contracts in Ruby · Fix 1 guide](https://fixrb.dev/gems/fix/v1/patterns/): Four uses of a Fix specification: one interface, several implementations; the contract of a dependency; three levels; a specification shipped with a gem.
+- [Coming from RSpec: RSpec idioms in Fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/coming-from-rspec/): What RSpec’s describe, context, subject, let, before and matchers become in Fix, and what it leaves out on purpose: hooks as such, doubles, shared state.
+- [Questions about Fix: short answers · Fix 1 guide](https://fixrb.dev/gems/fix/v1/questions/): Questions on Fix, answered in short: eq and eql?, lets in expectations, outcomes, exit status, random order, SimpleCov, Windows, RSpec or minitest beside it.
+
+## Gems
+
+- [fix-its: one-line expectations with its, for Fix](https://fixrb.dev/gems/fix-its/): Fix::Its adds the word its to the language of Fix: a method of the subject and one expectation about what it returns, on one line, its result pointing there.
+- [matchi-fix: test a value against a Fix specification](https://fixrb.dev/gems/matchi-fix/): Matchi::Fix tests a value against a specification of Fix, named or written in a block, and brings Fix specifications wherever a matcher of matchi goes.
+- [fix-command: the fix command, one process per file](https://fixrb.dev/gems/fix-command/): The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.
+- [matchi: Ruby matchers for any test framework](https://fixrb.dev/gems/matchi/): Matchi: Ruby matchers for any test framework, Minitest included, in which the expected value makes the comparison, not the object under test.
+- [spectus: Ruby expectations with MUST, SHOULD and MAY](https://fixrb.dev/gems/spectus/): Spectus expresses Ruby expectations with the MUST, SHOULD and MAY of RFC 2119, and gives a result that says how each one went, without raising.
+- [aw: run a Ruby block in a forked process](https://fixrb.dev/gems/aw/): Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.
+- [defi: a Ruby method call prepared for any object](https://fixrb.dev/gems/defi/): Defi prepares a Ruby method call, a name with its arguments, and sends it to any object, keeping what came back: the value returned, or the exception raised.
+- [brutal: plain Ruby tests written from what the code does](https://fixrb.dev/gems/brutal/): Brutal writes plain Ruby test files from YAML manifests, runs every combination of contexts in one child process and checks each observed value with eql?.
+
+## Blog
+
+- [Blog: Fix, Matchi and testing in Ruby](https://fixrb.dev/blog/): Posts about Fix, Matchi and the design of testing libraries for Ruby: specifications kept apart from the code, matchers, requirement levels, expected values.
+- [Fix 1.0 is here](https://fixrb.dev/framework/release/2026/10/31/fix-1.html): Fix 1.0 is out: a Ruby testing framework where a test suite is an RFC 2119 specification, tested against any subject, each context in its own process.
+
+## Before Fix 1.0
+
+- [The Three Levels of Requirements Inspired by RFC 2119](https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html): How Fix implements the MUST, SHOULD and MAY requirement levels for more precise specifications, and how this compares with RSpec’s historical evolution.
+- [Rethinking Test Architecture with Clear Specification Separation](https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html): How Fix’s approach to testing in Ruby keeps specifications apart from their implementations, for a test suite that is easier to maintain and to reuse.
+- [The Fundamental Distinction Between Expected and Actual Values in Testing](https://fixrb.dev/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html): Explore why the distinction between expected and actual values is crucial in test design, and how it impacts the robustness and reliability of your test suite.
+- [From RSpec to Fix: A Journey Towards Simpler Testing](https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html): How Fix brings simplicity and clarity to Ruby testing with a minimalist approach and an intuitive syntax, compared with traditional frameworks like RSpec.
+- [A Fresh Take on Ruby Testing](https://fixrb.dev/framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html): Introducing Fix 0.7, a minimalist Ruby testing framework focused on clear specifications and pure Ruby objects, built in just 148 lines of code.
+
+## Optional
+
+- [Fix 1: its page and its guide](https://fixrb.dev/llms-full.txt): the page of fix and every page of its guide, with the code of their examples, in one Markdown file

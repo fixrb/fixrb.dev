@@ -60,6 +60,23 @@
 
       <h2 id="writing">Writing</h2>
 
+      <h3 id="before-1">I found Fix code that does not run with Fix 1.0.</h3>
+      <p>Code written for Fix before 1.0 may use words that 1.0 changed or left out, and copies of it still circulate. The last betas of 1.0 and Fix 0.19 to 0.21, at the turn of 2025, wrote much as Fix 1.0 does, but for these:</p>
+      <table>
+        <thead>
+          <tr><th scope="col">Before 1.0</th><th scope="col">In Fix 1.0</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gem install fix --pre</code>, <code>gem "fix", ">= 1.0.0.beta12"</code></td><td><code>gem install fix</code>, <code>gem "fix"</code></td></tr>
+          <tr><td><code>Fix[:Duck].test { Duck.new }</code> on the last line: <code>test</code> ended the process on a failure</td><td><code>exit(Fix[:Duck].test { Duck.new })</code>: <code>test</code> returns <code>true</code> or <code>false</code> and never exits, hence <a href="#exit">the parentheses</a></td></tr>
+          <tr><td><code>eql</code>, <code>equal</code></td><td><code>eq</code>, <code>be</code></td></tr>
+          <tr><td><code>be_empty</code>, <code>be_valid</code>, <code>have_key(:id)</code>: a word for any predicate</td><td><code>on(:empty?) { it MUST be_true }</code>, the <a href="#predicates">idiom</a></td></tr>
+          <tr><td><code>it MUST eq name</code>, with <code>name</code> a let</td><td>the value in the expectation, the let in the subject block: <a href="#let-in-expectation">a let in an expectation</a></td></tr>
+          <tr><td>Ruby 3.1 or later, 3.2 for the last beta</td><td>Ruby 3.3 or later, with <code>fork(2)</code></td></tr>
+        </tbody>
+      </table>
+      <p>Fix 0.18 and earlier, from 2014 to 2019, had another language. In 0.18, for instance, <code>Fix.describe</code> took the subject itself, and an expectation was a block: <code>it { MUST eql "Swoosh..." }</code>. In Fix 1.0, the test gives the subject: <code>Fix :Duck do … end</code>, then <code>exit(Fix[:Duck].test { Duck.new })</code>. The posts of the blog written before 1.0 say so at their head.</p>
+
       <h3 id="eq">Why does <code>it MUST eq 42</code> fail for a subject that returns <code>42.0</code>?</h3>
       <p><code>eq</code> is <code>eql?</code>: the same value and the same class, for every value, not only numbers. <code>1.eql?(1.0)</code> is false, and so is <code>"a".eql?(:a)</code>. Compare with <code>be_within(delta).of(42)</code> for a number near 42, whatever its class, or with <code>be_a_kind_of Numeric</code> for the class alone. <a href="/gems/fix/v1/matchers/#eq">Matchers</a> has each one.</p>
 
@@ -131,7 +148,7 @@
       <p>Within a file, no: the contexts run in the order written, a context before those inside it, every time. Between files, on request: <code>fix --random</code> shuffles the files, and writes first the command that runs them in the same order again, <code>fix --random=2</code>. See <a href="/gems/fix/v1/running-specifications/#random-order">Random order</a>.</p>
 
       <h3 id="subject-output">Where does the subject’s own output go?</h3>
-      <p>It comes out as it is, on the same standard output, before the lines of its context. A text left without a line break joins the first of them. A runner reads the exit status, not the lines, for that reason.</p>
+      <p>What the subject writes comes out as it is, on the same standard output, before the lines of its context. A text left without a line break joins the first of them. A runner reads the exit status, not the lines, for that reason.</p>
 
       <h3 id="simplecov">SimpleCov reports nothing for the code my subjects ran.</h3>
       <p>Each context runs in a child that ends with <code>exit!</code>, which runs no <code>at_exit</code> handler, so SimpleCov never writes the child’s result. Either store the result before the child ends, as the tests of Fix do, or run with <code>test(fork: false)</code> for the measurement. See <a href="/gems/fix/v1/in-a-project/#debugging">Debugging</a>.</p>
@@ -157,17 +174,17 @@
       <p>Add a method to <code>Fix::Dsl</code> that composes <code>on</code> and <code>it</code>, and pass <code>it</code> the <code>location:</code> of your own caller, <code>caller_locations(1, 1).first</code>, so that the result points at the line of the specification. fix-its, nineteen lines of code, is the reference.</p>
 
       <h3 id="compared">How does Fix compare with RSpec and minitest?</h3>
-      <p>They do different jobs, and a project may have two of them. Where they differ:</p>
+      <p>Fix, RSpec and minitest do different jobs, and a project may have two of them. Where they differ:</p>
       <table>
         <thead>
-          <tr><th scope="col"></th><th scope="col">Fix</th><th scope="col">RSpec</th><th scope="col">minitest</th></tr>
+          <tr><th scope="col"></th><th scope="col">Fix</th><th scope="col"><a href="https://rspec.info/">RSpec</a></th><th scope="col"><a href="https://github.com/minitest/minitest">minitest</a></th></tr>
         </thead>
         <tbody>
           <tr><th scope="row">The subject</th><td>chosen by the test, apart from the specification, which names no class</td><td><code>subject</code>, in the spec; shared examples for several classes</td><td>built by the test class; a module included in several classes</td></tr>
           <tr><th scope="row">Levels</th><td>MUST, SHOULD and MAY; a warning and an info pass</td><td>one, with <code>pending</code> and <code>skip</code></td><td>one, with <code>skip</code></td></tr>
           <tr><th scope="row">Isolation</th><td>a child process per context</td><td>one process; hooks clean up</td><td>one process; <code>setup</code> and <code>teardown</code> clean up</td></tr>
           <tr><th scope="row">Hooks</th><td>none: the subject block runs for each expectation</td><td><code>before</code>, <code>after</code>, <code>around</code></td><td><code>setup</code>, <code>teardown</code></td></tr>
-          <tr><th scope="row">Doubles</th><td>none, by design</td><td>rspec-mocks</td><td>minitest/mock</td></tr>
+          <tr><th scope="row">Doubles</th><td>none, by design</td><td><a href="https://rspec.info/features/3-13/rspec-mocks/">rspec-mocks</a></td><td><a href="https://github.com/minitest/minitest-mock">minitest/mock</a></td></tr>
           <tr><th scope="row">Order</th><td>the order written; files shuffled on request</td><td>defined; random on request</td><td>random by default</td></tr>
           <tr><th scope="row">Output</th><td>one line per expectation, and the status of the process</td><td>formatters</td><td>reporters</td></tr>
           <tr><th scope="row">Runs on</th><td>CRuby with <code>fork</code>, tested on Linux and macOS</td><td>every Ruby</td><td>every Ruby</td></tr>

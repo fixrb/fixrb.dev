@@ -1,0 +1,2215 @@
+# Fix 1: its page and its guide
+
+> Fix 1.0 on one page: the four words “on”, “let”, “with” and “it”, the five outcomes of MUST, SHOULD and MAY, results as data, a child process per context.
+
+# fix
+
+Source: <https://fixrb.dev/gems/fix/>
+
+A Ruby testing framework: specifications in the words of RFC 2119, tested against a subject.
+
+A specification says what a subject **MUST**, **SHOULD** or **MAY** do, in the words of [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119), and nothing about how it is made: it names no class, builds no object, and holds no logic. Any subject is then tested against it, each context in a child process, and every expectation gets a result. One specification can test several implementations, a library you depend on, or the same object at every release; and because the levels are three, it can tell what it requires from what it recommends and what it leaves optional.
+
+- **Version**: 1.0.1
+- **Ruby**: 3.3 or later, with `fork`
+- **Dependencies**: [aw](https://fixrb.dev/gems/aw/), [defi](https://fixrb.dev/gems/defi/), [matchi](https://fixrb.dev/gems/matchi/), [spectus](https://fixrb.dev/gems/spectus/)
+- **License**: MIT
+
+## Install
+
+Add `gem "fix"` to your Gemfile, or run `gem install fix`.
+
+## In one file
+
+A file writes a specification, then tests a subject against it. `Fix :Duck do … end` builds the specification and registers it under its name; `Fix[:Duck]` finds it again. `test` builds a new subject with the block for every expectation, sends it the methods of the `on` around it, judges what comes out, writes one line per expectation and returns whether all of them pass; `exit` turns that into the status of the process.
+
+```ruby
+require "fix"
+
+class Duck
+  def walk = "Klop klop!"
+  def swim = "Swoosh..."
+end
+
+Fix :Duck do
+  on :walk do
+    it MUST eq "Klop klop!"
+  end
+
+  on :swim do
+    it MUST eq "Swoosh..."
+  end
+
+  on :speak do
+    it MAY eq "Quaaaaaack!"
+  end
+end
+
+exit(Fix[:Duck].test { Duck.new })
+```
+
+```console
+$ ruby duck.rb
+duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
+duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck
+```
+
+The duck has no `speak`: under MAY, a method the subject does not have is an info, which passes. The specification could sit in a file of its own and the test in another; the class could be anything with a `walk` and a `swim`. Keep the parentheses of `exit(…)`: `exit Fix[:Duck].test do … end` would give the block to `exit`.
+
+## What a specification is for
+
+### One specification, as many subjects as you like
+
+A specification is written once and tested against anything: the subject is chosen by the block of `test`, not by the specification. Here a stack is specified by what it does, then tested against `Array` and against a linked list. Nested `on` form a method chain, each one sent to what the one above returned, so `push` has to return the stack for `pop` to follow.
+
+```ruby
+require "fix"
+
+Fix :Stack do
+  on :empty? do
+    it MUST be_true
+  end
+
+  on :push, 1 do
+    on :push, 2 do
+      on :pop do
+        it MUST eq 2
+      end
+
+      on :size do
+        it MUST eq 2
+      end
+    end
+  end
+
+  on :pop do
+    it MUST be_nil
+  end
+end
+
+class LinkedStack
+  Node = Data.define(:value, :below)
+
+  def initialize = @top = nil
+  def empty? = @top.nil?
+  def size = each_node.count
+  def push(value) = tap { @top = Node.new(value, @top) }
+
+  def pop
+    value = @top&.value
+    @top = @top&.below
+    value
+  end
+
+  private
+
+  def each_node
+    return to_enum(:each_node) unless block_given?
+
+    node = @top
+    while node
+      yield node
+      node = node.below
+    end
+  end
+end
+
+Fix[:Stack].test { [] }               # => true
+Fix[:Stack].test { LinkedStack.new } # => true
+```
+
+```console
+$ ruby stack.rb
+stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil
+stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil
+```
+
+### A contract in three levels
+
+The levels of RFC 2119 say what an adapter has to do, what it had better do, and what it may leave out. A MUST not met fails the build; a SHOULD not met is a warning, and a MAY on a method the subject does not have is an info: both pass, and both are written, so the gap is known without blocking anyone. `let` declares a parameter of the subject, and `with` opens a context where it has another value: the block of `test` reads it to build the subject.
+
+```ruby
+require "fix"
+
+# What the application needs from a cache: a contract, in three levels.
+Fix :Cache do
+  let(:entries) { {} }
+
+  on :read, :answer do
+    it MUST be_nil
+  end
+
+  with entries: { answer: 42 } do
+    on :read, :answer do
+      it MUST eq 42
+    end
+  end
+
+  on :write, :answer, 42 do
+    it SHOULD be_true
+  end
+
+  on :clear do
+    it MAY be_nil
+  end
+end
+
+class MemoryCache
+  def initialize = @store = {}
+  def read(key) = @store[key]
+  def write(key, value) = @store[key] = value
+end
+
+exit(Fix[:Cache].test { entries.each_with_object(MemoryCache.new) { |(key, value), cache| cache.write(key, value) } })
+```
+
+```console
+$ ruby cache.rb
+cache.rb:8: Success: expected nil to be nil
+cache.rb:13: Success: expected 42 to eq 42
+cache.rb:18: Warning: expected 42 to be true
+cache.rb:22: Info: NoMethodError: undefined method 'clear' for an instance of MemoryCache
+```
+
+### What you expect of a dependency
+
+The subject does not have to be yours. A specification can hold what the application relies on in a library, and run at each upgrade of that library; here the standard `JSON` module. An exception the method raises is judged as such: `raise_exception` expects it, any other matcher reports an error.
+
+```ruby
+require "fix"
+require "json"
+
+# What the application expects of a library it depends on, tested at each
+# upgrade of that library.
+Fix :JSON do
+  on :generate, [1, 2] do
+    it MUST eq "[1,2]"
+  end
+
+  on :parse, "[1,2]" do
+    it MUST eq [1, 2]
+  end
+
+  on :parse, "nope" do
+    it MUST raise_exception JSON::ParserError
+  end
+
+  on :pretty_generate, [1] do
+    it SHOULD eq "[\n  1\n]"
+  end
+end
+
+exit(Fix[:JSON].test { JSON })
+```
+
+```console
+$ ruby json.rb
+json.rb:8: Success: expected "[1,2]" to eq "[1,2]"
+json.rb:12: Success: expected [1, 2] to eq [1, 2]
+json.rb:16: Success: expected #<JSON::ParserError: unexpected token 'nope' at line 1 column 1> to raise exception JSON::ParserError
+json.rb:20: Success: expected "[\n  1\n]" to eq "[\n  1\n]"
+```
+
+### Specifications that compose
+
+A specification is a matcher: `fix(:Name)` requires a registered one, `fix { … }` one written on the spot, and a level applies to it as to any matcher. A failed `fix` says that the specification is not met, not which of its expectations failed: test that specification on its own for the detail.
+
+```ruby
+require "fix"
+
+Fix :Positive do
+  on :positive? do
+    it MUST be_true
+  end
+end
+
+Fix :Score do
+  it MUST be_a_kind_of Numeric
+  it MUST fix(:Positive)
+  it MUST_NOT fix { on(:nan?) { it MUST be_true } }
+end
+
+exit(Fix[:Score].test { 7.5 })
+```
+
+```console
+$ ruby compose.rb
+compose.rb:10: Success: expected 7.5 to be a kind of Numeric
+compose.rb:11: Success: expected 7.5 to fix Positive
+compose.rb:12: Success: expected 7.5 not to fix an anonymous specification
+```
+
+### State that cannot leak
+
+Each context with expectations runs in a child process forked from the one that tests, with [aw](https://fixrb.dev/gems/aw/). A subject that writes to a global, a constant, `ENV` or the current directory does so in its child alone: every context starts from the state the file was loaded with, and the order of the contexts cannot change a result.
+
+```ruby
+require "fix"
+
+# A subject with a global state: every context starts from the state the
+# file was loaded with, since each one runs in a child process.
+module Registry
+  NAMES = []
+
+  def self.add(name) = tap { NAMES << name }
+  def self.names = NAMES
+end
+
+Fix :Registry do
+  on :add, "Alice" do
+    on :names do
+      it MUST eq ["Alice"]
+    end
+  end
+
+  on :add, "Bob" do
+    on :names do
+      it MUST eq ["Bob"]
+    end
+  end
+
+  on :names do
+    it MUST eq []
+  end
+end
+
+exit(Fix[:Registry].test { Registry })
+```
+
+```console
+$ ruby registry.rb
+registry.rb:15: Success: expected ["Alice"] to eq ["Alice"]
+registry.rb:21: Success: expected ["Bob"] to eq ["Bob"]
+registry.rb:26: Success: expected [] to eq []
+```
+
+## The language
+
+The block of `Fix` is a document, read once when the file is loaded, with four words. `on :name, *arguments` sends a method to the subject, and the expectations inside judge what it returns. `let(:name) { … }` is a parameter of the subject, computed once per expectation, the first time the subject block calls it; `with name: value` opens a context where it has that value. `it` takes a requirement: a level, `MUST`, `MUST_NOT`, `SHOULD`, `SHOULD_NOT` or `MAY`, then a matcher.
+
+```ruby
+require "fix"
+
+Fix :Greeting do
+  let(:name) { "Bob" }
+
+  it MUST eq "Hello, Bob!"
+  it MUST_NOT be_nil
+
+  on :size do
+    it MUST eq 11
+  end
+
+  with name: "Alice" do
+    it MUST eq "Hello, Alice!"
+  end
+end
+
+exit(Fix[:Greeting].test { "Hello, #{name}!" })
+```
+
+```console
+$ ruby greeting.rb
+greeting.rb:6: Success: expected "Hello, Bob!" to eq "Hello, Bob!"
+greeting.rb:7: Success: expected "Hello, Bob!" not to be nil
+greeting.rb:10: Success: expected 11 to eq 11
+greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"
+```
+
+The matchers are those of [matchi](https://fixrb.dev/gems/matchi/), as words: `eq`, `be`, `be_true`, `be_false`, `be_nil`, `be_within(delta).of`, `match`, `be_an_instance_of`, `be_a_kind_of`, `raise_exception`, `change` and `satisfy`, plus `fix`; any object with `match?` and `to_s` is one too. There is no predicate helper: `on(:empty?) { it MUST be_true }` asks the question.
+
+A let is visible from the subject block and from the other lets only; named in an expectation, it raises `NameError` at load, with the remedy. Its name cannot be a method of the object the subject is built on, nor a word of the language, so that nothing is redefined in silence. Everything that is wrong in the document raises when the file is loaded, before any test: an `it` with a block or without a requirement, a let or a specification named twice, a matcher without `match?`. A block that raises registers nothing.
+
+## Outcomes
+
+Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. Hence five outcomes, of which a success, a warning and an info pass:
+
+| Level | Match is true | Match is false | Missing method | Other exception |
+| --- | --- | --- | --- | --- |
+| MUST | success | failure | error | error |
+| SHOULD | success | warning | error | error |
+| MAY | success | failure | info | error |
+
+A negation swaps the first two columns. The missing method is the one named by the `on` of the context, when the object it is sent to raises `NoMethodError` for it. Below an error, `test` writes the frames of its backtrace that are not those of Fix and its gems, so that the line of the subject is there:
+
+```ruby
+require "fix"
+
+class Account
+  def initialize(balance)
+    @balance = balance
+  end
+
+  attr_reader :balance
+
+  def withdraw(amount)
+    raise ArgumentError, "insufficient funds" if amount > balance
+
+    @balance -= amount
+  end
+end
+
+Fix :Account do
+  on :balance do
+    it MUST eq 100
+    it MUST eq 200
+    it SHOULD eq 200
+  end
+
+  on :currency do
+    it MAY eq "EUR"
+  end
+
+  on :withdraw, 500 do
+    it MUST eq(-400)
+  end
+end
+
+Fix[:Account].test { Account.new(100) } # => false
+```
+
+```console
+$ ruby account.rb
+account.rb:19: Success: expected 100 to eq 100
+account.rb:20: Failure: expected 100 to eq 200
+account.rb:21: Warning: expected 100 to eq 200
+account.rb:25: Info: NoMethodError: undefined method 'currency' for an instance of Account
+account.rb:29: Error: ArgumentError: insufficient funds
+  account.rb:11:in 'Account#withdraw'
+  account.rb:33:in '<main>'
+```
+
+## Results and runners
+
+`test` writes, for each expectation, one line, `LOCATION: OUTCOME: SUMMARY`, the summary being that of [spectus](https://fixrb.dev/gems/spectus/), and nothing else: no letter, no colour, no count. A file is run with `ruby`, and its status is 0 when the specification is met: that is all a continuous integration, a Rakefile or a runner needs, and the grammar of the lines is what a runner reads to recap or colour them. [fix-command](https://fixrb.dev/gems/fix-command/) is such a runner: the `fix` command runs each file in a process of its own and tells how many were met. `run` gives the same results as data, in the order of the contexts, and `match?` tests a value as a matcher does:
+
+```ruby
+require "fix"
+
+Fix :Size do
+  it MUST be_an_instance_of String
+
+  on :size do
+    it MUST eq 3
+  end
+end
+
+results = Fix[:Size].run { "abcd" }
+results.map(&:outcome) # => [:success, :failure]
+results.map(&:passed?) # => [true, false]
+
+result = results.last
+result.location # => "examples/fix/results.rb:7"
+result.chain    # => ".size"
+result.summary  # => "expected 4 to eq 3"
+result.to_s     # => "examples/fix/results.rb:7: Failure: expected 4 to eq 3"
+result.result.class # => Spectus::Result
+
+Fix[:Size].match? { "abc" } # => true
+```
+
+## Processes
+
+The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an `exit` included, is an error of its expectation alone. Nothing is rescued around a child: an `Interrupt` stops the run, and so does a child that died, with `Aw::ChildError`. Fix never writes a result that did not come from an expectation. `test(fork: false)` runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.
+
+## What Fix leaves out
+
+No mocks, no `before` and `after`, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs `fork`: it is tested on Linux and macOS, and does not run on Windows or JRuby.
+
+## Where Fix fits
+
+Ruby has long kept a few specifications apart from what implements them: [`Rack::Lint`](https://github.com/rack/rack/blob/main/lib/rack/lint.rb) checks any application and any server against [the Rack specification](https://github.com/rack/rack/blob/main/SPEC.rdoc), [ruby/spec](https://github.com/ruby/spec) describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#shipped) shows.
+
+Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings such a specification into that framework as a matcher. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) shows what each RSpec idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
+
+## Extensions
+
+[fix-its](https://fixrb.dev/gems/fix-its/) adds the word `its`, a method and its expectation on one line. [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings a specification of Fix to any framework that takes a matcher of matchi. The block of `Fix` runs on an instance of `Fix::Dsl`, where a gem may add a word of its own.
+
+## Documentation
+
+- [The guide](https://fixrb.dev/gems/fix/v1/): Fix 1 one step at a time, from a first specification to the tests of a project.
+- [README](https://github.com/fixrb/fix/blob/v1.0.1/README.md): the language, outcomes, results and processes in full, and the changes in 1.0.1.
+- [API reference](https://rubydoc.info/gems/fix/1.0.1)
+- [RubyGems](https://rubygems.org/gems/fix/versions/1.0.1)
+- [Source code](https://github.com/fixrb/fix/tree/v1.0.1)
+- [Rethinking test architecture with clear specification separation](https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html) and [The three levels of requirements, inspired by RFC 2119](https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html), on the blog.
+
+# Fix guide
+
+Source: <https://fixrb.dev/gems/fix/v1/>
+
+Version 1: from a first specification to the tests of a project.
+
+This guide teaches version 1 of [Fix](https://fixrb.dev/gems/fix/), the Ruby testing framework, one step at a time, each page building on the one before. It assumes you know Ruby, not a test framework: [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) is for those who come from it, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) gives short answers to what comes up with a first specification.
+
+Each page shows files, and what running them writes. Both come from the repository of this site, where every example is run before a page is published: what you read is what Fix 1 does. One page, [In a Rails application](https://fixrb.dev/gems/fix/v1/in-a-rails-application/), shows files of another repository, [fixrb/microblog](https://github.com/fixrb/microblog), which run there, inside an application this site does not have. The outputs are those of Ruby 4.0; a message of Ruby itself, in an error, may read otherwise under another version.
+
+Fix 1 needs Ruby 3.3 or later and `fork(2)`: it is tested on Linux and macOS, and does not run on Windows or JRuby.
+
+## Other documents
+
+- [The README of fix](https://github.com/fixrb/fix/blob/v1.0.1/README.md) is the reference: every rule of the language, the outcomes, the results and the processes, in full. The guide links to it where a rule matters.
+- [The API reference](https://rubydoc.info/gems/fix/1.0.1) documents each class and method.
+- [The page of Fix](https://fixrb.dev/gems/fix/) tells what a specification is for, in five cases.
+
+# Getting started
+
+Source: <https://fixrb.dev/gems/fix/v1/getting-started/>
+
+A first specification: see it fail, make it pass, run it with the `fix` command.
+
+This page builds a small project, `greeting`, with a class in `lib/greeting.rb` and its specification in `fix/greeting_fix.rb`.
+
+## Install
+
+```console
+$ gem install fix-command
+```
+
+fix-command brings fix with it: the [fix](https://fixrb.dev/gems/fix/) gem holds the language of specifications, and [fix-command](https://fixrb.dev/gems/fix-command/) the `fix` command, which runs them. In a project with a Gemfile, add `gem "fix-command"` to it instead, run `bundle install`, and run the commands of this guide through `bundle exec`.
+
+## A specification
+
+Specifications live in the `fix` directory of a project, usually one per file, in files whose names end with `_fix.rb`. In `fix/greeting_fix.rb`:
+
+```ruby
+require "fix"
+require_relative "../lib/greeting"
+
+Fix :Greeting do
+  on :call, "Alice" do
+    it MUST eq "Hello, Alice!"
+  end
+end
+
+exit(Fix[:Greeting].test { Greeting.new })
+```
+
+- `require "fix"` loads Fix. `require_relative "../lib/greeting"` loads the class: the test at the end needs it, the specification does not.
+- `Fix :Greeting do … end` builds a specification and registers it under the name `Greeting`. Its block is read once, when the file is loaded.
+- `on :call, "Alice"` opens a context: the method sent to the subject, `call`, with its argument.
+- `it MUST eq "Hello, Alice!"` is an expectation about what comes back: a level of requirement, `MUST`, and a matcher, `eq`.
+- The last line tests a subject against the specification. Its block, the subject block, builds the subject, a new one for each expectation; `test` writes one line per expectation and returns whether all of them are met; `exit` makes that the status of the process.
+
+The specification names no class: it says what a greeting does, and the test, on the last line, picks what to test. The same specification could test another class tomorrow.
+
+## The code
+
+A first version of the class, in `lib/greeting.rb`:
+
+```ruby
+class Greeting
+  def call(name) = "Hello #{name}!"
+end
+```
+
+## A first run
+
+A specification file is a Ruby program: run it with `ruby`, from the root of the project, so that the lines name the file from there.
+
+```console
+$ ruby fix/greeting_fix.rb
+fix/greeting_fix.rb:6: Failure: expected "Hello Alice!" to eq "Hello, Alice!"
+```
+
+One line per expectation: where it is, the file and the line of its `it`; its outcome, `Failure`; and what happened, `expected ACTUAL to eq EXPECTED`. A comma is missing. The status of the process is 1, as for any failing program, which is all a terminal, a Rakefile or a CI service needs to know.
+
+## Making it pass
+
+With the comma, in `lib/greeting.rb`:
+
+```ruby
+class Greeting
+  def call(name) = "Hello, #{name}!"
+end
+```
+
+This time, run the `fix` command, from the root of the project:
+
+```console
+$ fix
+fix/greeting_fix.rb:6: Success: expected "Hello, Alice!" to eq "Hello, Alice!"
+1 file met
+```
+
+The expectation is met. `fix` runs each `_fix.rb` file of the `fix` directory in a process of its own, lets its lines through, and ends with how many files were met; its status is 0 when all of them are. With one file, it says what `ruby` said; with fifty, it is the command to run.
+
+That is the whole cycle: a specification says what a subject must do, a test picks the subject, and the status tells whether it does. The next page writes richer specifications: several contexts, parameters, and the two other levels, `SHOULD` and `MAY`.
+
+# Writing specifications
+
+Source: <https://fixrb.dev/gems/fix/v1/writing-specifications/>
+
+Four words, `on`, `let`, `with` and `it`, and three levels of requirement.
+
+The block of `Fix` is a document. It is read once, when the file is loaded, and builds the specification before any subject exists: no setup, no teardown, no state. Something wrong in it, such as an `it` without a requirement or a `let` declared twice in one context, raises then, before any test.
+
+## Methods: `on`
+
+`on` opens a context that sends a method to the subject, with its arguments; the expectations inside it judge what comes back. An `on` inside another sends its method to that value, and so on. An `it` outside any `on` judges the subject itself.
+
+```ruby
+require "fix"
+
+Fix :Phrase do
+  it MUST be_an_instance_of String
+
+  on :upcase do
+    it MUST eq "HELLO WORLD"
+
+    on :length do
+      it MUST eq 11
+    end
+  end
+
+  on :split, " " do
+    it MUST eq %w[hello world]
+  end
+
+  on :start_with?, "hello" do
+    it MUST be_true
+  end
+end
+
+exit(Fix[:Phrase].test { "hello world" })
+```
+
+```console
+$ ruby phrase_fix.rb
+phrase_fix.rb:4: Success: expected "hello world" to be an instance of String
+phrase_fix.rb:7: Success: expected "HELLO WORLD" to eq "HELLO WORLD"
+phrase_fix.rb:10: Success: expected 11 to eq 11
+phrase_fix.rb:15: Success: expected ["hello", "world"] to eq ["hello", "world"]
+phrase_fix.rb:19: Success: expected true to be true
+```
+
+A question is a method too: `on :start_with?, "hello"` asks it, and `be_true` wants the answer `true`. A method that raises ends the chain there: its expectations are errors, unless their matcher is [`raise_exception`](https://fixrb.dev/gems/fix/v1/matchers/#raise_exception), which is made for that. The method is sent without a block, since the block of `on` is the context.
+
+## Parameters: `let` and `with`
+
+A `let` is a parameter of the subject: a name and a block that gives its value. The block of `test` calls it to build the subject. `with` opens a context where parameters take other values:
+
+```ruby
+require "fix"
+
+class Price
+  def initialize(amount, rate: 0)
+    @amount = amount
+    @rate = rate
+  end
+
+  def total = @amount - (@amount * @rate / 100)
+end
+
+Fix :Price do
+  let(:amount) { 100 }
+  let(:rate) { 0 }
+
+  on :total do
+    it MUST eq 100
+
+    with rate: 20 do
+      it MUST eq 80
+    end
+  end
+
+  with amount: 50, rate: 10 do
+    on :total do
+      it MUST eq 45
+    end
+  end
+end
+
+exit(Fix[:Price].test { Price.new(amount, rate:) })
+```
+
+```console
+$ ruby price_fix.rb
+price_fix.rb:17: Success: expected 100 to eq 100
+price_fix.rb:20: Success: expected 80 to eq 80
+price_fix.rb:26: Success: expected 45 to eq 45
+```
+
+A context inherits the parameters and the methods of the contexts around it: inside `on :total`, `with rate: 20` builds the price at 20% and sends it `total`. A `with` may come before an `on` or inside it.
+
+- A let is visible from the subject block and from the other lets, not from the expectations, which are written before any subject exists: naming it there raises `NameError` at load.
+- Its value is computed the first time it is called, and kept for the rest of the expectation. Each expectation builds its subject anew: `let(:items) { [] }` gives each one its own array, while `with items: []` gives the same array to the expectations of its context.
+- A let cannot take the name of a method every object has, public or private, such as `format`, nor of a word of Fix, such as `eq`: `let(:format)` raises `ArgumentError` at load, `format is already a method of Kernel`, so that nothing is redefined in silence.
+
+## Expectations: `it`
+
+`it` takes a requirement: a level, then a matcher, as in `it MUST eq 100`. The levels are the words of [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119): `MUST`, `SHOULD` and `MAY`, with `MUST_NOT` and `SHOULD_NOT` for a negation; RFC 2119 has no negative `MAY`. The [matchers](https://fixrb.dev/gems/fix/v1/matchers/) have a page of their own.
+
+```ruby
+require "fix"
+
+Player = Data.define(:name, :score)
+
+Fix :Player do
+  on :name do
+    it MUST eq "Ada"
+  end
+
+  on :score do
+    it MUST_NOT be_nil
+    it SHOULD eq 100
+  end
+
+  on :avatar do
+    it MAY match(/\.png\z/)
+  end
+end
+
+exit(Fix[:Player].test { Player.new(name: "Ada", score: 90) })
+```
+
+```console
+$ ruby player_fix.rb
+player_fix.rb:7: Success: expected "Ada" to eq "Ada"
+player_fix.rb:11: Success: expected 90 not to be nil
+player_fix.rb:12: Warning: expected 90 to eq 100
+player_fix.rb:16: Info: NoMethodError: undefined method 'avatar' for an instance of Player
+```
+
+Two questions tell the levels apart. Must the method exist? `MUST` and `SHOULD` say yes, `MAY` says no. Must it do what is written? `MUST` and `MAY` say yes, `SHOULD` only recommends it. Hence five outcomes:
+
+| Level | It does | It does not | No such method | Another exception |
+| --- | --- | --- | --- | --- |
+| `MUST` | Success | Failure | Error | Error |
+| `SHOULD` | Success | Warning | Error | Error |
+| `MAY` | Success | Failure | Info | Error |
+
+A success, a warning and an info pass: the player above meets its specification, and the status of the process is 0. A failure and an error do not. A negation swaps the first two columns: `MUST_NOT be_nil` succeeds when the score is not `nil`.
+
+Below an error come the frames of its backtrace that are not in Fix and its gems, indented by two spaces, so that the line of the code that raised is there: the [matchers](https://fixrb.dev/gems/fix/v1/matchers/#raise_exception) page shows one, under `raise_exception`.
+
+## One process per context
+
+Each context with expectations runs in a child process of the one that tests, the expectations of a context in the same child, and the contexts one after the other, a context before those inside it. What a subject changes in its process, a global, a constant, the current directory, `ENV`, stays in its context, and the order of the contexts cannot change a result. What it changes outside the process, a file or a database, does not stay there: [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#outside-the-process) comes back to it.
+
+# Matchers
+
+Source: <https://fixrb.dev/gems/fix/v1/matchers/>
+
+What each one compares, and what it writes when it is met and when it is not.
+
+A matcher is the second half of a requirement, after the level: `it MUST eq 100`. The matchers of Fix are those of [Matchi](https://fixrb.dev/gems/matchi/), where the expected value makes the comparison wherever it can, so that the object under test cannot vouch for itself. Each one works with every level, and a negation, `MUST_NOT` or `SHOULD_NOT`, writes `not` in the line.
+
+| Matcher | Met when the actual value… |
+| --- | --- |
+| [`eq(expected)`](https://fixrb.dev/gems/fix/v1/matchers/#eq) | is of its class and `eql?` to it |
+| [`be(expected)`](https://fixrb.dev/gems/fix/v1/matchers/#be) | is the very same object |
+| [`be_true`, `be_false`, `be_nil`](https://fixrb.dev/gems/fix/v1/matchers/#be_true) | is `true`, `false`, `nil` |
+| [`be_a_kind_of(mod)`](https://fixrb.dev/gems/fix/v1/matchers/#be_a_kind_of) | is an instance of that module or of a descendant |
+| [`be_an_instance_of(klass)`](https://fixrb.dev/gems/fix/v1/matchers/#be_an_instance_of) | is an instance of that very class |
+| [`be_within(d).of(x)`](https://fixrb.dev/gems/fix/v1/matchers/#be_within) | is a number at most `d` away from `x` |
+| [`match(regexp)`](https://fixrb.dev/gems/fix/v1/matchers/#match) | is a String or a Symbol that matches |
+| [`satisfy { \|value\| … }`](https://fixrb.dev/gems/fix/v1/matchers/#satisfy) | makes the block answer `true` |
+| [`raise_exception(klass)`](https://fixrb.dev/gems/fix/v1/matchers/#raise_exception) | is an exception of that class, raised by the method |
+| [`change(object, :method)`](https://fixrb.dev/gems/fix/v1/matchers/#change) | comes back from a method that changed what `object.method` returns |
+| [`fix(:Name)`, `fix { … }`](https://fixrb.dev/gems/fix/v1/matchers/#fix) | meets that specification |
+
+## `eq`
+
+`eq(expected)` is met when the actual value is of the class of the expected one, and `eql?` to it. Strings, symbols, arrays, hashes and data objects compare their content, element by element; a number compares its class too, so `1` is not `eq 1.0`.
+
+```ruby
+require "fix"
+
+Fix :Half do
+  on :to_s do
+    it MUST eq "1/2"
+  end
+
+  on :to_f do
+    it MUST eq 0.5
+  end
+
+  on :numerator do
+    it MUST eq 1.0
+  end
+end
+
+exit(Fix[:Half].test { Rational(1, 2) })
+```
+
+```console
+$ ruby eq_fix.rb
+eq_fix.rb:5: Success: expected "1/2" to eq "1/2"
+eq_fix.rb:9: Success: expected 0.5 to eq 0.5
+eq_fix.rb:13: Failure: expected 1 to eq 1.0
+```
+
+The numerator is `1`, an Integer, and `1` is not `eql?` to `1.0`, a Float, although `1 == 1.0`. Write the number of the class you expect, or [`be_within`](https://fixrb.dev/gems/fix/v1/matchers/#be_within) for a computed Float.
+
+## `be`
+
+`be(expected)` is met when the actual value is the expected object itself, `equal?`: the object of a constant, a symbol, `true`, `false`, `nil`, or an object kept in a variable of the file.
+
+```ruby
+require "fix"
+
+DEFAULTS = { color: :blue }.freeze
+
+Settings = Data.define(:defaults)
+
+Fix :Settings do
+  on :defaults do
+    it MUST be DEFAULTS
+    it MUST eq({ color: :blue })
+    it MUST be({ color: :blue })
+  end
+end
+
+exit(Fix[:Settings].test { Settings.new(DEFAULTS) })
+```
+
+```console
+$ ruby be_fix.rb
+be_fix.rb:9: Success: expected {color: :blue} to be {color: :blue}
+be_fix.rb:10: Success: expected {color: :blue} to eq {color: :blue}
+be_fix.rb:11: Failure: expected {color: :blue} to be {color: :blue}
+```
+
+The last line reads like the first, but fails: the hash written there has the same content as `DEFAULTS`, which `eq` accepts, and is another object.
+
+## `be_true`, `be_false`, `be_nil`
+
+`be_true`, `be_false` and `be_nil` are each met by one object only: `true`, `false` or `nil`. A value that Ruby treats as true in a condition, such as `4`, is not `true`:
+
+```ruby
+require "fix"
+
+Fix :Word do
+  on :empty? do
+    it MUST be_false
+  end
+
+  on :index, "z" do
+    it MUST be_nil
+  end
+
+  on :size do
+    it MUST be_true
+  end
+end
+
+exit(Fix[:Word].test { "word" })
+```
+
+```console
+$ ruby be_true_fix.rb
+be_true_fix.rb:5: Success: expected false to be false
+be_true_fix.rb:9: Success: expected nil to be nil
+be_true_fix.rb:13: Failure: expected 4 to be true
+```
+
+To check that a collection is empty, ask it: `on(:empty?) { it MUST be_true }`. To accept any value that is neither `nil` nor `false`, write `satisfy { |value| !!value }`.
+
+## `be_a_kind_of`
+
+`be_a_kind_of(mod)` is met by an instance of that class, of one of its subclasses, or of a class that includes that module:
+
+```ruby
+require "fix"
+
+Fix :Count do
+  it MUST be_a_kind_of Integer
+  it MUST be_a_kind_of Numeric
+  it MUST be_a_kind_of Comparable
+  it MUST be_a_kind_of String
+end
+
+exit(Fix[:Count].test { 42 })
+```
+
+```console
+$ ruby be_a_kind_of_fix.rb
+be_a_kind_of_fix.rb:4: Success: expected 42 to be a kind of Integer
+be_a_kind_of_fix.rb:5: Success: expected 42 to be a kind of Numeric
+be_a_kind_of_fix.rb:6: Success: expected 42 to be a kind of Comparable
+be_a_kind_of_fix.rb:7: Failure: expected 42 to be a kind of String
+```
+
+## `be_an_instance_of`
+
+`be_an_instance_of(klass)` is met by an instance of that very class only, not of a subclass:
+
+```ruby
+require "fix"
+
+Fix :Count do
+  it MUST be_an_instance_of Integer
+  it MUST be_an_instance_of Numeric
+end
+
+exit(Fix[:Count].test { 42 })
+```
+
+```console
+$ ruby be_an_instance_of_fix.rb
+be_an_instance_of_fix.rb:4: Success: expected 42 to be an instance of Integer
+be_an_instance_of_fix.rb:5: Failure: expected 42 to be an instance of Numeric
+```
+
+## `be_within`
+
+`be_within(delta).of(expected)` is met by a number, an Integer, a Float, a Rational or a BigDecimal, at most `delta` away from the expected one; a value of another class, a String say, does not meet it. It is the matcher for a computed Float, which is rarely exact:
+
+```ruby
+require "fix"
+
+Circle = Data.define(:radius) do
+  def area = Math::PI * radius**2
+end
+
+Fix :Circle do
+  on :area do
+    it MUST be_within(0.01).of(3.14)
+    it MUST be_within(0.001).of(3.14)
+  end
+end
+
+exit(Fix[:Circle].test { Circle.new(radius: 1) })
+```
+
+```console
+$ ruby be_within_fix.rb
+be_within_fix.rb:9: Success: expected 3.141592653589793 to be within 0.01 of 3.14
+be_within_fix.rb:10: Failure: expected 3.141592653589793 to be within 0.001 of 3.14
+```
+
+## `match`
+
+`match(regexp)` is met by a String or a Symbol that the regular expression matches, and by nothing else:
+
+```ruby
+require "fix"
+
+Fix :Email do
+  it MUST match(/@example\.com\z/)
+  it MUST_NOT match(/\s/)
+  it MUST match(/\.org\z/)
+
+  on :to_sym do
+    it MUST match(/\Aada@/)
+  end
+end
+
+exit(Fix[:Email].test { "ada@example.com" })
+```
+
+```console
+$ ruby match_fix.rb
+match_fix.rb:4: Success: expected "ada@example.com" to match /@example\.com\z/
+match_fix.rb:5: Success: expected "ada@example.com" not to match /\s/
+match_fix.rb:6: Failure: expected "ada@example.com" to match /\.org\z/
+match_fix.rb:9: Success: expected :"ada@example.com" to match /\Aada@/
+```
+
+## `satisfy`
+
+`satisfy { |value| … }` is met when its block answers `true` for the actual value, and not when it answers `false`. Any other answer is an error, so that a block that forgot to answer a question cannot pass:
+
+```ruby
+require "fix"
+
+Fix :Score do
+  it MUST satisfy { |score| score.between?(0, 100) }
+  it MUST satisfy { |score| score.even? }
+  it MUST satisfy { |score| score.to_s }
+end
+
+exit(Fix[:Score].test { 75 })
+```
+
+```console
+$ ruby satisfy_fix.rb
+satisfy_fix.rb:4: Success: expected 75 to satisfy &block
+satisfy_fix.rb:5: Failure: expected 75 to satisfy &block
+satisfy_fix.rb:6: Error: TypeError: the block must return true or false (got a String)
+  satisfy_fix.rb:9:in '<main>'
+```
+
+Name the parameter of the block. Since Ruby 3.4, a bare `it` in a block is its parameter, while on Ruby 3.3 it is the word of Fix.
+
+## `raise_exception`
+
+`raise_exception(klass)` is met when the method of the context raised an exception of that class or of a subclass: a `KeyError` is an `IndexError`. `raise_exception(klass, message)` also wants that message, a String, or a Regexp that matches it. A method that returns does not meet it, nor does another exception. Under any other matcher, the exception is an error: the `it MUST eq 0` below gets one, with the frames of its backtrace that are not in Fix and its gems.
+
+```ruby
+require "fix"
+
+Fix :Stock do
+  on :fetch, :pears do
+    it MUST raise_exception KeyError
+    it MUST raise_exception KeyError, "key not found: :pears"
+    it MUST raise_exception IndexError
+    it MUST raise_exception ArgumentError
+    it MUST eq 0
+  end
+
+  on :fetch, :apples do
+    it MUST raise_exception KeyError
+  end
+end
+
+exit(Fix[:Stock].test { { apples: 3 } })
+```
+
+```console
+$ ruby raise_exception_fix.rb
+raise_exception_fix.rb:5: Success: expected #<KeyError: key not found: :pears> to raise exception KeyError
+raise_exception_fix.rb:6: Success: expected #<KeyError: key not found: :pears> to raise exception KeyError with message "key not found: :pears"
+raise_exception_fix.rb:7: Success: expected #<KeyError: key not found: :pears> to raise exception IndexError
+raise_exception_fix.rb:8: Failure: expected #<KeyError: key not found: :pears> to raise exception ArgumentError
+raise_exception_fix.rb:9: Error: KeyError: key not found: :pears
+  raise_exception_fix.rb:17:in '<main>'
+raise_exception_fix.rb:13: Failure: expected 3 to raise exception KeyError
+```
+
+## `change`
+
+`change(object, :method)` is met when sending the method of the context makes that method of that object return another value. `.by(n)`, `.by_at_least(n)` and `.by_at_most(n)` say by how much, `.to(b)` and `.from(a).to(b)` between which values. The line shows what the method of the context returned: here, `click` returns the new count.
+
+```ruby
+require "fix"
+
+COUNTER = Struct.new(:count).new(0)
+
+Clicker = Data.define(:counter) do
+  def click = counter.count += 1
+  def look = counter.count
+end
+
+Fix :Clicker do
+  on :click do
+    it MUST change(COUNTER, :count).by(1)
+  end
+
+  on :click do
+    it MUST change(COUNTER, :count).from(0).to(1)
+  end
+
+  on :look do
+    it MUST change(COUNTER, :count).by_at_least(1)
+  end
+end
+
+exit(Fix[:Clicker].test { Clicker.new(COUNTER) })
+```
+
+```console
+$ ruby change_fix.rb
+change_fix.rb:12: Success: expected 1 to change by 1
+change_fix.rb:16: Success: expected 1 to change from 0 to 1
+change_fix.rb:20: Failure: expected 0 to change by at least 1
+```
+
+The matcher is built when the file is loaded, so the object it watches exists then: a constant, as here, not a let, which lives with the subject. The expectations of a context run in the same process, one after the other: a second `change` in the same context would see what the first did. Above, each expectation has a context of its own, which starts from the state of the file: the count is 0 again when `look` is sent, and `look` changes nothing.
+
+## `fix`
+
+`fix(:Name)` is met when the actual value meets the specification of that name, written before it in the file or in a file it requires. `fix { … }` writes the specification in place, without a name:
+
+```ruby
+require "fix"
+
+Fix :Filled do
+  on :empty? do
+    it MUST be_false
+  end
+end
+
+Fix :Name do
+  it MUST be_an_instance_of String
+  it MUST fix(:Filled)
+  it MUST fix { on(:strip) { it MUST eq "Ada" } }
+end
+
+exit(Fix[:Name].test { "Ada" })
+```
+
+```console
+$ ruby fix_fix.rb
+fix_fix.rb:10: Success: expected "Ada" to be an instance of String
+fix_fix.rb:11: Success: expected "Ada" to fix Filled
+fix_fix.rb:12: Success: expected "Ada" to fix an anonymous specification
+```
+
+A specification in a specification: [Composing specifications](https://fixrb.dev/gems/fix/v1/composing-specifications/) tells more.
+
+## Your own matcher
+
+Any object with two methods is a matcher: `match?`, which gets the actual value from its block and answers `true` or `false`, and `to_s`, a String, which the line writes after `to`:
+
+```ruby
+require "fix"
+
+class BeEven
+  def match? = yield.even?
+  def to_s = "be even"
+end
+
+Fix :Pair do
+  on :size do
+    it MUST BeEven.new
+  end
+
+  on :first do
+    it MUST BeEven.new
+  end
+end
+
+exit(Fix[:Pair].test { [1, 2] })
+```
+
+```console
+$ ruby own_fix.rb
+own_fix.rb:10: Success: expected 2 to be even
+own_fix.rb:14: Failure: expected 1 to be even
+```
+
+`MUST_NOT BeEven.new` works as well: the level reads the answer.
+
+# Running specifications
+
+Source: <https://fixrb.dev/gems/fix/v1/running-specifications/>
+
+A file with `ruby`, a project with `fix`, and the status that says whether it is met.
+
+This page runs a project of three specification files: two are met, one is not.
+
+## A file
+
+A specification file is a Ruby program that ends with the test of a subject. `test` writes one line per expectation and returns whether all of them pass; `exit` makes it the status of the process, 0 or 1. A file that tests several specifications tests them all, then exits once, as `fix/shapes_fix.rb` does:
+
+```ruby
+require "fix"
+
+Square = Data.define(:side) do
+  def area = side * side
+end
+
+Circle = Data.define(:radius) do
+  def area = Math::PI * radius**2
+end
+
+Fix :Square do
+  on :area do
+    it MUST eq 4
+  end
+end
+
+Fix :Circle do
+  on :area do
+    it MUST be_within(0.01).of(3.14)
+  end
+end
+
+results = [
+  Fix[:Square].test { Square.new(side: 2) },
+  Fix[:Circle].test { Circle.new(radius: 1) }
+]
+
+exit(results.all?)
+```
+
+```console
+$ ruby fix/shapes_fix.rb
+fix/shapes_fix.rb:13: Success: expected 4 to eq 4
+fix/shapes_fix.rb:19: Success: expected 3.141592653589793 to be within 0.01 of 3.14
+```
+
+Keep the parentheses of `exit(…)`: without them, in `exit Fix[:Square].test do … end`, the block goes to `exit`, and `test` raises `ArgumentError` for want of one.
+
+## A project
+
+The `fix` command runs the files whose names end with `_fix.rb` in the `fix` directory, at any depth, in the order of their names, each in a process of its own, with the Ruby that runs `fix`. It lets their lines through, and ends with how many files were met:
+
+```console
+$ fix
+fix/shapes_fix.rb:13: Success: expected 4 to eq 4
+fix/shapes_fix.rb:19: Success: expected 3.141592653589793 to be within 0.01 of 3.14
+fix/tax_fix.rb:5: Failure: expected 20.0 to eq 20
+fix/text/slug_fix.rb:6: Success: expected "hello-world" to eq "hello-world"
+3 files, 1 not met: fix/tax_fix.rb
+```
+
+The file not met is `fix/tax_fix.rb`:
+
+```ruby
+require "fix"
+
+Fix :Tax do
+  on :*, 0.2 do
+    it MUST eq 20
+  end
+end
+
+exit(Fix[:Tax].test { 100 })
+```
+
+`100 * 0.2` is the Float `20.0`, which is not [`eq 20`](https://fixrb.dev/gems/fix/v1/matchers/#eq). Files and directories given as arguments narrow the run, in the order given:
+
+```console
+$ fix fix/text
+fix/text/slug_fix.rb:6: Success: expected "hello-world" to eq "hello-world"
+1 file met
+```
+
+The status of `fix` is 0 when every file was met, 1 when one was not, a file that raised when loaded or a process that died included, and 2 for a usage error, such as a path that does not exist. `fix --help` lists the options.
+
+## A random order
+
+Each file is a process, and each context a child of it: what a subject changes in its process cannot reach another file. What it changes outside, in a database or a file, can. `--random` runs the files in a random order, and writes first the command that runs them in the same order again:
+
+```console
+$ fix --random
+fix --random=2
+fix/text/slug_fix.rb:6: Success: expected "hello-world" to eq "hello-world"
+fix/tax_fix.rb:5: Failure: expected 20.0 to eq 20
+fix/shapes_fix.rb:13: Success: expected 4 to eq 4
+fix/shapes_fix.rb:19: Success: expected 3.141592653589793 to be within 0.01 of 3.14
+3 files, 1 not met: fix/tax_fix.rb
+```
+
+A file met in one order and not in another depends on what another file left behind.
+
+## Environment
+
+The processes inherit the environment of `fix`. In a project with a Gemfile, `bundle exec fix` gives every file the gems of the bundle. `RUBYOPT=-w fix` runs the files with warnings, and `RUBYOPT=-Ilib fix` lets them `require` the files of `lib` by name.
+
+Anything that reads an exit status can run Fix. A task in a Rakefile, `task(:fix) { sh "fix" }`, fails when a file is not met; so does a CI step that runs it, such as `run: bundle exec fix` in a GitHub Actions workflow.
+
+## Results as data
+
+For a tool of your own, `run` takes the place of `test`: it writes nothing, and gives the results, one `Fix::Result` per expectation, in the order of the lines:
+
+```ruby
+require "fix"
+
+Fix :Tax do
+  on :*, 0.2 do
+    it MUST eq 20
+  end
+end
+
+results = Fix[:Tax].run { 100 }
+results.map(&:outcome)  # => [:failure]
+result = results.first
+result.passed?          # => false
+result.chain            # => ".*(0.2)"
+result.summary          # => "expected 20.0 to eq 20"
+```
+
+A result also has its `location`, its `outcome` and the result of Spectus behind it. [The README of fix](https://github.com/fixrb/fix/blob/v1.0.1/README.md#results) lists them.
+
+# The word its
+
+Source: <https://fixrb.dev/gems/fix/v1/its/>
+
+A method and its expectation on one line, with the [fix-its](https://fixrb.dev/gems/fix-its/) gem.
+
+Many contexts hold one method and one expectation:
+
+```ruby
+require "fix"
+
+Fix :Team do
+  on :size do
+    it MUST eq 3
+  end
+
+  on :first do
+    it MUST eq "Ada"
+  end
+end
+
+exit(Fix[:Team].test { %w[Ada Grace Linus] })
+```
+
+With fix-its, each of them takes one line. Install it, `gem install fix-its` or `gem "fix-its"` in a Gemfile, and require `fix/its`, which requires fix:
+
+```ruby
+require "fix/its"
+
+Fix :Team do
+  its(:size) { MUST eq 3 }
+  its(:first) { MUST eq "Ada" }
+  its(:include?, "Linus") { MUST be_true }
+  its(:join, ", ") { MUST eq "Ada, Grace, Linus" }
+
+  on :last do
+    its(:length) { MUST eq 5 }
+  end
+end
+
+exit(Fix[:Team].test { %w[Ada Grace Linus] })
+```
+
+```console
+$ ruby team_fix.rb
+team_fix.rb:4: Success: expected 3 to eq 3
+team_fix.rb:5: Success: expected "Ada" to eq "Ada"
+team_fix.rb:6: Success: expected true to be true
+team_fix.rb:7: Success: expected "Ada, Grace, Linus" to eq "Ada, Grace, Linus"
+team_fix.rb:10: Success: expected 5 to eq 5
+```
+
+`its(:size) { MUST eq 3 }` is `on(:size) { it MUST eq 3 }`, and the line points at the `its`.
+
+- `its` takes the name of the method and its arguments, as `on` does: `its(:join, ", ")`.
+- Its block gives the requirement, a level and a matcher, and is read with the rest of the document. A block that gives anything else, or no block, raises `ArgumentError` when the file is loaded.
+- Inside an `on` or a `with`, `its` sends its method to the value of that context: above, the length of the last name.
+- `its` is a word of the language, so a let cannot take that name.
+
+Since Ruby 3.4, a bare `it` in a block is its parameter: in `its(:size) { MUST eq it }`, `it` is `nil`. On Ruby 3.3, it is the word of Fix, which raises `ArgumentError` for want of a requirement. Write the value.
+
+Use `its` for a method and one expectation; keep `on` for a context with several expectations, a `with`, or a further `on` inside it.
+
+# Composing specifications
+
+Source: <https://fixrb.dev/gems/fix/v1/composing-specifications/>
+
+A specification is a matcher: one may require another, here and in other test frameworks.
+
+A specification says what a subject does. Some of that is said once and holds for many subjects: what an empty collection does, what a name looks like, what any plugin answers. Written as a specification of its own, it is required by the others.
+
+## In a specification: `fix`
+
+The matcher `fix(:Name)` is met when the actual value meets the specification of that name. Here a stack must be empty when it is new, and must not be once something is pushed:
+
+```ruby
+require "fix"
+
+Fix :Empty do
+  on :empty? do
+    it MUST be_true
+  end
+
+  on :size do
+    it MUST eq 0
+  end
+end
+
+Fix :Stack do
+  it MUST fix(:Empty)
+
+  on :push, 1 do
+    it MUST_NOT fix(:Empty)
+
+    on :last do
+      it MUST eq 1
+    end
+  end
+end
+
+exit(Fix[:Stack].test { [] })
+```
+
+```console
+$ ruby stack_fix.rb
+stack_fix.rb:14: Success: expected [] to fix Empty
+stack_fix.rb:17: Success: expected [1] not to fix Empty
+stack_fix.rb:20: Success: expected 1 to eq 1
+```
+
+- The specification is found when the file is loaded, so write it before, or require the file that writes it: an unknown name raises `KeyError` then, `no specification named :Nope`.
+- The value is tested as a subject: each context of `Empty` sends its method to it, in a child process of its own, and its lines are not written. `fix` is met when all of them pass, a warning or an info included.
+- A `fix` not met says that the specification is not met, not which of its expectations failed: test the specification on the same value, on its own, to see them.
+- `fix { … }` writes a specification in place, without a name, for a requirement used once.
+- A specification meant for `fix` is written without `with`: the value it gets is already built, so a let cannot change it.
+
+## In Ruby: `match?`
+
+A specification answers `match?`, as any matcher does. Its block gives the value, and the answer says whether the value meets the specification. Here `Empty` holds for an array, a hash and a string alike:
+
+```ruby
+require "fix"
+
+Fix :Empty do
+  on :empty? do
+    it MUST be_true
+  end
+
+  on :size do
+    it MUST eq 0
+  end
+end
+
+Fix[:Empty].match? { [] }    # => true
+Fix[:Empty].match? { {} }    # => true
+Fix[:Empty].match? { "" }    # => true
+Fix[:Empty].match? { [nil] } # => false
+```
+
+`match?` writes nothing: `test` is there for the lines, and [`run`](https://fixrb.dev/gems/fix/v1/running-specifications/#results-as-data) for the results.
+
+## In other frameworks: matchi-fix
+
+The matchers of [Matchi](https://fixrb.dev/gems/matchi/) work in any test framework, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) makes a specification of Fix one of them: `Matchi::Fix.new(:Name)`, or `Matchi::Fix.new { … }` for one written in place. Install it, `gem install matchi-fix`, and require `matchi/fix`:
+
+```ruby
+require "fix"
+require "matchi/fix"
+
+Fix :Empty do
+  on :empty? do
+    it MUST be_true
+  end
+end
+
+matcher = Matchi::Fix.new(:Empty)
+matcher.to_s          # => "fix Empty"
+matcher.match? { [] } # => true
+
+Spectus.must(matcher).call { [nil] }.to_s # => "Failure: expected [nil] to fix Empty"
+```
+
+The last line uses [Spectus](https://fixrb.dev/gems/spectus/), which Fix is built on. In minitest, `assert` takes its answer: `assert Matchi::Fix.new(:Empty).match? { [] }`. A project that has its tests in another framework can use the same specifications in those tests, without moving them.
+
+In a specification of Fix, `it MUST Matchi::Fix.new(:Empty)` and `it MUST fix(:Empty)` are the same: `fix` needs no other gem.
+
+# In a project
+
+Source: <https://fixrb.dev/gems/fix/v1/in-a-project/>
+
+Where specifications live, how they load the code, and what to know when they run.
+
+This page takes a small project: a product and a cart, in `lib`, and their specifications, in `fix`.
+
+## Layout
+
+The code lives where it already does, `lib/product.rb` and `lib/cart.rb`:
+
+```ruby
+Product = Data.define(:name, :price)
+```
+
+```ruby
+require_relative "product"
+
+class Cart
+  def initialize(*products)
+    @products = products.freeze
+  end
+
+  def count = @products.size
+  def total = @products.sum(&:price)
+  def add(product) = Cart.new(*@products, product)
+end
+```
+
+Each specification has a file of its own in `fix`, named after what it specifies, `fix/product_fix.rb` and `fix/cart_fix.rb`, with subdirectories as the project grows. A file requires Fix and the code it tests, writes its specification, and tests a subject:
+
+```ruby
+require "fix"
+require_relative "../lib/product"
+
+Fix :Product do
+  on :name do
+    it MUST be_an_instance_of String
+  end
+
+  on :price do
+    it MUST be_a_kind_of Numeric
+  end
+end
+
+exit(Fix[:Product].test { Product.new(name: "Tea", price: 4) })
+```
+
+```ruby
+require "fix"
+require_relative "../lib/cart"
+
+TEA = Product.new(name: "Tea", price: 4)
+CAKE = Product.new(name: "Cake", price: 6)
+
+Fix :Cart do
+  let(:products) { [] }
+
+  on :count do
+    it MUST eq 0
+  end
+
+  with products: [TEA, CAKE] do
+    on :total do
+      it MUST eq 10
+    end
+
+    on :add, TEA do
+      on :count do
+        it MUST eq 3
+      end
+    end
+  end
+end
+
+exit(Fix[:Cart].test { Cart.new(*products) })
+```
+
+```console
+$ fix
+fix/cart_fix.rb:11: Success: expected 0 to eq 0
+fix/cart_fix.rb:16: Success: expected 10 to eq 10
+fix/cart_fix.rb:21: Success: expected 3 to eq 3
+fix/product_fix.rb:6: Success: expected "Tea" to be an instance of String
+fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
+2 files met
+```
+
+The products are constants of the file: a `with` takes values that exist when the file is loaded, while a `let` builds its value for each subject.
+
+## Loading the code
+
+Above, each file loads the code with `require_relative`, which works from any directory and with plain `ruby`. Two other ways are common:
+
+- `RUBYOPT=-Ilib fix` puts `lib` on the load path of every file, which then writes `require "cart"`.
+- In a gem whose Gemfile says `gemspec`, `bundle exec fix` puts the gem on the load path, and the files `require` it by name, as its users do.
+
+A file shared by several specification files, a helper or a specification that others require, goes in `fix` under a name that does not end with `_fix.rb`, so that `fix` does not run it on its own: [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#implementations) has one.
+
+## Next to other tests
+
+Fix needs nothing from another test framework, and changes nothing in it: minitest in `test`, RSpec in `spec` and Fix in `fix` run side by side, each with its command. A Rakefile can run them all, `task default: %i[test spec fix]` with a task `fix` that runs `sh "fix"`. A specification of Fix can also be checked from a test of another framework, as a matcher, with [matchi-fix](https://fixrb.dev/gems/fix/v1/composing-specifications/#matchi-fix).
+
+## What a process does not isolate
+
+Each context runs in a child process: what a subject changes in its process, a global, a constant, the current directory, `ENV`, ends with the child. What it changes outside its process stays: a file it writes, a row it inserts, a message it sends.
+
+- Give each subject what it writes to: a directory of its own, a database it creates, an object that stands for a service. The subject block is the place, since it runs for each expectation.
+- A child starts as a copy of its parent, open files and connections included, and shares them with it. Open a connection in the subject block, not in the file around it.
+- Run `fix --random` from time to time: a file met in one order and not in another depends on what another one left behind.
+
+## Debugging
+
+To stop in a subject with a debugger, run its contexts in the process itself: `Fix[:Cart].test(fork: false) { … }`. Each context then sees what the ones before it left, so use it only while debugging.
+
+Coverage tools such as SimpleCov store what they measure when a process ends normally, and a child of Fix ends with `exit!`, which skips that: what runs in the children is not counted, unless the tool stores its result before. [The README of fix](https://github.com/fixrb/fix/blob/v1.0.1/README.md#processes) details the processes.
+
+# In a Rails application
+
+Source: <https://fixrb.dev/gems/fix/v1/in-a-rails-application/>
+
+What a Rails application needs for Fix to test its models and its controllers, and where the files go.
+
+This page takes a Rails application: [fixrb/microblog](https://github.com/fixrb/microblog), a small microblog whose only test framework is Fix. Users pick a handle, post short texts, follow one another and read a timeline. Its domain, a handle and the body of a post, is plain Ruby in `lib`, tested as [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/) showed. This page is about the rest: the models, which need a database, and the controllers, which need the application.
+
+The files shown here are those of the application, as they are in its repository, where they run with it. The repository of this site runs its examples before a page is published; it has no Rails, so these are the ones it shows without running.
+
+## The Gemfile
+
+Fix and its command go in the test group, with `require: false`: `gem "fix", require: false` and `gem "fix-command", require: false`. Rails requires the gems of the group of its environment when the application boots, and the files of `fix` require Fix themselves: the application never loads it.
+
+## Layout
+
+The specification of a model or of a controller names nothing of Rails: `eq 302`, `eq ["Body can't be blank"]`. So this application keeps its specifications apart from its tests, as [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#implementations) does for a shared one. `spec` holds the specifications, one `Fix :Name do … end` document per file, each requiring Fix and nothing else: no Rails, no database, not even the class it specifies. `fix` holds the tests, the files the `fix` command runs: each loads what its subject needs, requires its specification and ends with `exit(Fix[:Name].test { … })`, the block building the subject. A result then points at the line of the specification.
+
+The `let` of a specification is the interface between the two files: the specification declares a parameter of the subject, with its default and the `with` that vary it, and the block of the test reads it by name. Writing both halves in one file, as the pages before did, works just as well. An application that also uses RSpec keeps `spec` for it, and puts the documents in `fix/specs`, say.
+
+## Loading the application
+
+The tests of the models and of the controllers share a helper, `fix/support/rails.rb`, which `fix` does not run on its own, since its name does not end with `_fix.rb`:
+
+```ruby
+# frozen_string_literal: true
+
+# Loads the application in its test environment, for the tests of the
+# models and of the controllers. Those of the domain, in fix/microblog,
+# need none of this: they run on plain Ruby. The specifications, in
+# spec, need nothing but Fix.
+#
+# The tests empty the database, so they run in the test environment and
+# nowhere else, whatever the shell says.
+ENV["RAILS_ENV"] = "test"
+
+require_relative "../../config/environment"
+require "rack/test"
+
+# Keeps the test database in step with db/schema.rb, as rails/test_help
+# does.
+ActiveRecord::Migration.maintain_test_schema!
+
+# Fix builds the subject anew for every expectation, in the child
+# process of its context, which gets a connection of its own: Active
+# Record forgets the pool of the parent after a fork. The database
+# itself is outside the processes, so a subject starts by emptying it.
+# Nothing is rolled back; nothing needs to be.
+def empty_database
+  Follow.delete_all
+  Post.delete_all
+  User.delete_all
+end
+
+# A browser for the application, with its cookies, signed in as the user
+# of that handle when one is given. Its requests return a
+# Rack::MockResponse, with a status, a body and a location.
+def browser(as: nil)
+  visitor = Rack::Test::Session.new(Rails.application)
+  visitor.post("/session", handle: as) if as
+  visitor
+end
+```
+
+Four things happen here.
+
+- The environment is forced to `test`, rather than defaulted to it as a `test_helper.rb` of Rails does: the tests empty the database, so a shell that exports `RAILS_ENV=development` must not send them to the development one.
+- The application boots, and `maintain_test_schema!` keeps the test database in step with `db/schema.rb`, as `rails/test_help` does for minitest.
+- Fix builds the subject anew for every expectation, in the child process of its context, which the other expectations of that context share. A child starts as a copy of its parent, open connections included; Active Record discards the connection pools of the parent in a forked child, which connects on its own when it first needs the database. The database is outside the processes, though, and keeps what a subject writes, so a subject starts by emptying it. Nothing is wrapped in a transaction and nothing is rolled back; what an expectation leaves in its process, a cached value or a mail in `ActionMailer::Base.deliveries`, the next expectations of its context find.
+- A browser for the controllers: a `Rack::Test::Session` on the application, with its cookies, signed in when a handle is given. Rack::Test is a dependency of Action Pack; its requests return a `Rack::MockResponse`, with a `status`, a `body` and a `location`.
+
+The two methods are defined at the top level, where the subject block sees them, as it sees `Kernel`. A name defined that way can no longer be the name of a `let`.
+
+## A model
+
+A post has a body, which must not be blank and may not exceed 280 characters. The specification, `spec/models/post_spec.rb`, says so in terms of the methods of a record, `valid?`, `errors` and `mentions`, with the body as a parameter:
+
+```ruby
+# frozen_string_literal: true
+
+require "fix"
+
+# A post, built from a body: it mentions the handles of the body, and
+# says why an empty or an overlong body is refused.
+Fix :Post do
+  let(:body) { "Good morning, @bob and @carol." }
+
+  on :valid? do
+    it MUST be_true
+  end
+
+  on :mentions do
+    it MUST eq %w[bob carol]
+  end
+
+  with body: "" do
+    on :valid? do
+      it MUST be_false
+    end
+
+    on :errors do
+      on :full_messages do
+        it MUST eq ["Body can't be blank"]
+      end
+    end
+  end
+
+  with body: "a" * 281 do
+    on :valid? do
+      it MUST be_false
+    end
+
+    on :errors do
+      on :full_messages do
+        it MUST eq ["Body is too long (maximum is 280 characters)"]
+      end
+    end
+  end
+end
+```
+
+The test, `fix/models/post_fix.rb`, builds a post of a user with that body, validated so that `errors` is filled:
+
+```ruby
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../support/rails"
+require_relative "../../spec/models/post_spec"
+
+# The subject is a new post of Alice with the body, a parameter of the
+# specification, validated.
+exit(Fix[:Post].test do
+  empty_database
+  User.create!(handle: "alice").posts.new(body:).tap(&:validate)
+end)
+```
+
+The user is created inside the block, for each expectation, in a database just emptied: a record a test needs is built where the subject is, never in the file around it, which runs once in the parent. A test that needs a row to exist already, a handle taken or a user followed, creates it there too.
+
+## A controller
+
+The subject of a controller test is a response. The specification, `spec/controllers/posts_spec.rb`, judges its status, its location and its body, for a signed-in visitor and for one who is not:
+
+```ruby
+# frozen_string_literal: true
+
+require "fix"
+
+# The response to posting the body, for the visitor signed in with the
+# handle: home when the post is saved, the form again with the reason
+# when it is not, the sign-in page for a visitor who is not signed in.
+Fix :CreatePost do
+  let(:handle) { "alice" }
+  let(:body) { "Hello, world!" }
+
+  on :status do
+    it MUST eq 302
+  end
+
+  on :location do
+    it MUST eq "http://example.org/"
+  end
+
+  with body: "a" * 281 do
+    on :status do
+      it MUST eq 422
+    end
+
+    on :body do
+      it MUST match(/Body is too long/)
+    end
+  end
+
+  with handle: nil do
+    on :status do
+      it MUST eq 302
+    end
+
+    on :location do
+      it MUST eq "http://example.org/session/new"
+    end
+  end
+end
+```
+
+The test, `fix/controllers/posts_fix.rb`, creates the user, signs the browser in with the handle, posts the body and gives the response:
+
+```ruby
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../support/rails"
+require_relative "../../spec/controllers/posts_spec"
+
+# The subject is the response to posting the body, for the visitor
+# signed in with the handle; both are parameters of the specification.
+exit(Fix[:CreatePost].test do
+  empty_database
+  User.create!(handle: "alice")
+  browser(as: handle).post("/posts", post: { body: })
+end)
+```
+
+The host of a Rack::Test request is `example.org`, hence the locations. Signing in is a request, as a visitor would make it; in this application a handle is enough, with no password, and an application with passwords signs its browser in the same way, with the request its sign-in form sends. Forgery protection is off in the test environment, as the `config/environments/test.rb` that Rails generates sets it, and `show_exceptions` is `:rescuable`, so that a record not found gives a 404 to judge, not an exception.
+
+## Running
+
+```console
+$ bin/rails db:prepare
+$ bundle exec fix
+```
+
+`db:prepare` creates the development and the test databases. `fix` then runs the files of `fix`, each in a process of its own, which boots the application once: that is where the time of a run goes. Each line points at an expectation of `spec`, and the status is 0 when every file is met. A task of the Rakefile, `task(:fix) { sh "fix" }`, runs it with `rake`; the continuous integration of the application runs `bin/rails db:prepare`, then `bundle exec fix`, and since the environment sets `CI`, the application is eager loaded there, as Rails recommends.
+
+The files of `fix` are executable, with `#!/usr/bin/env ruby` on their first line: one of them runs on its own, `fix/models/post_fix.rb`, and finds its gems through `config/boot.rb`.
+
+## What a process does not isolate
+
+[In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#outside-the-process) listed what a child process leaves behind. In a Rails application, that is the database, hence `empty_database`, and the log, `log/test.log`, which the children write to as the parent would. What stays in the process ends with it: a mail that the test environment of Rails keeps in `ActionMailer::Base.deliveries` instead of sending, say, is read in the subject block, in the process that sent it, and given to the specification.
+
+To stop in a subject with a debugger, run its contexts in the process itself, `test(fork: false)`, as [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#debugging) says; each subject still empties the database first.
+
+# Patterns
+
+Source: <https://fixrb.dev/gems/fix/v1/patterns/>
+
+A specification apart from any implementation, put to work four ways.
+
+A specification of Fix names no class: it says what a subject does, and the test picks the subject. These four patterns follow from that.
+
+## One specification, several implementations
+
+When two classes do the same job, one specification describes the job, and each implementation is tested against it. The specification goes in a file of its own, `fix/specs/stack.rb`, which `fix` does not run, since its name does not end with `_fix.rb`:
+
+```ruby
+require "fix"
+
+Fix :Stack do
+  on :empty? do
+    it MUST be_true
+  end
+
+  on :push, 1 do
+    on :push, 2 do
+      on :pop do
+        it MUST eq 2
+      end
+    end
+  end
+
+  on :pop do
+    it MUST be_nil
+  end
+end
+```
+
+Each implementation has a short file that requires it and tests a subject. An Array, in `fix/array_fix.rb`:
+
+```ruby
+require_relative "specs/stack"
+
+exit(Fix[:Stack].test { [] })
+```
+
+A linked list of the project, in `lib/linked_stack.rb`:
+
+```ruby
+class LinkedStack
+  Node = Data.define(:value, :below)
+
+  def initialize = @top = nil
+  def empty? = @top.nil?
+  def push(value) = tap { @top = Node.new(value, @top) }
+
+  def pop
+    value = @top&.value
+    @top = @top&.below
+    value
+  end
+end
+```
+
+and its file, `fix/linked_stack_fix.rb`:
+
+```ruby
+require_relative "specs/stack"
+require_relative "../lib/linked_stack"
+
+exit(Fix[:Stack].test { LinkedStack.new })
+```
+
+```console
+$ fix
+fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+2 files met
+```
+
+The lines point at the specification, the same three twice; the count names the file of an implementation that is not met. Another implementation is one more short file.
+
+## The contract of a dependency
+
+A project relies on what its dependencies do: that `JSON.parse` gives string keys unless asked otherwise, say. A specification of the dependency writes that down, and tells at the next upgrade whether it still holds:
+
+```ruby
+require "fix"
+require "json"
+
+Fix :JSON do
+  on :generate, { "id" => 1 } do
+    it MUST eq '{"id":1}'
+  end
+
+  on :parse, '{"id":1}' do
+    it MUST eq({ "id" => 1 })
+  end
+
+  on :parse, '{"id":1}', symbolize_names: true do
+    it MUST eq({ id: 1 })
+  end
+end
+
+exit(Fix[:JSON].test { JSON })
+```
+
+```console
+$ ruby json_fix.rb
+json_fix.rb:6: Success: expected "{\"id\":1}" to eq "{\"id\":1}"
+json_fix.rb:10: Success: expected {"id" => 1} to eq {"id" => 1}
+json_fix.rb:14: Success: expected {id: 1} to eq {id: 1}
+```
+
+The subject is the module itself, and each `on` a call the project makes. Only what the project uses is written, not the whole library.
+
+## A contract in three levels
+
+An interface often has methods that are required, others that are recommended, others that are optional: the three levels say so. Here, a plugin MUST transform a text, SHOULD have a name in lowercase, and MAY have a version:
+
+```ruby
+require "fix"
+
+Fix :Plugin do
+  on :call, "text" do
+    it MUST be_an_instance_of String
+  end
+
+  on :name do
+    it SHOULD match(/\A[a-z]+\z/)
+  end
+
+  on :version do
+    it MAY match(/\A\d+\.\d+\z/)
+  end
+end
+
+class Upcase
+  def call(text) = text.upcase
+  def name = "Upcase"
+end
+
+class Reverse
+  def call(text) = text.reverse
+  def name = "reverse"
+  def version = "1.2"
+end
+
+results = [
+  Fix[:Plugin].test { Upcase.new },
+  Fix[:Plugin].test { Reverse.new }
+]
+
+exit(results.all?)
+```
+
+```console
+$ ruby plugin_fix.rb
+plugin_fix.rb:5: Success: expected "TEXT" to be an instance of String
+plugin_fix.rb:9: Warning: expected "Upcase" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Info: NoMethodError: undefined method 'version' for an instance of Upcase
+plugin_fix.rb:5: Success: expected "txet" to be an instance of String
+plugin_fix.rb:9: Success: expected "reverse" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/
+```
+
+The first three lines are those of `Upcase`: its name is not in lowercase, a warning, and it has no version, an info. Both pass, so both plugins meet the contract, and the status is 0. A plugin without `call` would get an error, and not pass.
+
+## A specification shipped with a gem
+
+A gem that defines an interface, a store, an adapter, a plugin, can ship the specification of that interface, as rack ships [`Rack::Lint`](https://github.com/rack/rack/blob/main/lib/rack/lint.rb): those who implement the interface test their implementation against it, and an upgrade of the gem brings them its new specification. The gem keeps it in a file of `lib`, `lib/kvstore/specification.rb`, which requires Fix: only the implementers load it, so fix is a dependency of their projects, not of the gem.
+
+```ruby
+require "fix"
+
+# What the kvstore gem asks of a store, shipped with the gem for those
+# who write one.
+Fix :KVStore do
+  on :fetch, :missing do
+    it MUST be_nil
+  end
+
+  on :store, :answer, 42 do
+    on :fetch, :answer do
+      it MUST eq 42
+    end
+  end
+
+  on :delete, :missing do
+    it SHOULD be_nil
+  end
+
+  on :size do
+    it MAY eq 0
+  end
+end
+```
+
+An implementation, in a project of its own, requires that file and tests itself: with the gem in its Gemfile, `require "kvstore/specification"`. Here the two projects sit side by side, and the implementation is in the test file, to keep the example short:
+
+```ruby
+# With the gem in a Gemfile, this is require "kvstore/specification";
+# here the two projects sit side by side.
+require_relative "../../kvstore/lib/kvstore/specification"
+
+class HashStore
+  def initialize = @entries = {}
+  def fetch(key) = @entries[key]
+  def store(key, value) = tap { @entries[key] = value }
+  def delete(key) = @entries.delete(key)
+end
+
+exit(Fix[:KVStore].test { HashStore.new })
+```
+
+```console
+$ ruby hash_store/fix/hash_store_fix.rb
+kvstore/lib/kvstore/specification.rb:7: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:12: Success: expected 42 to eq 42
+kvstore/lib/kvstore/specification.rb:17: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:21: Info: NoMethodError: undefined method 'size' for an instance of HashStore
+```
+
+The lines point into the gem, at the specification: an implementer reads what is asked where it is written. The store has no `size`, which the specification leaves optional: an info, and the store meets the contract.
+
+# Coming from RSpec
+
+Source: <https://fixrb.dev/gems/fix/v1/coming-from-rspec/>
+
+The same ideas under other names, and a few left out on purpose.
+
+[RSpec](https://rspec.info/) and Fix both describe behaviour with nested contexts and expectations. Two things differ at the root. A specification of Fix names no class: the subject comes from the test, on the last line, so that the same specification can test another one. And a specification is a document, read once when the file is loaded: it holds no code that runs before or after an expectation.
+
+## Structure
+
+| RSpec | Fix |
+| --- | --- |
+| `RSpec.describe Counter do … end` | `Fix :Counter do … end` |
+| `subject { Counter.new(start) }` | the block of the test: `Fix[:Counter].test { Counter.new(start) }` |
+| `describe "#count"`, then `subject.count` in each example | `on :count do … end` |
+| `let(:start) { 0 }` | `let(:start) { 0 }`, visible from the subject block and the other lets only |
+| `context` with `let(:start) { 5 }` | `with start: 5 do … end` |
+| `before { subject.increment }` | `on :increment do … end`, around the expectations it prepares |
+| `it { is_expected.to eq(0) }` | `it MUST eq 0` |
+| `is_expected.not_to` | `it MUST_NOT` |
+| `shared_examples`, `it_behaves_like` | a specification of its own, required with [`fix(:Name)`](https://fixrb.dev/gems/fix/v1/composing-specifications/), or tested against [several subjects](https://fixrb.dev/gems/fix/v1/patterns/#implementations) |
+| `rspec`, `rspec spec/models` | [`fix`, `fix fix/models`](https://fixrb.dev/gems/fix/v1/running-specifications/) |
+| `rspec --order random` | `fix --random`, for the order of files |
+| `rspec --seed 1234` | `fix --random=1234` |
+
+An RSpec spec of a counter, with a `subject`, a `before` that increments it in one context and a `let` overridden in another, becomes:
+
+```ruby
+require "fix"
+
+class Counter
+  attr_reader :count
+
+  def initialize(start) = @count = start
+  def increment = tap { @count += 1 }
+end
+
+Fix :Counter do
+  let(:start) { 0 }
+
+  on :count do
+    it MUST eq 0
+  end
+
+  on :increment do
+    on :count do
+      it MUST eq 1
+    end
+  end
+
+  with start: 5 do
+    on :count do
+      it MUST eq 5
+    end
+  end
+end
+
+exit(Fix[:Counter].test { Counter.new(start) })
+```
+
+```console
+$ ruby counter_fix.rb
+counter_fix.rb:14: Success: expected 0 to eq 0
+counter_fix.rb:19: Success: expected 1 to eq 1
+counter_fix.rb:25: Success: expected 5 to eq 5
+```
+
+The `before` became a method of the chain: `increment` returns the counter, and `count` is sent to it. A method that needs some preparation beyond a chain gets it in the subject block, from the lets.
+
+## Matchers
+
+| RSpec | Fix |
+| --- | --- |
+| `eq(x)`, `eql(x)` | [`eq(x)`](https://fixrb.dev/gems/fix/v1/matchers/#eq), which wants the class of `x` and uses `eql?`, where the `eq` of RSpec uses `==`: `1.0` is not `eq 1` |
+| `equal(x)`, `be(x)` | [`be(x)`](https://fixrb.dev/gems/fix/v1/matchers/#be) |
+| `be(true)`, `be(false)`, `be_nil` | [`be_true`, `be_false`, `be_nil`](https://fixrb.dev/gems/fix/v1/matchers/#be_true) |
+| `be_truthy`, `be_falsey` | `satisfy { \|value\| !!value }`, `satisfy { \|value\| !value }` |
+| `be_a`, `be_kind_of` | [`be_a_kind_of`](https://fixrb.dev/gems/fix/v1/matchers/#be_a_kind_of) |
+| `be_an_instance_of`, `be_instance_of` | [`be_an_instance_of`](https://fixrb.dev/gems/fix/v1/matchers/#be_an_instance_of) |
+| `be_within(d).of(x)` | [`be_within(d).of(x)`](https://fixrb.dev/gems/fix/v1/matchers/#be_within) |
+| `match(regexp)` | [`match(regexp)`](https://fixrb.dev/gems/fix/v1/matchers/#match), for a String or a Symbol |
+| `satisfy { \|v\| … }`, `be >= 3` | [`satisfy { \|v\| … }`](https://fixrb.dev/gems/fix/v1/matchers/#satisfy), answering `true` or `false` |
+| `expect { … }.to raise_error(K)` | [`raise_exception(K)`](https://fixrb.dev/gems/fix/v1/matchers/#raise_exception), the method of the context being what raises |
+| `expect { … }.to change { o.count }.by(1)` | [`change(o, :count).by(1)`](https://fixrb.dev/gems/fix/v1/matchers/#change) |
+| `be_empty`, and other predicates | `on(:empty?) { it MUST be_true }` |
+| `include(x)`, `start_with(x)` | `on(:include?, x) { it MUST be_true }`, `on(:start_with?, x) { … }` |
+| `have_attributes(name: "Ada")` | `on(:name) { it MUST eq "Ada" }`, or [`its(:name) { MUST eq "Ada" }`](https://fixrb.dev/gems/fix/v1/its/) |
+| `match_array`, `contain_exactly` | `on(:sort) { it MUST eq [1, 2, 3] }` |
+
+## Three levels instead of pending
+
+RSpec skips an example, or marks it `pending` so that its failure does not fail the run. Fix says it in the specification itself: `SHOULD` for what is recommended, a warning when it is not met; `MAY` for what is optional, an info when the method does not exist. Both pass, and both are written in the lines, so nothing is hidden. [Writing specifications](https://fixrb.dev/gems/fix/v1/writing-specifications/#it) has the five outcomes.
+
+## Left out on purpose
+
+- **Hooks**, `before`, `after`, `around`: the subject block builds what a subject needs, for each expectation, and each context runs in a process of its own, so there is nothing to clean up in memory.
+- **Doubles and mocks**, `double`, `allow(…).to receive`: give the subject a real object, or a small object of the file that stands for a service, through a let. A specification says what a subject does, not which messages it sends.
+- **Shared state** between examples, `before(:all)`, instance variables: a let lives with one subject, and a context cannot reach another; only a `with` shares its value, within its context.
+- **Tags and filters**, `focus`: `fix` takes files and directories, and a file is a program that can be run alone.
+- **`aggregate_failures`**: every expectation gets its line, met or not.
+
+Both can live in one project, each in its directory: [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#other-tests) tells how.
+
+# Questions
+
+Source: <https://fixrb.dev/gems/fix/v1/questions/>
+
+What comes up with a first specification, in short answers.
+
+The guide teaches each of these in turn; this page is for finding one by its keyword, with the short answer and the page that has the long one. Every answer was checked against Fix 1.0.1, whose README is itself run by its test suite.
+
+## Writing
+
+### I found Fix code that does not run with Fix 1.0.
+
+Code written for Fix before 1.0 may use words that 1.0 changed or left out, and copies of it still circulate. The last betas of 1.0 and Fix 0.19 to 0.21, at the turn of 2025, wrote much as Fix 1.0 does, but for these:
+
+| Before 1.0 | In Fix 1.0 |
+| --- | --- |
+| `gem install fix --pre`, `gem "fix", ">= 1.0.0.beta12"` | `gem install fix`, `gem "fix"` |
+| `Fix[:Duck].test { Duck.new }` on the last line: `test` ended the process on a failure | `exit(Fix[:Duck].test { Duck.new })`: `test` returns `true` or `false` and never exits, hence [the parentheses](https://fixrb.dev/gems/fix/v1/questions/#exit) |
+| `eql`, `equal` | `eq`, `be` |
+| `be_empty`, `be_valid`, `have_key(:id)`: a word for any predicate | `on(:empty?) { it MUST be_true }`, the [idiom](https://fixrb.dev/gems/fix/v1/questions/#predicates) |
+| `it MUST eq name`, with `name` a let | the value in the expectation, the let in the subject block: [a let in an expectation](https://fixrb.dev/gems/fix/v1/questions/#let-in-expectation) |
+| Ruby 3.1 or later, 3.2 for the last beta | Ruby 3.3 or later, with `fork(2)` |
+
+Fix 0.18 and earlier, from 2014 to 2019, had another language. In 0.18, for instance, `Fix.describe` took the subject itself, and an expectation was a block: `it { MUST eql "Swoosh..." }`. In Fix 1.0, the test gives the subject: `Fix :Duck do … end`, then `exit(Fix[:Duck].test { Duck.new })`. The posts of the blog written before 1.0 say so at their head.
+
+### Why does `it MUST eq 42` fail for a subject that returns `42.0`?
+
+`eq` is `eql?`: the same value and the same class, for every value, not only numbers. `1.eql?(1.0)` is false, and so is `"a".eql?(:a)`. Compare with `be_within(delta).of(42)` for a number near 42, whatever its class, or with `be_a_kind_of Numeric` for the class alone. [Matchers](https://fixrb.dev/gems/fix/v1/matchers/#eq) has each one.
+
+### Why can’t I write `it MUST eq name` when `name` is a let?
+
+A let is a parameter of the subject, visible from the block of `test` and from the other lets only. Named in an expectation, it would be read while the file loads, before any subject exists, so Fix raises `NameError` at load: `name is a let, visible in the subject block and in other lets only`. Write the value in the expectation, and let the subject block read the let: `with name: "Alice" do it MUST eq "Hello, Alice!" end`, against `test { "Hello, #{name}!" }`. See [let and with](https://fixrb.dev/gems/fix/v1/writing-specifications/#let-and-with).
+
+### `let(:format)` raises `ArgumentError`. Why?
+
+A let becomes a method of the object the subject block runs on, and that object sees `Kernel` and the methods of the top level. A let named like one of them, public or private (`format`, `p`, `test`, `open`, `select`, `method`, `class`, `hash`…), or like a word of the language (`let`, `with`, `on`, `it`, and `its` with fix-its), or like a matcher or a level (`eq`, `match`, `change`, `fix`, `MUST`), would redefine it in silence. The message names the owner or the word: `format is already a method of Kernel`. Pick another name.
+
+### What is the difference between `let(:items) { [] }` and `with items: []`?
+
+A `let` is a block, called anew for each expectation: every expectation gets a new array. A `with` is a value, the very object given, shared by the expectations of its context: `with items: []` gives them all the same array. Two contexts are two child processes, so the sharing never crosses a context.
+
+### Can a `with` name a let that was never declared?
+
+Yes. A `with` declares the lets it names; a key no `let` declared is a new parameter, not an error. So a misspelt key is a new let, in silence: check the spelling against the subject block.
+
+### How do I test a method that takes a block?
+
+`on` sends its method without a block, since the `do … end` of `on` is the context. Either call the method in the subject block, `test { list.map { |x| x * 2 } }`, or judge the subject with `satisfy { |value| value.map { … } == … }`.
+
+### Is there a `be_empty`, a `have_key`, a `be_valid`?
+
+Not as words of Fix. The idiom is `on(:empty?) { it MUST be_true }`: the method is sent by `on`, and the line reads `expected true to be true`; `run` keeps the method in the `chain` of the result, `.empty?`. Any object with `match?` and `to_s` is a matcher, though, so `it MUST Matchi::Predicate.new(:be_empty)` works, with the matcher of matchi written in full. See [Your own matcher](https://fixrb.dev/gems/fix/v1/matchers/#your-own-matcher).
+
+### Can `change` observe a let?
+
+No. The object of `change(object, :method)` must exist when the file loads, since the matcher is built then, and a let lives with the subject, later: naming one there raises the `NameError` of a let read in an expectation. Observe an object of the file, a constant say.
+
+### `it MUST fix(:Other)` raises `KeyError`.
+
+`fix(:Name)` finds its specification when the document is read, so `Fix :Other` must come earlier in the file, or in a file required earlier. The message is `no specification named :Other`; when a registered name is near, `:Positive` for a `fix(:Positiv)`, Ruby adds `Did you mean?  :Positive` below it. See [Composing specifications](https://fixrb.dev/gems/fix/v1/composing-specifications/#fix).
+
+### How do I test a class method, or a constructor?
+
+Return the class from the subject block, and send the method with `on`: `Fix[:Calculator].test { Calculator }` with `on :new, 2 do … end`. An `on` inside that one is sent to the new instance.
+
+### On Ruby 3.4, `its(:size) { MUST eq it }` builds `eq nil`.
+
+In Ruby 3.4 and later, a bare `it` in a block is the implicit parameter of the block; `it` with a requirement is still the word of Fix. On 3.3, the bare `it` is the word of Fix, and raises for want of a requirement. Write the value. A `satisfy` meant for both Rubies names its parameter: `satisfy { |value| … }`. [The word its](https://fixrb.dev/gems/fix/v1/its/) has the detail.
+
+## Outcomes
+
+### My `raise_exception ArgumentError` is a Failure, not an Error. The subject raised `TypeError`.
+
+The exception is what `raise_exception` judges: another class is a match that is false, so a failure under MUST and MAY, a warning under SHOULD. An error is an exception that reached a matcher not made to judge one: with `eq`, the same `TypeError` is an error.
+
+### Why is a missing method an Info under MAY, but an Error under MUST?
+
+Two questions tell the levels apart. Does the method exist? MUST and SHOULD require it, MAY does not. Does it do what is specified? MUST and MAY require it, SHOULD recommends it. A duck that does not `speak` meets `on :speak do it MAY … end`. The table of the five outcomes is in [Writing specifications](https://fixrb.dev/gems/fix/v1/writing-specifications/#it).
+
+### Does a warning make the run fail?
+
+No. A success, a warning and an info pass; a failure and an error do not. `test` returns `true` for a run with warnings, and the status of the process is 0.
+
+### I see `undefined method 'speak'` on Ruby 3.4, but ``undefined method `speak'`` on 3.3.
+
+Ruby changed the quote in 3.4, and a frame of a backtrace now names the class of its method. The texts are those of Ruby; Fix does not rewrite them.
+
+## Running
+
+### Why `exit(Fix[:Duck].test { Duck.new })`, with parentheses?
+
+Without them, `exit Fix[:Duck].test do … end` gives the `do … end` block to `exit`, not to `test`, and `test` raises `ArgumentError`: `a block must be given`. Keep the parentheses, or use braces.
+
+### A file with two specifications: how does it exit?
+
+Test them all, then exit once: `exit([Fix[:A].test { … }, Fix[:B].test { … }].all?)`.
+
+### Nothing failed, but the process exits 1. Something failed, but it exits 0.
+
+Look at the last line of the file: it passes the result of `test` to `exit`, and nothing else. `test` never calls `exit`, so a file that forgets it exits 0 whatever happened, and the command `fix` reads that status and nothing else. See [Running specifications](https://fixrb.dev/gems/fix/v1/running-specifications/#a-file).
+
+### How do I run one file? All of them?
+
+`ruby fix/duck_fix.rb` runs one, as any Ruby file. `fix`, from the fix-command gem, runs the `*_fix.rb` files of `fix/`, each in a new process, or the files and directories given: `fix fix/duck_fix.rb fix/models`.
+
+### My subject needs `lib/` on the load path.
+
+The command passes its environment to every file: `RUBYOPT=-Ilib fix`, or `bundle exec fix` for the gems of a Gemfile. `bundle exec` puts the gems on the load path; it does not require them, the file does. See [Loading the code](https://fixrb.dev/gems/fix/v1/in-a-project/#loading-the-code).
+
+### Does `fix` run files in parallel? Does it have a timeout?
+
+No and no, in 1.0. Files run one after the other, each in its own process; Ctrl-C ends the command and, through the terminal, the file being run.
+
+### Is the order random?
+
+Within a file, no: the contexts run in the order written, a context before those inside it, every time. Between files, on request: `fix --random` shuffles the files, and writes first the command that runs them in the same order again, `fix --random=2`. See [Random order](https://fixrb.dev/gems/fix/v1/running-specifications/#random-order).
+
+### Where does the subject’s own output go?
+
+What the subject writes comes out as it is, on the same standard output, before the lines of its context. A text left without a line break joins the first of them. A runner reads the exit status, not the lines, for that reason.
+
+### SimpleCov reports nothing for the code my subjects ran.
+
+Each context runs in a child that ends with `exit!`, which runs no `at_exit` handler, so SimpleCov never writes the child’s result. Either store the result before the child ends, as the tests of Fix do, or run with `test(fork: false)` for the measurement. See [Debugging](https://fixrb.dev/gems/fix/v1/in-a-project/#debugging).
+
+### Does Fix work on Windows? On JRuby?
+
+No. Fix forks a child per context and needs `fork(2)`: a context with expectations raises `NotImplementedError` on a Ruby without it. Linux and macOS are tested in CI, on Ruby 3.3, 3.4, 4.0 and head.
+
+## Beside RSpec and minitest
+
+### Do I have to replace my test suite?
+
+No. Fix needs nothing from another framework and changes nothing in it: a `fix` directory beside `spec` or `test`, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. [Next to other tests](https://fixrb.dev/gems/fix/v1/in-a-project/#other-tests) says how, and [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) what each idiom becomes.
+
+### Can I check a specification of Fix from RSpec or minitest?
+
+As a matcher of matchi: `Matchi::Fix.new(:Duck).match? { Duck.new }`, from the [matchi-fix](https://fixrb.dev/gems/matchi-fix/) gem, answers `true` or `false`, forking the contexts as Fix does. In RSpec, `expect(Matchi::Fix.new(:Duck).match? { duck }).to be true`; in minitest, `assert Matchi::Fix.new(:Duck).match? { duck }`. The message of a failure then says `false`, no more: `Fix[:Duck].test { duck }` gives the lines. A specification meant for a matcher is written without `with`, since the value is given once and the contexts cannot build it anew.
+
+### A failed `fix(:Other)` does not say which expectation failed.
+
+By design: a matcher answers `true` or `false`. Test the inner specification on its own, `Fix[:Other].test { … }`, for the lines.
+
+### Can I get the results as data instead of lines?
+
+`Fix[:Name].run { … }` returns an `Array` of `Fix::Result`, frozen data with `location`, `chain`, `outcome`, `passed?`, `summary`, and the `Spectus::Result` underneath. `test` is `run` plus the printing. See [Results as data](https://fixrb.dev/gems/fix/v1/running-specifications/#results-as-data).
+
+### How do I add a word to the language, as fix-its does?
+
+Add a method to `Fix::Dsl` that composes `on` and `it`, and pass `it` the `location:` of your own caller, `caller_locations(1, 1).first`, so that the result points at the line of the specification. fix-its, nineteen lines of code, is the reference.
+
+### How does Fix compare with RSpec and minitest?
+
+Fix, RSpec and minitest do different jobs, and a project may have two of them. Where they differ:
+
+|  | Fix | [RSpec](https://rspec.info/) | [minitest](https://github.com/minitest/minitest) |
+| --- | --- | --- | --- |
+| The subject | chosen by the test, apart from the specification, which names no class | `subject`, in the spec; shared examples for several classes | built by the test class; a module included in several classes |
+| Levels | MUST, SHOULD and MAY; a warning and an info pass | one, with `pending` and `skip` | one, with `skip` |
+| Isolation | a child process per context | one process; hooks clean up | one process; `setup` and `teardown` clean up |
+| Hooks | none: the subject block runs for each expectation | `before`, `after`, `around` | `setup`, `teardown` |
+| Doubles | none, by design | [rspec-mocks](https://rspec.info/features/3-13/rspec-mocks/) | [minitest/mock](https://github.com/minitest/minitest-mock) |
+| Order | the order written; files shuffled on request | defined; random on request | random by default |
+| Output | one line per expectation, and the status of the process | formatters | reporters |
+| Runs on | CRuby with `fork`, tested on Linux and macOS | every Ruby | every Ruby |

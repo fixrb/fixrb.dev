@@ -189,7 +189,7 @@ plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/</samp></pre>
       <p>The first three lines are those of <code>Upcase</code>: its name is not in lowercase, a warning, and it has no version, an info. Both pass, so both plugins meet the contract, and the status is 0. A plugin without <code>call</code> would get an error, and not pass.</p>
 
       <h2 id="shipped">A specification shipped with a gem</h2>
-      <p>A gem that defines an interface, a store, an adapter, a plugin, can ship the specification of that interface, as rack ships <code>Rack::Lint</code>: those who implement the interface test their implementation against it, and an upgrade of the gem brings them its new specification. The gem keeps it in a file of <code>lib</code>, <code>lib/kvstore/specification.rb</code>, which requires Fix: only the implementers load it, so fix is a dependency of their projects, not of the gem.</p>
+      <p>A gem that defines an interface, a store, an adapter, a plugin, can ship the specification of that interface, as rack ships <a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a>: those who implement the interface test their implementation against it, and an upgrade of the gem brings them its new specification. The gem keeps it in a file of <code>lib</code>, <code>lib/kvstore/specification.rb</code>, which requires Fix: only the implementers load it, so fix is a dependency of their projects, not of the gem.</p>
       <pre data-example="examples/fix/v1/patterns/shipped/kvstore/lib/kvstore/specification.rb"><code>require <span class="string">"fix"</span>
 
 <span class="comment"># What the kvstore gem asks of a store, shipped with the gem for those</span>

@@ -1,0 +1,40 @@
+name: IndexNow
+
+# Once GitHub Pages has published a commit of main, tell the engines of
+# IndexNow (Bing, Yandex, Naver, Seznam, Yep) which pages it changed. Run by
+# hand, from the Actions tab, it announces every page of the sitemap.
+on:
+  workflow_run:
+    workflows: [pages build and deployment]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        # The commit Pages has published, and the one before it.
+        ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+        fetch-depth: 2
+        persist-credentials: false
+    # Without ruby-version, the version comes from .ruby-version.
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+
+    - name: Announce the pages
+      env:
+        ALL: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        if [ "$ALL" = true ]; then bin/indexnow --all > request.json; else bin/indexnow > request.json; fi
+        if [ -s request.json ]; then
+          curl --silent --show-error --fail-with-body --max-time 30 \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data @request.json https://api.indexnow.org/indexnow
+        fi

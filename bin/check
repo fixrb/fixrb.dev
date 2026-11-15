@@ -6,14 +6,16 @@
 # internal links and anchors, code examples kept identical to their files
 # under examples/ and highlighted as Ripper reads them (a YAML manifest of
 # brutal is shown as it is), the files the stylesheet loads, the feed, the
-# sitemap, robots.txt, the SVG drawings and the PNG images.
+# sitemap, robots.txt, llms.txt and llms-full.txt, the key of IndexNow, the
+# SVG drawings and the PNG images.
 #
 #   bin/check         checks, and changes nothing
 #   bin/check --fix   first rewrites every <pre><code> from its example file
 #                     (or, in an archived post, from its own text) with the
-#                     highlighting expected, and the structured data of every
+#                     highlighting expected, the structured data of every
 #                     indexed page from the pages, the feed and the footer,
-#                     then checks
+#                     and llms.txt and llms-full.txt from the pages and the
+#                     feed, then checks
 
 require "cgi/escape"
 require "digest"
@@ -27,17 +29,24 @@ Dir.chdir(File.expand_path("..", __dir__))
 
 ORIGIN = "https://fixrb.dev"
 
+# The key of IndexNow, which tells Bing and the other engines of IndexNow that
+# pages have changed: one file at the root, named after the key it holds. It
+# is public by design; bin/indexnow and the workflow indexnow.yml use it.
+INDEXNOW_KEY = /\A[0-9a-f]{32}\.txt\z/
+
 # Every file of the repository matches one of these patterns. GitHub Pages
 # publishes the whole repository, so anything else would go live unchecked.
 FILES = [
+  INDEXNOW_KEY,
   %r{\A(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.html\z},
   %r{\Aexamples(?:/[a-z0-9_-]+)+\.(?:rb|yaml)\z},
   %r{\Afonts/[a-z0-9-]+\.woff2\z},
   %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
   %r{\Aimg/[a-z0-9_-]+\.(?:svg|png)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
-  %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|
-         card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|logo\.svg|robots\.txt|sitemap\.xml|style\.css)\z}x
+  %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|bin/indexnow|
+         card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|llms\.txt|llms-full\.txt|logo\.svg|robots\.txt|sitemap\.xml|
+         style\.css)\z}x
 ].freeze
 
 # Files the site cannot do without.
@@ -127,6 +136,21 @@ TWITTER_CARD = %(\n  <meta name="twitter:card" content="summary_large_image">)
 # Every indexed page lets search engines show its image large.
 ROBOTS = %(<meta name="robots" content="max-image-preview:large">)
 
+# For language models, two files in Markdown: llms.txt, the pages of the site
+# by what they hold, as llmstxt.org proposes, and llms-full.txt, the page of
+# fix and its guide, each with the code of its examples. bin/check --fix writes
+# both from the pages and the feed, and bin/check finds them as --fix would
+# write them, so that they never say anything the pages do not.
+LLMS = "llms.txt"
+LLMS_FULL = "llms-full.txt"
+LLMS_GUIDE = "gems/fix/v1/"
+# The elements of a <main> that hold blocks; markdown_blocks and
+# markdown_inline name the others. A nav is left out, and so are an image
+# without alternative text and a comment; any other element stops the
+# conversion, to be added to bin/check.
+MARKDOWN_CONTAINERS = %w[main article header].freeze
+MARKDOWN_HEADINGS = %w[h2 h3 h4].freeze
+
 POST = %r{\A[a-z]+(?:/[a-z]+)*/\d{4}/\d{2}/\d{2}/[a-z0-9-]+\.html\z}
 TAG = /<([a-z][a-z0-9-]*)\b([^>]*)>/i
 ATTRIBUTES = %r{\A(?:\s+[a-z][a-z0-9-]*(?:="[^"]*")?)*\s*/?\z}i
@@ -210,6 +234,16 @@ def check_pinned
     error(path, "has changed: update its digest in bin/check if this is intended") unless Digest::SHA256.file(path).hexdigest == digest
   end
   error("CNAME", "must contain fixrb.dev") if @files.include?("CNAME") && read("CNAME") != "fixrb.dev\n"
+end
+
+# One key of IndexNow, holding its own name and nothing else, not even a line
+# break: the engines compare the file with the key they are sent.
+def check_indexnow
+  keys = @files.grep(INDEXNOW_KEY)
+  return error("KEY.txt", "the key of IndexNow is missing: 32 hexadecimal digits, in a file of that name") if keys.empty?
+  return error(keys.join(", "), "only one key of IndexNow is used: remove the others") if keys.size > 1
+
+  error(keys.first, "must hold its own name, without .txt, and nothing else") unless read(keys.first) == keys.first.delete_suffix(".txt")
 end
 
 def url_for(path)
@@ -706,13 +740,232 @@ rescue REXML::ParseException => e
   error("sitemap.xml", "malformed: #{e.message.lines.first.strip}")
 end
 
+# Text in Markdown: the characters that would start a code span, an emphasis,
+# a link or a tag are escaped.
+def markdown_escape(text)
+  text.gsub(/[\\`*_\[\]<]/) { |char| "\\#{char}" }
+end
+
+# A code span, its fence longer than any run of backticks in it.
+def markdown_code(text)
+  fence = "`" * (text.scan(/`+/).map(&:size).max.to_i + 1)
+  pad = text.start_with?("`") || text.end_with?("`") ? " " : ""
+  "#{fence}#{pad}#{text}#{pad}#{fence}"
+end
+
+# A link of a page as an absolute URL: llms-full.txt is read away from the site.
+def markdown_url(href, url)
+  return url + href if href.start_with?("#")
+  return ORIGIN + href if href.start_with?("/")
+
+  href
+end
+
+def markdown_text(node)
+  REXML::XPath.match(node, ".//text()").sum("", &:value)
+end
+
+# The content of an element, on one line: text, code, strong and links.
+def markdown_inline(element, url)
+  element.children.sum("") do |child|
+    next markdown_escape(child.value.gsub(/\s+/, " ")) if child.is_a?(REXML::Text)
+    next "" unless child.is_a?(REXML::Element)
+
+    case child.name
+    when "code" then markdown_code(markdown_text(child).gsub(/\s+/, " "))
+    when "strong" then "**#{markdown_inline(child, url).strip}**"
+    when "a" then "[#{markdown_inline(child, url).strip}](#{markdown_url(child.attributes['href'], url)})"
+    else raise ArgumentError, "<#{child.name}> cannot be written in Markdown: add it to bin/check"
+    end
+  end
+end
+
+def markdown_line(element, url)
+  markdown_inline(element, url).gsub(/ {2,}/, " ").strip
+end
+
+def markdown_list(list, url)
+  list.elements.each_with_index.map do |item, index|
+    raise ArgumentError, "a <#{list.name}> holds <#{item.name}>" unless item.name == "li"
+
+    "#{list.name == 'ol' ? "#{index + 1}." : '-'} #{markdown_line(item, url)}"
+  end.join("\n")
+end
+
+# A list of terms, each with its definitions after it.
+def markdown_definitions(list, url)
+  terms = list.elements.each_with_object([]) do |item, pairs|
+    case item.name
+    when "dt" then pairs << [markdown_line(item, url), []]
+    when "dd" then (pairs.last || raise(ArgumentError, "a <dd> comes before any <dt>"))[1] << markdown_line(item, url)
+    else raise ArgumentError, "a <dl> holds <#{item.name}>"
+    end
+  end
+  terms.map { |term, definitions| "- **#{term}**: #{definitions.join('; ')}" }.join("\n")
+end
+
+def markdown_table(table, url)
+  raise ArgumentError, "a <table> holds only a <thead> and a <tbody>" unless table.elements.map(&:name) == %w[thead tbody]
+
+  rows = table.elements.flat_map { |part| part.elements.to_a }.map do |row|
+    raise ArgumentError, "a <#{row.parent.name}> holds <#{row.name}>" unless row.name == "tr"
+
+    row.elements.map do |cell|
+      raise ArgumentError, "a <tr> holds <#{cell.name}>" unless %w[th td].include?(cell.name)
+
+      markdown_line(cell, url).gsub("|", "\\|")
+    end
+  end
+  header, *body = rows
+  [header, header.map { "---" }, *body].map { |cells| "| #{cells.join(' | ')} |" }.join("\n")
+end
+
+# A block of code: the file of examples/ it shows, or a terminal session, each
+# command after a $.
+def markdown_pre(pre)
+  example = pre.attributes["data-example"]
+  if example
+    raise ArgumentError, "#{example} is not a file of the repository" unless @files.include?(example)
+
+    language = example.end_with?(".yaml") ? "yaml" : "ruby"
+    source = read(example)
+  else
+    language = "console"
+    source = pre.children.sum("") do |child|
+      next child.value if child.is_a?(REXML::Text)
+      next "" unless child.is_a?(REXML::Element)
+      raise ArgumentError, "a terminal session holds <#{child.name}>" unless %w[kbd samp].include?(child.name)
+
+      child.name == "kbd" ? "$ #{markdown_text(child)}" : markdown_text(child)
+    end
+  end
+  fence = "`" * [3, source.scan(/`+/).map(&:size).max.to_i + 1].max
+  "#{fence}#{language}\n#{source.chomp}\n#{fence}"
+end
+
+def markdown_blocks(elements, url)
+  elements.flat_map do |element|
+    if (MARKDOWN_CONTAINERS + ["hgroup"]).include?(element.name) && element.texts.any? { |text| !text.value.strip.empty? }
+      raise ArgumentError, "a <#{element.name}> holds text outside a block"
+    end
+
+    case element.name
+    when *MARKDOWN_CONTAINERS then markdown_blocks(element.elements.to_a, url)
+    # The eyebrow before the title, and the title, written above the page.
+    when "hgroup" then markdown_blocks(element.elements.to_a.drop_while { |child| child.name != "h1" }.drop(1), url)
+    when "nav", "h1" then []
+    when *MARKDOWN_HEADINGS then ["#{'#' * element.name[1].to_i} #{markdown_line(element, url)}"]
+    when "p" then [markdown_line(element, url)]
+    when "ul", "ol" then [markdown_list(element, url)]
+    when "dl" then [markdown_definitions(element, url)]
+    when "table" then [markdown_table(element, url)]
+    when "pre" then [markdown_pre(element)]
+    when "img"
+      alt = element.attributes["alt"].to_s
+      alt.empty? ? [] : ["![#{markdown_escape(alt)}](#{markdown_url(element.attributes['src'], url)})"]
+    else raise ArgumentError, "<#{element.name}> cannot be written in Markdown: add it to bin/check"
+    end
+  end
+end
+
+# A page in Markdown: its title, its address, then its <main>. HTML is not
+# XML, so the one empty element a <main> may hold, <img>, is closed first.
+def markdown_page(path)
+  html = read(path)
+  url = ORIGIN + url_for(path)
+  main = html[%r{<main>.*?</main>}m] || raise(ArgumentError, "has no <main>")
+  root = REXML::Document.new(main.gsub(/<img\b([^>]*)>/, '<img\1/>')).root
+  blocks = markdown_blocks(root.elements.to_a, url)
+  "# #{markdown_escape(title_of(html))}\n\nSource: <#{url}>\n\n#{blocks.join("\n\n")}\n"
+rescue REXML::ParseException => e
+  raise ArgumentError, "#{path}: its <main> cannot be read: #{e.message.lines.first.strip}"
+rescue ArgumentError => e
+  raise ArgumentError, "#{path}: #{e.message}"
+end
+
+# The pages of a guide, in the order of its nav: its first page, then the
+# others.
+def guide_pages(root)
+  read("#{root}index.html")[GUIDE_NAV].to_s.scan(/href="([^"]+)"/).flatten.map { |url| file_for(url) }
+end
+
+def llms_full
+  fix = read("gems/fix/index.html")
+  pages = ["gems/fix/index.html"] + guide_pages(LLMS_GUIDE)
+  intro = "# Fix 1: its page and its guide\n\n> #{markdown_escape(meta_of(fix, 'description'))}\n"
+  ([intro] + pages.map { |path| markdown_page(path) }).join("\n")
+end
+
+# Every indexed page, once, in a section: Fix, its guide, the other gems in
+# the order of the home page, the blog, and the posts before Fix 1.0, the
+# newest first, as the feed has them.
+def llms_sections(pages, times)
+  home = read("index.html")
+  gems = home.scan(%r{href="/gems/([a-z0-9_-]+)/"}).flatten.uniq.map { |name| "gems/#{name}/index.html" }
+  posts = times.keys.select { |path| pages.include?(path) }
+  {
+    "Fix" => ["index.html", "gems/fix/index.html"],
+    "Guide of Fix 1" => guide_pages(LLMS_GUIDE),
+    "Gems" => gems.select { |path| pages.include?(path) } - ["gems/fix/index.html"],
+    "Blog" => ["blog/index.html"] + (posts - ARCHIVED),
+    "Before Fix 1.0" => posts & ARCHIVED
+  }
+end
+
+def llms_index(pages, times)
+  home = read("index.html")
+  sections = llms_sections(pages, times).map do |name, paths|
+    entries = paths.map do |path|
+      html = read(path)
+      "- [#{markdown_escape(meta_of(html, 'og:title'))}](#{ORIGIN}#{url_for(path)}): #{markdown_escape(meta_of(html, 'description'))}"
+    end
+    "## #{name}\n\n#{entries.join("\n")}\n"
+  end
+  optional = "## Optional\n\n- [Fix 1: its page and its guide](#{ORIGIN}/#{LLMS_FULL}): the page of fix and every page of its guide, " \
+             "with the code of their examples, in one Markdown file\n"
+  "# Fixrb\n\n> #{markdown_escape(meta_of(home, 'description'))}\n\n#{(sections + [optional]).join("\n")}"
+end
+
+def llms_files(pages, times)
+  { LLMS => llms_index(pages, times), LLMS_FULL => llms_full }
+end
+
+def fix_llms(pages, times)
+  llms_files(pages, times).filter_map do |path, content|
+    next if File.exist?(path) && read(path) == content
+
+    File.write(path, content)
+    path
+  end
+rescue ArgumentError
+  []
+end
+
+# Each file as --fix writes it, every indexed page listed once in llms.txt; a
+# feed that cannot be read is reported by check_feed.
+def check_llms(pages, times)
+  return if times.nil?
+
+  listed = llms_sections(pages, times).values.flatten
+  (pages - ["404.html"] - listed).each { |page| error(LLMS, "leaves out #{page}: give it a section in bin/check") }
+  listed.tally.each { |page, count| error(LLMS, "lists #{page} #{count} times") if count > 1 }
+  llms_files(pages, times).each do |path, content|
+    next error(path, "is missing: run bin/check --fix") unless File.exist?(path)
+
+    error(path, "is not as expected: run bin/check --fix") unless read(path) == content
+  end
+rescue ArgumentError => e
+  error(LLMS_FULL, e.message)
+end
+
 # robots.txt announces the sitemap, and hides nothing the pages need: pages,
-# feed, sitemap, style, fonts and images stay open to crawlers.
+# feed, sitemap, style, fonts, images and the text files (llms.txt and the key
+# of IndexNow among them) stay open to crawlers.
 def check_robots(pages)
   lines = read("robots.txt").lines(chomp: true)
   error("robots.txt", "must announce #{ORIGIN}/sitemap.xml") unless lines.include?("Sitemap: #{ORIGIN}/sitemap.xml")
   rules = lines.filter_map { |line| line[/\ADisallow:\s*(\S+)\z/, 1] }
-  served = pages.map { |page| url_for(page) } + @files.grep(/\.(?:xml|css|woff2|svg|ico|png)\z/).map { |file| "/#{file}" }
+  served = pages.map { |page| url_for(page) } + @files.grep(/\.(?:xml|css|woff2|svg|ico|png|txt)\z/).map { |file| "/#{file}" }
   served.each do |url|
     rule = rules.find { |prefix| url.start_with?(prefix) }
     error("robots.txt", "Disallow: #{rule} hides #{url}") if rule
@@ -782,6 +1035,7 @@ abort "usage: bin/check [--fix]" unless fix || ARGV.empty?
 check_files(@files)
 abort(@errors.join("\n")) unless @errors.empty?
 check_pinned
+check_indexnow
 @files.grep(/\.svg\z/).each { |path| check_svg(path) }
 @files.grep(/\.png\z/).each { |path| check_png(path) }
 
@@ -789,6 +1043,7 @@ pages = @files.grep(/\.html\z/)
 pages.select { |path| fix_code_blocks(path) }.each { |path| puts "fixed #{path}" } if fix
 times = feed_times
 pages.select { |path| fix_structured_data(path, times) }.each { |path| puts "fixed #{path}" } if fix && times
+fix_llms(pages, times).each { |path| puts "fixed #{path}" } if fix && times
 
 home = read("index.html")
 used = []
@@ -819,6 +1074,7 @@ check_stylesheet
 check_feed(posts)
 check_sitemap(pages)
 check_robots(pages)
+check_llms(pages, times)
 
 abort(@errors.join("\n")) unless @errors.empty?
 puts "#{pages.size} pages, #{used.uniq.size} examples, #{posts.size} posts: ok"

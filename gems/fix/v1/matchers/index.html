@@ -135,7 +135,7 @@ be_fix.rb:11: Failure: expected {color: :blue} to be {color: :blue}</samp></pre>
       <p>The last line reads like the first, but fails: the hash written there has the same content as <code>DEFAULTS</code>, which <code>eq</code> accepts, and is another object.</p>
 
       <h2 id="be_true"><code>be_true</code>, <code>be_false</code>, <code>be_nil</code></h2>
-      <p>Each is met by one object only: <code>true</code>, <code>false</code> or <code>nil</code>. A value that Ruby treats as true in a condition, such as <code>4</code>, is not <code>true</code>:</p>
+      <p><code>be_true</code>, <code>be_false</code> and <code>be_nil</code> are each met by one object only: <code>true</code>, <code>false</code> or <code>nil</code>. A value that Ruby treats as true in a condition, such as <code>4</code>, is not <code>true</code>:</p>
       <pre data-example="examples/fix/v1/matchers/be_true_fix.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Word</span> <span class="keyword">do</span>

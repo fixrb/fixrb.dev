@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Writes the request that tells the engines of IndexNow (Bing, Yandex, Naver,
+# Seznam, Yep) which pages of fixrb.dev have changed, as JSON on its standard
+# output, or nothing when no page has. It sends nothing itself: the workflow
+# indexnow.yml sends it once GitHub Pages has published the commit.
+#
+#   bin/indexnow         the pages the last commit adds, changes or deletes
+#   bin/indexnow --all   every page of the sitemap
+#
+# The URL of a page is its canonical URL, which bin/check keeps equal to its
+# path; the key is the one file KEY.txt at the root, which bin/check checks.
+
+require "json"
+require "open3"
+
+Dir.chdir(File.expand_path("..", __dir__))
+
+ORIGIN = "https://fixrb.dev"
+KEY = /\A[0-9a-f]{32}\.txt\z/
+
+abort "usage: bin/indexnow [--all]" unless ARGV.empty? || ARGV == ["--all"]
+
+keys = Dir.children(".").grep(KEY)
+abort "bin/indexnow needs one key of IndexNow at the root, KEY.txt" unless keys.size == 1
+key = keys.first.delete_suffix(".txt")
+
+urls = if ARGV == ["--all"]
+         File.read("sitemap.xml", encoding: "UTF-8").scan(%r{<loc>([^<]+)</loc>}).flatten
+       else
+         listing, status = Open3.capture2("git", "diff", "--name-only", "--no-renames", "HEAD~1", "HEAD")
+         abort "bin/indexnow needs the commit before HEAD: fetch two commits" unless status.success?
+         listing.lines(chomp: true).grep(/\.html\z/).reject { |path| path == "404.html" }.map do |path|
+           "#{ORIGIN}/#{path.delete_suffix('index.html')}"
+         end
+       end
+
+puts JSON.generate({ host: "fixrb.dev", key: key, keyLocation: "#{ORIGIN}/#{key}.txt", urlList: urls }) unless urls.empty?
