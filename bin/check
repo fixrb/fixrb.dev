@@ -107,7 +107,7 @@ GUIDE_NAV = %r{<nav aria-label="Guide">.*?</nav>}m
 PAGES_NAV = %r{<nav aria-label="Pages">(.*?)</nav>}m
 
 # A long page lists its sections in a nav, "On this page": a link to each
-# <h2> that carries an id, in the order of the page and with its words.
+# <h2>, which all carry an id, in the order of the page and with its words.
 CONTENTS_NAV = %r{<nav aria-label="On this page">(.*?)</nav>}m
 CONTENTS_LINK = %r{<li><a href="#([^"]+)">(.*?)</a></li>}m
 SECTION = %r{<h2 id="([^"]+)">(.*?)</h2>}m
@@ -595,7 +595,12 @@ def check_contents(path, html)
   nav = html[CONTENTS_NAV, 1]
   return unless nav
 
-  error(path, "its nav of the page must list every <h2> that has an id, in order and with its words") unless nav.scan(CONTENTS_LINK) == html.scan(SECTION)
+  sections = html.scan(SECTION)
+  error(path, "its nav of the page must list every <h2> that has an id, in order and with its words") unless nav.scan(CONTENTS_LINK) == sections
+  # The stylesheet marks the section being read by pairing the nth link with
+  # the nth <h2>, and provides for fourteen.
+  error(path, "has a nav of its sections: every <h2> must have an id") unless html.scan(/<h2[ >]/).size == sections.size
+  error(path, "its nav of the page lists more sections than the stylesheet can mark: fourteen") if sections.size > 14
 end
 
 # The examples a session runs, as bin/examples finds them: the file of `ruby

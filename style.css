@@ -704,9 +704,10 @@ article > footer {
 /* On this page: the sections of a long page, a nav after its facts, or
    after the header of a page of a guide. Its label is its aria-label. In
    the column, a slab of links in a line; from 80rem, a rail on the right of
-   the article, which stays in view while the page is read. Where the
-   browser tells which section is on screen (scroll-target-group), its link
-   is marked. A page with a design of its own dresses it. */
+   the article, which stays in view while the page is read, the link of the
+   section being read marked on it. A page with a design of its own dresses
+   it, by the custom properties --toc-link, --toc-text, --toc-current,
+   --toc-track and --toc-mark. */
 nav[aria-label="On this page"] {
   max-width: calc(var(--measure) - 8px);
   margin: 2.25rem 4px 0;
@@ -714,7 +715,6 @@ nav[aria-label="On this page"] {
   background: var(--surface);
   font-size: .9375rem;
   line-height: 1.35;
-  scroll-target-group: auto;
   box-shadow:
     0 -4px 0 var(--rim),
     0 4px 0 var(--rim),
@@ -749,7 +749,7 @@ nav[aria-label="On this page"] li {
 nav[aria-label="On this page"] a {
   display: block;
   padding: .25rem 0;
-  color: var(--text);
+  color: var(--toc-link, var(--text));
   text-decoration-color: var(--accent);
 }
 
@@ -824,19 +824,144 @@ nav[aria-label="On this page"] a > code {
     display: block;
   }
 
-  /* A track down the list: the section on screen is lit on it, and wears
-     the sign of the page, if it has one. */
+  /* A track down the list: the section being read is lit on it, and wears
+     the sign of the page, if it has one. --toc-lit is 1 on its link and 0 on
+     the others; the colours of the link and the opacity of its sign follow
+     it. */
   nav[aria-label="On this page"] a {
+    --toc-lit: calc(var(--toc-on) - var(--toc-off));
     position: relative;
     padding: .375rem 0 .375rem 1rem;
     border-left: 4px solid var(--toc-track, var(--rim));
+    border-left-color: color-mix(in srgb, var(--toc-mark, var(--accent)) calc(var(--toc-lit) * 100%), var(--toc-track, var(--rim)));
     color: var(--toc-text, var(--muted));
+    color: color-mix(in srgb, var(--toc-current, var(--text)) calc(var(--toc-lit) * 100%), var(--toc-text, var(--muted)));
     text-decoration: none;
+    animation: toc-on linear both, toc-off linear both;
+    animation-range: cover 40% cover 41%;
   }
 
-  nav[aria-label="On this page"] a:target-current {
-    border-left-color: var(--toc-mark, var(--accent));
-    color: var(--toc-current, var(--text));
+  /* Which section is being read, without a script: each title of the
+     article is the subject of a view timeline, which the article lends to
+     the nav. The link of a section goes on when its title has come up to
+     the middle of the screen, and off when the next title has: the nth link
+     listens to the nth title and to the one after it, so every h2 of a page
+     with this nav carries an id and is listed, which bin/check verifies.
+     Fourteen sections are provided for; the longest page has twelve. */
+  article:has(> nav[aria-label="On this page"]) {
+    timeline-scope: --section-1, --section-2, --section-3, --section-4, --section-5, --section-6, --section-7, --section-8, --section-9, --section-10, --section-11, --section-12, --section-13, --section-14;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(1) {
+    view-timeline-name: --section-1;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(2) {
+    view-timeline-name: --section-2;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(3) {
+    view-timeline-name: --section-3;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(4) {
+    view-timeline-name: --section-4;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(5) {
+    view-timeline-name: --section-5;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(6) {
+    view-timeline-name: --section-6;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(7) {
+    view-timeline-name: --section-7;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(8) {
+    view-timeline-name: --section-8;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(9) {
+    view-timeline-name: --section-9;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(10) {
+    view-timeline-name: --section-10;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(11) {
+    view-timeline-name: --section-11;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(12) {
+    view-timeline-name: --section-12;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(13) {
+    view-timeline-name: --section-13;
+  }
+
+  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(14) {
+    view-timeline-name: --section-14;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(1) > a {
+    animation-timeline: --section-1, --section-2;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(2) > a {
+    animation-timeline: --section-2, --section-3;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(3) > a {
+    animation-timeline: --section-3, --section-4;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(4) > a {
+    animation-timeline: --section-4, --section-5;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(5) > a {
+    animation-timeline: --section-5, --section-6;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(6) > a {
+    animation-timeline: --section-6, --section-7;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(7) > a {
+    animation-timeline: --section-7, --section-8;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(8) > a {
+    animation-timeline: --section-8, --section-9;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(9) > a {
+    animation-timeline: --section-9, --section-10;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(10) > a {
+    animation-timeline: --section-10, --section-11;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(11) > a {
+    animation-timeline: --section-11, --section-12;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(12) > a {
+    animation-timeline: --section-12, --section-13;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(13) > a {
+    animation-timeline: --section-13, --section-14;
+  }
+
+  nav[aria-label="On this page"] li:nth-child(14) > a {
+    animation-timeline: --section-14, --section-15;
   }
 
   nav[aria-label="On this page"] a:hover {
@@ -846,6 +971,33 @@ nav[aria-label="On this page"] a > code {
 
   article:has(> nav[aria-label="On this page"]) > pre {
     max-width: calc(100% - var(--rail) - 3.5rem - 8px);
+  }
+}
+
+/* The two numbers behind the mark of the section being read: 1 from the
+   moment the title of the section has come up, and 1 from the moment the
+   next one has. They are registered so that a scroll can animate them. */
+@property --toc-on {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --toc-off {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes toc-on {
+  to {
+    --toc-on: 1;
+  }
+}
+
+@keyframes toc-off {
+  to {
+    --toc-off: 1;
   }
 }
 
@@ -2154,7 +2306,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"]:
 }
 
 body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a {
-  color: var(--ink);
+  --toc-link: var(--ink);
   text-decoration-color: var(--jester-red);
 }
 
@@ -2201,11 +2353,10 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] 
 
   body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a {
     padding-left: 1.5rem;
-    color: var(--toc-text);
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 8px);
@@ -2213,6 +2364,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] 
     width: 18px;
     height: 16px;
     background: url("/gems/matchi/img/hat.svg") 0 0 / 18px 16px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -2592,7 +2744,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"]::befor
 }
 
 body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a {
-  color: var(--paper);
+  --toc-link: var(--paper);
   text-decoration-color: var(--gold);
 }
 
@@ -2651,7 +2803,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focu
     border-left: 0;
   }
 
-  body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 9px);
@@ -2659,6 +2811,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focu
     width: 26px;
     height: 18px;
     background: url("/gems/aw/img/cursor.svg") 0 0 / 26px 18px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -3069,7 +3222,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"]::
 }
 
 body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a {
-  color: var(--pine-ink);
+  --toc-link: var(--pine-ink);
   font-weight: 600;
   text-decoration-color: var(--pine-link);
 }
@@ -3102,7 +3255,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a
     padding-left: 1.5rem;
   }
 
-  body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 10px);
@@ -3110,6 +3263,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a
     width: 20px;
     height: 20px;
     background: url("/gems/brutal/img/axe.svg") 0 0 / 20px 20px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -3618,7 +3772,7 @@ body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"]
     padding-left: 1.25rem;
   }
 
-  body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 7px);
@@ -3626,6 +3780,7 @@ body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"]
     width: 14px;
     height: 14px;
     background: url("/img/level-must.svg") 0 0 / 14px 14px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -4025,7 +4180,7 @@ main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"]::before {
 }
 
 main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a {
-  color: #e6d6e8;
+  --toc-link: #e6d6e8;
   text-decoration-color: var(--coral);
 }
 
@@ -4076,10 +4231,9 @@ main:has(> nav[aria-label="Guide"]) > article > h2::before {
   main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a {
     padding-left: 2rem;
     border-left: 0;
-    color: var(--toc-text);
   }
 
-  main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a:target-current::before {
+  main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -4087,6 +4241,7 @@ main:has(> nav[aria-label="Guide"]) > article > h2::before {
     width: 20px;
     height: 24px;
     background: url("/gems/fix/img/lamp.svg") 0 0 / 20px 24px no-repeat, var(--code-bg);
+    opacity: var(--toc-lit);
   }
 }
 
@@ -4695,7 +4850,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
 }
 
 body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a {
-  color: var(--ink);
+  --toc-link: var(--ink);
   text-decoration-color: var(--bordeaux);
 }
 
@@ -4715,11 +4870,10 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
 
   body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a {
     padding-left: 1.5rem;
-    color: var(--toc-text);
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 8px);
@@ -4727,6 +4881,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
     width: 16px;
     height: 16px;
     background: url("/gems/spectus/img/jewel.svg") 0 0 / 16px 16px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -5065,7 +5220,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"]::b
 }
 
 body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a {
-  color: var(--ink);
+  --toc-link: var(--ink);
   text-decoration-color: var(--airmail-ruby);
 }
 
@@ -5102,7 +5257,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 9px);
@@ -5110,6 +5265,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:
     width: 18px;
     height: 18px;
     background: url("/gems/defi/img/seal.svg") 0 0 / 18px 18px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -5540,7 +5696,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this
 }
 
 body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a {
-  color: var(--phosphor);
+  --toc-link: var(--phosphor);
   text-decoration-color: var(--coral);
 }
 
@@ -5563,12 +5719,13 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this
     border-left: 0;
   }
 
-  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a::before {
     content: ">";
     position: absolute;
     left: 0;
     color: var(--coral);
     font-weight: 700;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -6013,7 +6170,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"]:
 }
 
 body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a {
-  color: var(--paper);
+  --toc-link: var(--paper);
   text-decoration-color: var(--coral);
 }
 
@@ -6035,10 +6192,9 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] 
 
   body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a {
     padding-left: 1.75rem;
-    color: var(--toc-text);
   }
 
-  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -6046,6 +6202,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] 
     width: 24px;
     height: 24px;
     background: url("/gems/fix-its/img/loupe-mark.svg") 0 0 / 24px 24px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -6478,7 +6635,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this pag
 }
 
 body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a {
-  color: var(--paper);
+  --toc-link: var(--paper);
   text-decoration-color: var(--matcher);
 }
 
@@ -6498,10 +6655,9 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this pag
 
   body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a {
     padding-left: 1.75rem;
-    color: var(--toc-text);
   }
 
-  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a:target-current::before {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -6509,6 +6665,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this pag
     width: 24px;
     height: 24px;
     background: url("/gems/matchi-fix/img/piece.svg") 0 0 / 24px 24px no-repeat;
+    opacity: var(--toc-lit);
   }
 }
 
@@ -7166,9 +7323,11 @@ body > footer a:hover {
   }
 }
 
-/* Movement is a pixel or a blink: none when the reader asks for less. */
+/* Movement is a pixel or a blink: none when the reader asks for less. The
+   mark of the section being read is no movement: its link keeps listening
+   to the scroll. */
 @media (prefers-reduced-motion: reduce) {
-  *,
+  *:not(nav[aria-label="On this page"] a),
   *::before,
   *::after {
     animation: none !important;
