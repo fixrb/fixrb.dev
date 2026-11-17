@@ -437,7 +437,7 @@ Fix does not replace the framework of a project. A suite that needs fixtures, do
 
 - [The guide](https://fixrb.dev/gems/fix/v1/): Fix 1 one step at a time, from a first specification to the tests of a project.
 - [README](https://github.com/fixrb/fix/blob/v1.0.1/README.md): the language, outcomes, results and processes in full, and the changes in 1.0.1.
-- [API reference](https://rubydoc.info/gems/fix/1.0.1)
+- [API reference](https://gemdocs.org/gems/fix/1.0.1/)
 - [RubyGems](https://rubygems.org/gems/fix/versions/1.0.1)
 - [Source code](https://github.com/fixrb/fix/tree/v1.0.1)
 - [Rethinking test architecture with clear specification separation](https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html) and [The three levels of requirements, inspired by RFC 2119](https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html), on the blog.
@@ -457,7 +457,7 @@ Fix 1 needs Ruby 3.3 or later and `fork(2)`: it is tested on Linux and macOS, an
 ## Other documents
 
 - [The README of fix](https://github.com/fixrb/fix/blob/v1.0.1/README.md) is the reference: every rule of the language, the outcomes, the results and the processes, in full. The guide links to it where a rule matters.
-- [The API reference](https://rubydoc.info/gems/fix/1.0.1) documents each class and method.
+- [The API reference](https://gemdocs.org/gems/fix/1.0.1/) documents each class and method.
 - [The page of Fix](https://fixrb.dev/gems/fix/) tells what a specification is for, in five cases.
 
 # Getting started
