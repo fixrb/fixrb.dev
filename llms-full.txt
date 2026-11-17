@@ -77,6 +77,10 @@ The first three lines are the duck's, the last three the robot's. The robot swim
 
 Ruby has long kept a few specifications apart from what implements them: [`Rack::Lint`](https://github.com/rack/rack/blob/main/lib/rack/lint.rb) checks any application and any server against [the Rack specification](https://github.com/rack/rack/blob/main/SPEC.rdoc), [ruby/spec](https://github.com/ruby/spec) describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#shipped) shows.
 
+![One specification, a sheet of three lines, tested against three rubies of different cuts.](https://fixrb.dev/gems/fix/img/subjects.svg)
+
+One specification, three subjects. A row for each subject, a column for each expectation, a MUST, a SHOULD and a MAY: the first subject meets all three, the second gets a warning and an info, the third fails the MUST.
+
 Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings such a specification into that framework as a matcher. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) shows what each RSpec idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
 
 ## What Fix leaves out

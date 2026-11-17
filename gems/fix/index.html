@@ -129,6 +129,10 @@ duck.rb:14: Info: NoMethodError: undefined method 'speak' for an instance of Rob
 
       <h2 id="fits">Where Fix fits</h2>
       <p>Ruby has long kept a few specifications apart from what implements them: <a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a> checks any application and any server against <a href="https://github.com/rack/rack/blob/main/SPEC.rdoc">the Rack specification</a>, <a href="https://github.com/ruby/spec">ruby/spec</a> describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as <a href="/gems/fix/v1/patterns/#shipped">Patterns</a> shows.</p>
+      <figure>
+        <img src="/gems/fix/img/subjects.svg" alt="One specification, a sheet of three lines, tested against three rubies of different cuts." width="408" height="208">
+        <figcaption>One specification, three subjects. A row for each subject, a column for each expectation, a MUST, a SHOULD and a MAY: the first subject meets all three, the second gets a warning and an info, the third fails the MUST.</figcaption>
+      </figure>
       <p>Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher. <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> shows what each RSpec idiom becomes, and <a href="/gems/fix/v1/questions/">Questions</a> answers what comes up when the two live together. <a href="/gems/fix/v1/questions/#compared">A table</a> sets Fix beside RSpec and minitest, point by point.</p>
 
       <h2 id="scope">What Fix leaves out</h2>

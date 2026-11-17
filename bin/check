@@ -145,10 +145,11 @@ LLMS = "llms.txt"
 LLMS_FULL = "llms-full.txt"
 LLMS_GUIDE = "gems/fix/v1/"
 # The elements of a <main> that hold blocks; markdown_blocks and
-# markdown_inline name the others. A nav is left out, and so are an image
-# without alternative text and a comment; any other element stops the
-# conversion, to be added to bin/check.
-MARKDOWN_CONTAINERS = %w[main article header].freeze
+# markdown_inline name the others. A figure gives its image, then its caption
+# as a paragraph. A nav is left out, and so are an image without alternative
+# text and a comment; any other element stops the conversion, to be added to
+# bin/check.
+MARKDOWN_CONTAINERS = %w[main article header figure].freeze
 MARKDOWN_HEADINGS = %w[h2 h3 h4].freeze
 
 POST = %r{\A[a-z]+(?:/[a-z]+)*/\d{4}/\d{2}/\d{2}/[a-z0-9-]+\.html\z}
@@ -855,7 +856,7 @@ def markdown_blocks(elements, url)
     when "hgroup" then markdown_blocks(element.elements.to_a.drop_while { |child| child.name != "h1" }.drop(1), url)
     when "nav", "h1" then []
     when *MARKDOWN_HEADINGS then ["#{'#' * element.name[1].to_i} #{markdown_line(element, url)}"]
-    when "p" then [markdown_line(element, url)]
+    when "p", "figcaption" then [markdown_line(element, url)]
     when "ul", "ol" then [markdown_list(element, url)]
     when "dl" then [markdown_definitions(element, url)]
     when "table" then [markdown_table(element, url)]
