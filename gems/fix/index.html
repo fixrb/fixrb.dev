@@ -47,8 +47,12 @@
           <h1>fix</h1>
           <p>A Ruby testing framework: specifications in the words of RFC 2119, tested against a subject.</p>
         </hgroup>
+        <ul role="list">
+          <li><a href="/gems/fix/v1/getting-started/">Start the guide</a></li>
+          <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        </ul>
       </header>
-      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made: it names no class, builds no object, and holds no logic. Any subject is then tested against it, each context in a child process, and every expectation gets a result. One specification can test several implementations, a library you depend on, or the same object at every release; and because the levels are three, it can tell what it requires from what it recommends and what it leaves optional.</p>
+      <p>A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>: what it requires, what it recommends, and what it leaves optional. It names no class, so one specification tests several implementations, a library you depend on, or the same object at every release. Each context runs in a child process, and every expectation gets a result.</p>
       <dl>
         <dt>Version</dt>
         <dd>1.0.1</dd>
@@ -56,6 +60,8 @@
         <dd>3.3 or later, with <code>fork</code></dd>
         <dt>Dependencies</dt>
         <dd><a href="/gems/aw/">aw</a>, <a href="/gems/defi/">defi</a>, <a href="/gems/matchi/">matchi</a>, <a href="/gems/spectus/">spectus</a></dd>
+        <dt>Code</dt>
+        <dd>About 300 lines, tested at full coverage</dd>
         <dt>License</dt>
         <dd>MIT</dd>
       </dl>
@@ -63,13 +69,13 @@
         <ol>
           <li><a href="#install">Install</a></li>
           <li><a href="#usage">In one file</a></li>
+          <li><a href="#fits">Where Fix fits</a></li>
+          <li><a href="#scope">What Fix leaves out</a></li>
           <li><a href="#cases">What a specification is for</a></li>
           <li><a href="#language">The language</a></li>
           <li><a href="#outcomes">Outcomes</a></li>
           <li><a href="#results">Results and runners</a></li>
           <li><a href="#processes">Processes</a></li>
-          <li><a href="#scope">What Fix leaves out</a></li>
-          <li><a href="#fits">Where Fix fits</a></li>
           <li><a href="#extensions">Extensions</a></li>
           <li><a href="#documentation">Documentation</a></li>
         </ol>
@@ -79,21 +85,17 @@
       <p>Add <code>gem "fix"</code> to your Gemfile, or run <code>gem install fix</code>.</p>
 
       <h2 id="usage">In one file</h2>
-      <p>A file writes a specification, then tests a subject against it. <code>Fix :Duck do … end</code> builds the specification and registers it under its name; <code>Fix[:Duck]</code> finds it again. <code>test</code> builds a new subject with the block for every expectation, sends it the methods of the <code>on</code> around it, judges what comes out, writes one line per expectation and returns whether all of them pass; <code>exit</code> turns that into the status of the process.</p>
+      <p>A file writes a specification, then tests subjects against it: here a duck, and a robot that was not built to be one. <code>Fix :Duck do … end</code> builds the specification and registers it under its name; <code>Fix[:Duck]</code> finds it again. <code>test</code> builds a new subject with its block for every expectation, sends it the methods of the <code>on</code> around it, judges what comes out, writes one line per expectation and returns whether all of them pass; <code>exit</code> turns that into the status of the process.</p>
       <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
 
-<span class="keyword">class</span> <span class="constant">Duck</span>
-  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
-  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
-<span class="keyword">end</span>
-
+<span class="comment"># What a duck does, whatever it is made of.</span>
 <span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
   on <span class="string">:walk</span> <span class="keyword">do</span>
     it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
   <span class="keyword">end</span>
 
   on <span class="string">:swim</span> <span class="keyword">do</span>
-    it <span class="constant">MUST</span> eq <span class="string">"Swoosh..."</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Swoosh..."</span>
   <span class="keyword">end</span>
 
   on <span class="string">:speak</span> <span class="keyword">do</span>
@@ -101,13 +103,36 @@
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Quaaaaaack!"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Robot</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Glug glug..."</span>
+<span class="keyword">end</span>
+
+duck = <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new }
+robot = <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Robot</span>.new }
+exit(duck &amp;&amp; robot)
 </code></pre>
       <pre data-directory="examples/fix"><kbd>ruby duck.rb</kbd>
-<samp>duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
-duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
-duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck</samp></pre>
-      <p>The duck has no <code>speak</code>: under MAY, a method the subject does not have is an info, which passes. The specification could sit in a file of its own and the test in another; the class could be anything with a <code>walk</code> and a <code>swim</code>. Keep the parentheses of <code>exit(…)</code>: <code>exit Fix[:Duck].test do … end</code> would give the block to <code>exit</code>.</p>
+<samp>duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Success: expected "Swoosh..." to eq "Swoosh..."
+duck.rb:14: Success: expected "Quaaaaaack!" to eq "Quaaaaaack!"
+duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Warning: expected "Glug glug..." to eq "Swoosh..."
+duck.rb:14: Info: NoMethodError: undefined method 'speak' for an instance of Robot</samp></pre>
+      <p>The first three lines are the duck's, the last three the robot's. The robot swims in its own way: a SHOULD not met is a warning. It has no <code>speak</code>: under MAY, a method the subject does not have is an info. Both pass, so the file exits with 0, and both are written, so the gap is known; had the robot not walked like a duck, a MUST, its line would say Failure, and the status would be 1. The specification names neither class: it could sit in a file of its own, and be tested against anything with a <code>walk</code>. With one subject, the last lines are one, <code>exit(Fix[:Duck].test { Duck.new })</code>; keep its parentheses: <code>exit Fix[:Duck].test do … end</code> would give the block to <code>exit</code>.</p>
+
+      <h2 id="fits">Where Fix fits</h2>
+      <p>Ruby has long kept a few specifications apart from what implements them: <a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a> checks any application and any server against <a href="https://github.com/rack/rack/blob/main/SPEC.rdoc">the Rack specification</a>, <a href="https://github.com/ruby/spec">ruby/spec</a> describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as <a href="/gems/fix/v1/patterns/#shipped">Patterns</a> shows.</p>
+      <p>Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher. <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> shows what each RSpec idiom becomes, and <a href="/gems/fix/v1/questions/">Questions</a> answers what comes up when the two live together. <a href="/gems/fix/v1/questions/#compared">A table</a> sets Fix beside RSpec and minitest, point by point.</p>
+
+      <h2 id="scope">What Fix leaves out</h2>
+      <p>No mocks, no <code>before</code> and <code>after</code>, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs <code>fork</code>: it is tested on Linux and macOS, and does not run on Windows or JRuby.</p>
 
       <h2 id="cases">What a specification is for</h2>
 
@@ -425,13 +450,6 @@ result.result.class <span class="comment"># => Spectus::Result</span>
 
       <h2 id="processes">Processes</h2>
       <p>The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an <code>exit</code> included, is an error of its expectation alone. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.</p>
-
-      <h2 id="scope">What Fix leaves out</h2>
-      <p>No mocks, no <code>before</code> and <code>after</code>, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs <code>fork</code>: it is tested on Linux and macOS, and does not run on Windows or JRuby.</p>
-
-      <h2 id="fits">Where Fix fits</h2>
-      <p>Ruby has long kept a few specifications apart from what implements them: <a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a> checks any application and any server against <a href="https://github.com/rack/rack/blob/main/SPEC.rdoc">the Rack specification</a>, <a href="https://github.com/ruby/spec">ruby/spec</a> describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as <a href="/gems/fix/v1/patterns/#shipped">Patterns</a> shows.</p>
-      <p>Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and <a href="/gems/matchi-fix/">matchi-fix</a> brings such a specification into that framework as a matcher. <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> shows what each RSpec idiom becomes, and <a href="/gems/fix/v1/questions/">Questions</a> answers what comes up when the two live together. <a href="/gems/fix/v1/questions/#compared">A table</a> sets Fix beside RSpec and minitest, point by point.</p>
 
       <h2 id="extensions">Extensions</h2>
       <p><a href="/gems/fix-its/">fix-its</a> adds the word <code>its</code>, a method and its expectation on one line. <a href="/gems/matchi-fix/">matchi-fix</a> brings a specification of Fix to any framework that takes a matcher of matchi. The block of <code>Fix</code> runs on an instance of <code>Fix::Dsl</code>, where a gem may add a word of its own.</p>

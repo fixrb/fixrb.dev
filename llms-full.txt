@@ -8,11 +8,15 @@ Source: <https://fixrb.dev/gems/fix/>
 
 A Ruby testing framework: specifications in the words of RFC 2119, tested against a subject.
 
-A specification says what a subject **MUST**, **SHOULD** or **MAY** do, in the words of [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119), and nothing about how it is made: it names no class, builds no object, and holds no logic. Any subject is then tested against it, each context in a child process, and every expectation gets a result. One specification can test several implementations, a library you depend on, or the same object at every release; and because the levels are three, it can tell what it requires from what it recommends and what it leaves optional.
+- [Start the guide](https://fixrb.dev/gems/fix/v1/getting-started/)
+- [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/)
+
+A specification says what a subject **MUST**, **SHOULD** or **MAY** do, in the words of [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119): what it requires, what it recommends, and what it leaves optional. It names no class, so one specification tests several implementations, a library you depend on, or the same object at every release. Each context runs in a child process, and every expectation gets a result.
 
 - **Version**: 1.0.1
 - **Ruby**: 3.3 or later, with `fork`
 - **Dependencies**: [aw](https://fixrb.dev/gems/aw/), [defi](https://fixrb.dev/gems/defi/), [matchi](https://fixrb.dev/gems/matchi/), [spectus](https://fixrb.dev/gems/spectus/)
+- **Code**: About 300 lines, tested at full coverage
 - **License**: MIT
 
 ## Install
@@ -21,23 +25,19 @@ Add `gem "fix"` to your Gemfile, or run `gem install fix`.
 
 ## In one file
 
-A file writes a specification, then tests a subject against it. `Fix :Duck do … end` builds the specification and registers it under its name; `Fix[:Duck]` finds it again. `test` builds a new subject with the block for every expectation, sends it the methods of the `on` around it, judges what comes out, writes one line per expectation and returns whether all of them pass; `exit` turns that into the status of the process.
+A file writes a specification, then tests subjects against it: here a duck, and a robot that was not built to be one. `Fix :Duck do … end` builds the specification and registers it under its name; `Fix[:Duck]` finds it again. `test` builds a new subject with its block for every expectation, sends it the methods of the `on` around it, judges what comes out, writes one line per expectation and returns whether all of them pass; `exit` turns that into the status of the process.
 
 ```ruby
 require "fix"
 
-class Duck
-  def walk = "Klop klop!"
-  def swim = "Swoosh..."
-end
-
+# What a duck does, whatever it is made of.
 Fix :Duck do
   on :walk do
     it MUST eq "Klop klop!"
   end
 
   on :swim do
-    it MUST eq "Swoosh..."
+    it SHOULD eq "Swoosh..."
   end
 
   on :speak do
@@ -45,17 +45,43 @@ Fix :Duck do
   end
 end
 
-exit(Fix[:Duck].test { Duck.new })
+class Duck
+  def walk = "Klop klop!"
+  def swim = "Swoosh..."
+  def speak = "Quaaaaaack!"
+end
+
+class Robot
+  def walk = "Klop klop!"
+  def swim = "Glug glug..."
+end
+
+duck = Fix[:Duck].test { Duck.new }
+robot = Fix[:Duck].test { Robot.new }
+exit(duck && robot)
 ```
 
 ```console
 $ ruby duck.rb
-duck.rb:10: Success: expected "Klop klop!" to eq "Klop klop!"
-duck.rb:14: Success: expected "Swoosh..." to eq "Swoosh..."
-duck.rb:18: Info: NoMethodError: undefined method 'speak' for an instance of Duck
+duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Success: expected "Swoosh..." to eq "Swoosh..."
+duck.rb:14: Success: expected "Quaaaaaack!" to eq "Quaaaaaack!"
+duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Warning: expected "Glug glug..." to eq "Swoosh..."
+duck.rb:14: Info: NoMethodError: undefined method 'speak' for an instance of Robot
 ```
 
-The duck has no `speak`: under MAY, a method the subject does not have is an info, which passes. The specification could sit in a file of its own and the test in another; the class could be anything with a `walk` and a `swim`. Keep the parentheses of `exit(…)`: `exit Fix[:Duck].test do … end` would give the block to `exit`.
+The first three lines are the duck's, the last three the robot's. The robot swims in its own way: a SHOULD not met is a warning. It has no `speak`: under MAY, a method the subject does not have is an info. Both pass, so the file exits with 0, and both are written, so the gap is known; had the robot not walked like a duck, a MUST, its line would say Failure, and the status would be 1. The specification names neither class: it could sit in a file of its own, and be tested against anything with a `walk`. With one subject, the last lines are one, `exit(Fix[:Duck].test { Duck.new })`; keep its parentheses: `exit Fix[:Duck].test do … end` would give the block to `exit`.
+
+## Where Fix fits
+
+Ruby has long kept a few specifications apart from what implements them: [`Rack::Lint`](https://github.com/rack/rack/blob/main/lib/rack/lint.rb) checks any application and any server against [the Rack specification](https://github.com/rack/rack/blob/main/SPEC.rdoc), [ruby/spec](https://github.com/ruby/spec) describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#shipped) shows.
+
+Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings such a specification into that framework as a matcher. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) shows what each RSpec idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
+
+## What Fix leaves out
+
+No mocks, no `before` and `after`, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs `fork`: it is tested on Linux and macOS, and does not run on Windows or JRuby.
 
 ## What a specification is for
 
@@ -418,16 +444,6 @@ Fix[:Size].match? { "abc" } # => true
 ## Processes
 
 The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an `exit` included, is an error of its expectation alone. Nothing is rescued around a child: an `Interrupt` stops the run, and so does a child that died, with `Aw::ChildError`. Fix never writes a result that did not come from an expectation. `test(fork: false)` runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.
-
-## What Fix leaves out
-
-No mocks, no `before` and `after`, no shared examples, no random order: a specification holds expectations and nothing else, and what a test needs to set up belongs to the subject block, where the lets live. The same specification tests a class, a module, an instance or a library, and gives the same results on every run. Fix needs `fork`: it is tested on Linux and macOS, and does not run on Windows or JRuby.
-
-## Where Fix fits
-
-Ruby has long kept a few specifications apart from what implements them: [`Rack::Lint`](https://github.com/rack/rack/blob/main/lib/rack/lint.rb) checks any application and any server against [the Rack specification](https://github.com/rack/rack/blob/main/SPEC.rdoc), [ruby/spec](https://github.com/ruby/spec) describes the language for every Ruby that implements it, and a library with several adapters writes the examples each adapter has to pass. Fix makes such a specification a document of its own: written once, read before any test runs, in three levels, tested against any object, and shipped in a gem for those who implement it, as [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#shipped) shows.
-
-Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings such a specification into that framework as a matcher. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) shows what each RSpec idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
 
 ## Extensions
 

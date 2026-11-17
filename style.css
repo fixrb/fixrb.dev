@@ -762,6 +762,28 @@ nav[aria-label="On this page"] a > code {
   background: none;
 }
 
+/* On a phone, the links keep to one line, which is scrolled sideways: a
+   page of many sections does not push its text a screen further down. The
+   line has room around it for the outline of a link. */
+@media (max-width: 39.99rem) {
+  nav[aria-label="On this page"] > ol {
+    flex-wrap: nowrap;
+    margin: -6px;
+    padding: 6px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--toc-track, var(--rim)) transparent;
+  }
+
+  nav[aria-label="On this page"] li {
+    flex: none;
+  }
+
+  nav[aria-label="On this page"] a {
+    white-space: nowrap;
+  }
+}
+
 /* From 80rem, the rail: the first paragraph, the facts and the nav float,
    so that the facts start beside the paragraph and the nav under them, and
    what follows the nav starts again under the paragraph. The nav stays in
@@ -1028,7 +1050,8 @@ section#fix > p strong:nth-of-type(3) {
   color: var(--may);
 }
 
-section#fix > ul {
+section#fix > ul,
+article > header > ul {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -1037,13 +1060,15 @@ section#fix > ul {
   list-style: none;
 }
 
-section#fix > ul li {
+section#fix > ul li,
+article > header > ul li {
   margin: 0;
 }
 
 /* The button: a ruby slab that sinks a pixel when pressed. Its border is
    invisible but in forced colours, where backgrounds are dropped. */
-section#fix > ul a {
+section#fix > ul a,
+article > header > ul a {
   display: inline-block;
   margin: 4px;
   padding: .875rem 1.25rem;
@@ -1060,7 +1085,8 @@ section#fix > ul a {
     8px 8px 0 var(--wine);
 }
 
-section#fix > ul a:hover {
+section#fix > ul a:hover,
+article > header > ul a:hover {
   background: var(--coral);
   color: var(--night);
   box-shadow:
@@ -1071,7 +1097,8 @@ section#fix > ul a:hover {
     8px 8px 0 var(--wine);
 }
 
-section#fix > ul a:active {
+section#fix > ul a:active,
+article > header > ul a:active {
   translate: 4px 4px;
   box-shadow:
     0 -4px 0 var(--coral),
@@ -3155,6 +3182,13 @@ body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > p 
   box-shadow: 0 0 0 4px var(--night);
 }
 
+/* The two doors of the page, under the subtitle and over the jewel on a
+   phone: the buttons of the home page. */
+body:has(article > header > img[src="/logo.svg"]) article > header > ul {
+  justify-content: center;
+  margin: 0;
+}
+
 body:has(article > header > img[src="/logo.svg"]) article > header + p {
   margin-top: 3.5rem;
   font-size: 1.125rem;
@@ -3420,7 +3454,7 @@ body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + u
   body:has(article > header > img[src="/logo.svg"]) article > header > img {
     order: 0;
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 1 / span 2;
     width: 256px;
     height: 256px;
     padding: 48px 64px 80px;
@@ -3430,9 +3464,15 @@ body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + u
   body:has(article > header > img[src="/logo.svg"]) article > header > hgroup {
     grid-column: 1;
     grid-row: 1;
-    align-self: center;
     max-width: none;
-    padding-bottom: 3rem;
+  }
+
+  body:has(article > header > img[src="/logo.svg"]) article > header > ul {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    justify-content: start;
+    margin-bottom: 1.5rem;
   }
 
   body:has(article > header > img[src="/logo.svg"]) article > header > hgroup > h1 {
