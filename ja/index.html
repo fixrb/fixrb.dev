@@ -21,7 +21,7 @@
   <meta property="og:image" content="https://fixrb.dev/img/card-ja.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「Fixrb」と「Rubyのテストライブラリ：Fix、Matchi、そしてその周りのgem」の文字。">
+  <meta property="og:image:alt" content="夜空に浮かぶピクセルアートのルビー、Fixrbのロゴの横に「Fixrb」と「Rubyのテストライブラリ：Fix、Matchi、そしてその周りのgem」の文字。その下にはルビーの結晶と、いちばん高い結晶のふもとのアヒル。">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},{"@type":"WebSite","@id":"https://fixrb.dev/#website","name":"Fixrb","alternateName":"fixrb.dev","url":"https://fixrb.dev/","publisher":{"@id":"https://fixrb.dev/#organization"}}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -98,6 +98,11 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
     <section id="why" aria-labelledby="why-title">
       <h2 id="why-title">Fixのどこが違うのか</h2>
+      <p>Rubyは昔から、オブジェクトをその振る舞いで判断してきました。アヒルのように歩き、アヒルのように鳴くなら、それはアヒルです。Fixはその判断を書き留めます。仕様はアヒルが何をするか、そしてそれぞれがどれほど大切かを述べ、どんなオブジェクトもそれに対してテストできます。</p>
+      <figure>
+        <img src="/img/duck-test.png" alt="夜のピクセルアート。看板には:Duck、そしてwalk、swim、speakがそれぞれのレベルとともに書かれている。池では、白いアヒルが3つのチェックの下で鳴き、腰まで水につかって両腕を上げたロボットの上にはチェック、Warning、Info、黄色いゴムのアヒルの上にはバツ、チェック、Info。" width="688" height="352">
+        <figcaption>3つの候補に、ひとつの仕様。アヒルはすべてを満たします。ロボットは合格しますが、泳ぎ方でWarning、声がないのでInfoを受けます。ゴムのアヒルは浮かびますが歩けません。MUSTを満たさないので、失敗です。</figcaption>
+      </figure>
       <ul role="list">
         <li>
           <h3>仕様は文書である</h3>

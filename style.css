@@ -1096,7 +1096,9 @@ li > article p:first-of-type {
 }
 
 /* Home: Fix, under a night over the gems of Fixrb, one crystal per gem, the
-   tallest for Fix. The night stays in both themes, as the header band does.
+   tallest for Fix, and the duck of the duck test floating at its foot: the
+   duck's position follows the crystals', in one column as from 62rem. The
+   night stays in both themes, as the header band does.
    One column; from 62rem, the words on the left and the example on the
    right. The ids of the home page are read on its sections only: a heading
    of another page may share one. */
@@ -1109,6 +1111,7 @@ section#fix {
   padding: 3.5rem var(--gutter) 17rem;
   color: var(--paper);
   background:
+    url("/img/duck.svg") calc(50% - 56px) 100% / 160px 104px no-repeat,
     url("/img/horizon.svg") calc(50% + 352px) 100% / 1440px 256px no-repeat,
     linear-gradient(var(--night-edge) 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
     url("/img/stars.svg") 0 0 / 480px 320px,
@@ -1357,7 +1360,7 @@ section#fix > figure > figcaption {
     grid-template-rows: auto auto auto auto 1fr;
     column-gap: 4.5rem;
     padding-top: 4.5rem;
-    background-position: 50% 100%, 0 100%, 0 0, 0 calc(100% + 4px);
+    background-position: calc(50% - 408px) 100%, 50% 100%, 0 100%, 0 0, 0 calc(100% + 4px);
   }
 
   section#fix h1 {
@@ -1379,7 +1382,60 @@ main > section > h2 {
   margin: 0;
 }
 
-/* Three ideas, each with its pictogram in a slot; in a row from 56rem. */
+/* The duck test: a lead, then the scene on a plate of the dark of the code,
+   its caption under it, at 2 screen pixels per pixel of the drawing, 3 from
+   35rem, 4 from 46rem (shrunk on a phone narrower than its plate). */
+section#why > p {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+}
+
+section#why > figure {
+  width: fit-content;
+  max-width: calc(100% - 8px);
+  margin: 2rem 4px 0;
+  padding: 0 0 1.25rem;
+  background: var(--code-bg);
+  box-shadow:
+    0 -4px 0 var(--code-bg),
+    0 4px 0 var(--code-bg),
+    -4px 0 0 var(--code-bg),
+    4px 0 0 var(--code-bg);
+}
+
+section#why > figure > img {
+  display: block;
+  width: 344px;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+section#why > figure > figcaption {
+  max-width: 36rem;
+  margin: 1.25rem auto 0;
+  padding: 0 1rem;
+  color: #d9c6dc;
+  font-size: .9375rem;
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (min-width: 35rem) {
+  section#why > figure > img {
+    width: 516px;
+  }
+}
+
+@media (min-width: 46rem) {
+  section#why > figure > img {
+    width: 688px;
+  }
+}
+
+/* Three ideas, each with its vignette, a scene of 96 x 52 pixels with the
+   duck of the duck test: at 3 screen pixels per pixel, 2 from 56rem, where
+   they stand in a row, and 3 again from 62rem. */
 section#why > ul {
   display: grid;
   gap: 3rem;
@@ -1396,27 +1452,28 @@ section#why li {
 section#why li::before {
   content: "";
   display: block;
-  width: 96px;
-  height: 96px;
+  width: min(288px, calc(100% - 8px));
+  aspect-ratio: 96 / 52;
   margin: 4px 4px 1.5rem;
-  background: var(--slot) center / 64px 64px no-repeat;
+  background: var(--night) 0 0 / 100% 100% no-repeat;
   box-shadow:
-    0 -4px 0 var(--slot),
-    0 4px 0 var(--slot),
-    -4px 0 0 var(--slot),
-    4px 0 0 var(--slot);
+    0 -4px 0 var(--night),
+    0 4px 0 var(--night),
+    -4px 0 0 var(--night),
+    4px 0 0 var(--night);
+  image-rendering: pixelated;
 }
 
 section#why li:nth-child(1)::before {
-  background-image: url("/img/picto-document.svg");
+  background-image: url("/img/why-document.svg");
 }
 
 section#why li:nth-child(2)::before {
-  background-image: url("/img/picto-levels.svg");
+  background-image: url("/img/why-levels.svg");
 }
 
 section#why li:nth-child(3)::before {
-  background-image: url("/img/picto-fork.svg");
+  background-image: url("/img/why-contexts.svg");
 }
 
 section#why h3 {
@@ -1433,6 +1490,16 @@ section#why p {
   section#why > ul {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 2.5rem;
+  }
+
+  section#why li::before {
+    width: 192px;
+  }
+}
+
+@media (min-width: 62rem) {
+  section#why li::before {
+    width: 288px;
   }
 }
 
