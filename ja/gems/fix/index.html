@@ -21,7 +21,7 @@
   <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta property="og:image:alt" content="夜の岩の上で輝くピクセルアートのルビー、Fixrbのロゴの横に「Fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"}]}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -90,6 +90,10 @@
 
       <h2 id="usage">ひとつのファイルで</h2>
       <p>ファイルは仕様を書き、それに対してサブジェクトをテストします。ここではアヒルと、アヒルとして作られたわけではないロボットです。<code>Fix :Duck do … end</code>は仕様を組み立て、その名前で登録します。<code>Fix[:Duck]</code>がそれを再び見つけます。<code>test</code>は期待ごとにブロックで新しいサブジェクトを作り、期待を囲む<code>on</code>のメソッドをサブジェクトに送り、出てきたものを判定して、期待ごとに1行を書き、すべてが成功したかどうかを返します。<code>exit</code>はそれをプロセスの終了ステータスにします。</p>
+      <figure>
+        <img src="/gems/fix/img/scene.png" alt="夜のピクセルアート。紙には:Duck、そしてwalk、swim、speakがそれぞれのレベルとともに書かれている。白いアヒルが池を泳いで鳴き、その上に3つのチェック。ロボットは腰まで水につかって両腕を上げ、泡が立ちのぼる。その上にチェック、Warning、Info。" width="640" height="360">
+        <figcaption>仕様と2つのサブジェクト。アヒルは3つの期待をすべて満たします。ロボットは歩き、自己流で泳いでWarning、声がないのでInfoです。</figcaption>
+      </figure>
       <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
 
 <span class="comment"># What a duck does, whatever it is made of.</span>
@@ -347,6 +351,10 @@ registry.rb:26: Success: expected [] to eq []</samp></pre>
 
       <h2 id="language">言語</h2>
       <p><code>Fix</code>のブロックは文書で、ファイルの読み込み時に一度だけ読まれ、4つの語をもちます。<code>on :name, *arguments</code>はサブジェクトにメソッドを送り、その中の期待が戻り値を判定します。<code>let(:name) { … }</code>はサブジェクトのパラメーターで、サブジェクトブロックが最初に呼んだときに、期待ごとに一度だけ計算されます。<code>with name: value</code>は、それがその値をとるコンテキストを開きます。<code>it</code>は要求をとります。レベル（<code>MUST</code>、<code>MUST_NOT</code>、<code>SHOULD</code>、<code>SHOULD_NOT</code>、<code>MAY</code>）のあとにマッチャーを書きます。</p>
+      <figure>
+        <img src="/gems/fix/img/language.svg" alt="withと書かれた枠の中で、letと書かれた札がルビーにつながり、onと書かれた矢印がルビーから値11へ、itと書かれた矢印がMUSTとeqへ、そしてチェックへつながる図。" width="408" height="160">
+        <figcaption>4つの語のはたらき。<code>let</code>がサブジェクトを組み立て、<code>on</code>がメソッドを送り、<code>it</code>が戻り値をレベルとマッチャーで判定します。<code>with</code>は、letが別の値をもつコンテキストを開きます。</figcaption>
+      </figure>
       <pre data-example="examples/fix/greeting.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Greeting</span> <span class="keyword">do</span>
@@ -455,9 +463,17 @@ result.result.class <span class="comment"># => Spectus::Result</span>
 
 <span class="constant">Fix</span>[<span class="string">:Size</span>].match? { <span class="string">"abc"</span> } <span class="comment"># => true</span>
 </code></pre>
+      <figure>
+        <img src="/gems/fix/img/results.svg" alt="仕様と3本の矢印。testは3行のターミナルへ、runは3つの結果のリストへ、match?はtrueへつながる図。" width="408" height="208">
+        <figcaption>仕様の3つの読み方。<code>test</code>は期待ごとに1行を書き、<code>run</code>は結果をデータとして返し、<code>match?</code>はマッチャーと同じように答えます。</figcaption>
+      </figure>
 
       <h2 id="processes">プロセス</h2>
       <p>コンテキストは順に、それぞれの子プロセスで実行され、親プロセスは子プロセスが返したコンテキストの結果を書きます。サブジェクトが発生させた例外は、<code>exit</code>も含めて、その期待だけのErrorになります。子プロセスの周りで何かをrescueすることはありません。<code>Interrupt</code>は実行を止め、異常終了した子プロセスも<code>Aw::ChildError</code>で実行を止めます。Fixは、期待から得たものでない結果を書くことは決してありません。<code>test(fork: false)</code>は、デバッガーのために、コンテキストをプロセス自身の中で実行します。コンテキストのコストはforkひとつ、数ミリ秒です。</p>
+      <figure>
+        <img src="/gems/fix/img/processes.svg" alt="左にファイル。親プロセスの線に沿って、3つの子プロセスが順にforkされ、どれも同じルビーをもつ。それぞれが結果を線へ返し、チェック、Warning、Infoが、その順に線の端で書かれる図。" width="408" height="184">
+        <figcaption>コンテキストごとに1つの子プロセスが、順に実行されます。どれもファイルが読み込まれたときの状態から始まり、親プロセスは子プロセスが返した結果を書きます。</figcaption>
+      </figure>
 
       <h2 id="extensions">拡張</h2>
       <p><a href="/ja/gems/fix-its/">fix-its</a>は<code>its</code>という語を加え、メソッドとその期待を1行にします。<a href="/ja/gems/matchi-fix/">matchi-fix</a>は、matchiのマッチャーを受け付けるどのフレームワークにも、Fixの仕様を持ち込みます。<code>Fix</code>のブロックは<code>Fix::Dsl</code>のインスタンスの上で実行され、gemはそこに独自の語を加えられます。</p>

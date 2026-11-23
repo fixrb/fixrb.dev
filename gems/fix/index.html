@@ -20,7 +20,7 @@
   <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby, beside the words: fix, a Ruby testing framework: specifications in the words of RFC 2119.">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby glowing over a rock at night, beside the words: Fix, a Ruby testing framework: specifications in the words of RFC 2119.">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/gems/fix/"}]}]}</script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -89,6 +89,10 @@
 
       <h2 id="usage">In one file</h2>
       <p>A file writes a specification, then tests subjects against it: here a duck, and a robot that was not built to be one. <code>Fix :Duck do … end</code> builds the specification and registers it under its name; <code>Fix[:Duck]</code> finds it again. <code>test</code> builds a new subject with its block for every expectation, sends it the methods of the <code>on</code> around it, judges what comes out, writes one line per expectation and returns whether all of them pass; <code>exit</code> turns that into the status of the process.</p>
+      <figure>
+        <img src="/gems/fix/img/scene.png" alt="Pixel art at night: a sheet reads :Duck, then walk, swim and speak, each with its level. A white duck swims in a pond and quacks, three checks above it; a robot stands in the water up to its waist, arms up, bubbles rising, a check, a warning and an info above it." width="640" height="360">
+        <figcaption>The specification and its two subjects: the duck meets all three expectations; the robot walks, swims its own way, a warning, and has no voice, an info.</figcaption>
+      </figure>
       <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
 
 <span class="comment"># What a duck does, whatever it is made of.</span>
@@ -346,6 +350,10 @@ registry.rb:26: Success: expected [] to eq []</samp></pre>
 
       <h2 id="language">The language</h2>
       <p>The block of <code>Fix</code> is a document, read once when the file is loaded, with four words. <code>on :name, *arguments</code> sends a method to the subject, and the expectations inside judge what it returns. <code>let(:name) { … }</code> is a parameter of the subject, computed once per expectation, the first time the subject block calls it; <code>with name: value</code> opens a context where it has that value. <code>it</code> takes a requirement: a level, <code>MUST</code>, <code>MUST_NOT</code>, <code>SHOULD</code>, <code>SHOULD_NOT</code> or <code>MAY</code>, then a matcher.</p>
+      <figure>
+        <img src="/gems/fix/img/language.svg" alt="Inside a frame marked with, a tag marked let leads to a ruby; an arrow marked on leads from the ruby to the value 11; an arrow marked it leads to MUST and eq, then to a check." width="408" height="160">
+        <figcaption>The four words at work: <code>let</code> builds the subject, <code>on</code> sends it a method, and <code>it</code> judges what comes back with a level and a matcher; <code>with</code> frames a context where a let has another value.</figcaption>
+      </figure>
       <pre data-example="examples/fix/greeting.rb"><code>require <span class="string">"fix"</span>
 
 <span class="constant">Fix</span> <span class="string">:Greeting</span> <span class="keyword">do</span>
@@ -454,9 +462,17 @@ result.result.class <span class="comment"># => Spectus::Result</span>
 
 <span class="constant">Fix</span>[<span class="string">:Size</span>].match? { <span class="string">"abc"</span> } <span class="comment"># => true</span>
 </code></pre>
+      <figure>
+        <img src="/gems/fix/img/results.svg" alt="A specification and three arrows: test leads to a terminal with three lines, run to a list of three results, and match? to true." width="408" height="208">
+        <figcaption>Three ways to read a specification: <code>test</code> writes a line per expectation, <code>run</code> gives the results as data, <code>match?</code> answers as a matcher does.</figcaption>
+      </figure>
 
       <h2 id="processes">Processes</h2>
       <p>The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an <code>exit</code> included, is an error of its expectation alone. Nothing is rescued around a child: an <code>Interrupt</code> stops the run, and so does a child that died, with <code>Aw::ChildError</code>. Fix never writes a result that did not come from an expectation. <code>test(fork: false)</code> runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.</p>
+      <figure>
+        <img src="/gems/fix/img/processes.svg" alt="A file on the left and, along the lane of the parent process, three children forked one after the other, each with the same ruby; each sends its result back up to the lane, a check, a warning and an info, written in that order at the end of the lane." width="408" height="184">
+        <figcaption>One child per context, one after the other: each starts from the state the file was loaded with, and the parent writes its results as it returns them.</figcaption>
+      </figure>
 
       <h2 id="extensions">Extensions</h2>
       <p><a href="/gems/fix-its/">fix-its</a> adds the word <code>its</code>, a method and its expectation on one line. <a href="/gems/matchi-fix/">matchi-fix</a> brings a specification of Fix to any framework that takes a matcher of matchi. The block of <code>Fix</code> runs on an instance of <code>Fix::Dsl</code>, where a gem may add a word of its own.</p>

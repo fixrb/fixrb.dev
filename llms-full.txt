@@ -27,6 +27,10 @@ Add `gem "fix"` to your Gemfile, or run `gem install fix`.
 
 A file writes a specification, then tests subjects against it: here a duck, and a robot that was not built to be one. `Fix :Duck do … end` builds the specification and registers it under its name; `Fix[:Duck]` finds it again. `test` builds a new subject with its block for every expectation, sends it the methods of the `on` around it, judges what comes out, writes one line per expectation and returns whether all of them pass; `exit` turns that into the status of the process.
 
+![Pixel art at night: a sheet reads :Duck, then walk, swim and speak, each with its level. A white duck swims in a pond and quacks, three checks above it; a robot stands in the water up to its waist, arms up, bubbles rising, a check, a warning and an info above it.](https://fixrb.dev/gems/fix/img/scene.png)
+
+The specification and its two subjects: the duck meets all three expectations; the robot walks, swims its own way, a warning, and has no voice, an info.
+
 ```ruby
 require "fix"
 
@@ -324,6 +328,10 @@ registry.rb:26: Success: expected [] to eq []
 
 The block of `Fix` is a document, read once when the file is loaded, with four words. `on :name, *arguments` sends a method to the subject, and the expectations inside judge what it returns. `let(:name) { … }` is a parameter of the subject, computed once per expectation, the first time the subject block calls it; `with name: value` opens a context where it has that value. `it` takes a requirement: a level, `MUST`, `MUST_NOT`, `SHOULD`, `SHOULD_NOT` or `MAY`, then a matcher.
 
+![Inside a frame marked with, a tag marked let leads to a ruby; an arrow marked on leads from the ruby to the value 11; an arrow marked it leads to MUST and eq, then to a check.](https://fixrb.dev/gems/fix/img/language.svg)
+
+The four words at work: `let` builds the subject, `on` sends it a method, and `it` judges what comes back with a level and a matcher; `with` frames a context where a let has another value.
+
 ```ruby
 require "fix"
 
@@ -445,9 +453,17 @@ result.result.class # => Spectus::Result
 Fix[:Size].match? { "abc" } # => true
 ```
 
+![A specification and three arrows: test leads to a terminal with three lines, run to a list of three results, and match? to true.](https://fixrb.dev/gems/fix/img/results.svg)
+
+Three ways to read a specification: `test` writes a line per expectation, `run` gives the results as data, `match?` answers as a matcher does.
+
 ## Processes
 
 The contexts run one after the other, each in its child, and the parent writes the results of a context as its child returns them. What the subject raises, an `exit` included, is an error of its expectation alone. Nothing is rescued around a child: an `Interrupt` stops the run, and so does a child that died, with `Aw::ChildError`. Fix never writes a result that did not come from an expectation. `test(fork: false)` runs the contexts in the process itself, for a debugger. The cost of a context is one fork, a few milliseconds.
+
+![A file on the left and, along the lane of the parent process, three children forked one after the other, each with the same ruby; each sends its result back up to the lane, a check, a warning and an info, written in that order at the end of the lane.](https://fixrb.dev/gems/fix/img/processes.svg)
+
+One child per context, one after the other: each starts from the state the file was loaded with, and the parent writes its results as it returns them.
 
 ## Extensions
 

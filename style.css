@@ -3422,10 +3422,12 @@ body:has(article > header > img[src="/logo.svg"]) article > header + p + dl code
   color: var(--ink);
 }
 
-/* One specification, three subjects: a plate of the dark of the code, in
-   both themes, since the signs of the outcomes are drawn for it. The
-   drawing keeps to a whole number of screen pixels per pixel: 2 on a narrow
-   phone, 3 from 24rem, 4 from 31rem. */
+/* The figures: plates of the dark of the code, in both themes, since the
+   signs of the outcomes are drawn for it. The diagrams are 102 pixels wide
+   and keep to a whole number of screen pixels per pixel: 2 on a narrow
+   phone, 3 from 24rem, 4 from 31rem; their height follows. The scene of
+   the duck and the robot, 160 x 90 pixels, nearly fills its plate: 2 screen
+   pixels per pixel, 3 from 34rem, 4 from 44rem (shrunk below 376px). */
 body:has(article > header > img[src="/logo.svg"]) article > figure {
   max-width: calc(var(--measure) - 8px);
   margin: 2rem 4px 0;
@@ -3441,9 +3443,18 @@ body:has(article > header > img[src="/logo.svg"]) article > figure {
 body:has(article > header > img[src="/logo.svg"]) article > figure > img {
   display: block;
   width: 204px;
-  height: 104px;
+  height: auto;
   margin: 0 auto;
   image-rendering: pixelated;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > figure:has(> img[src="/gems/fix/img/scene.png"]) {
+  padding: 4px 4px 1.5rem;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > figure > img[src="/gems/fix/img/scene.png"] {
+  width: 320px;
+  max-width: 100%;
 }
 
 body:has(article > header > img[src="/logo.svg"]) article > figure > figcaption {
@@ -3455,10 +3466,18 @@ body:has(article > header > img[src="/logo.svg"]) article > figure > figcaption 
   text-wrap: balance;
 }
 
+body:has(article > header > img[src="/logo.svg"]) article > figure:has(> img[src="/gems/fix/img/scene.png"]) > figcaption {
+  padding: 0 1rem;
+}
+
+body:has(article > header > img[src="/logo.svg"]) article > figure > figcaption code {
+  background: var(--code-bar);
+  color: var(--band-text);
+}
+
 @media (min-width: 24rem) {
   body:has(article > header > img[src="/logo.svg"]) article > figure > img {
     width: 306px;
-    height: 156px;
   }
 }
 
@@ -3469,8 +3488,33 @@ body:has(article > header > img[src="/logo.svg"]) article > figure > figcaption 
 
   body:has(article > header > img[src="/logo.svg"]) article > figure > img {
     width: 408px;
-    height: 208px;
   }
+}
+
+@media (min-width: 34rem) {
+  body:has(article > header > img[src="/logo.svg"]) article > figure:has(> img[src="/gems/fix/img/scene.png"]) {
+    padding: 12px 12px 1.5rem;
+  }
+
+  body:has(article > header > img[src="/logo.svg"]) article > figure > img[src="/gems/fix/img/scene.png"] {
+    width: 480px;
+  }
+}
+
+@media (min-width: 44rem) {
+  body:has(article > header > img[src="/logo.svg"]) article > figure > img[src="/gems/fix/img/scene.png"] {
+    width: 640px;
+  }
+}
+
+/* Between two sections, the dotted rule of the site holds a jewel: the
+   glyph of MUST between two beads, at 4 screen pixels per pixel, the rule
+   stopping short of it on either side. */
+body:has(article > header > img[src="/logo.svg"]) article > h2 ~ h2 {
+  background:
+    url("/gems/fix/img/fleuron.svg") 50% 0 / 92px 28px no-repeat,
+    repeating-linear-gradient(90deg, var(--rim) 0 4px, transparent 0 8px) 0 12px / calc(50% - 64px) 4px no-repeat,
+    repeating-linear-gradient(270deg, var(--rim) 0 4px, transparent 0 8px) 100% 12px / calc(50% - 64px) 4px no-repeat;
 }
 
 /* The five cases a specification is for: the title of each beside its
