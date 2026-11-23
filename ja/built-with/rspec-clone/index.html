@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>RSpec clone：Fixrbのライブラリで作られた、ミニマルなRSpec · Fixrb</title>
+  <meta name="description" content="RSpec cloneは、describe、it、expectといったRSpecの言葉を、Fix 1.0も支えるライブラリdefi、matchi、spectusの上に、約250行のRubyで実装しています。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/built-with/rspec-clone/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="RSpec clone：Fixrbのライブラリで作られた、ミニマルなRSpec">
+  <meta property="og:description" content="RSpec cloneは、describe、it、expectといったRSpecの言葉を、Fix 1.0も支えるライブラリdefi、matchi、spectusの上に、約250行のRubyで実装しています。">
+  <meta property="og:url" content="https://fixrb.dev/ja/built-with/rspec-clone/">
+  <meta property="og:image" content="https://fixrb.dev/built-with/rspec-clone/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="夜空を背景に、サングラスをかけた茶トラの猫がワイングラスを手に持ち、そばにボトルが立っているピクセルアートの横に「RSpec clone」と「RSpecの言葉を、約250行で。Fixrbのライブラリの上に。」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"RSpec clone","item":"https://fixrb.dev/ja/built-with/rspec-clone/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/built-with/rspec-clone/img/scene.png" alt="ピクセルアート。夜空を背景に、サングラスをかけた茶トラの猫がワイングラスを手に持ち、そばにはラベルにルビーが描かれたボトルが立っている。横には「What did you RSpec?」の文字。" width="640" height="360">
+        <hgroup>
+          <p>Fixrbで作られたもの</p>
+          <h1>RSpec clone</h1>
+          <p>RSpecの言葉を、約250行で。Fixrbのライブラリの上に。</p>
+        </hgroup>
+      </header>
+      <p>RSpec cloneは、<a href="https://rspec.info/">RSpec</a>の言葉を話す小さなテストフレームワークです。<code>describe</code>、<code>context</code>、<code>it</code>、<code>its</code>、<code>let</code>、<code>subject</code>、<code>before</code>、<code>expect</code>、<code>is_expected</code>、<code>pending</code>と、いくつかのマッチャーだけを備えています。Fixrbのgemではなく、Fixrbの作者<a href="https://cyril.email/">Cyril Kato</a>による別のプロジェクトで、本拠は<a href="https://github.com/cyril/r_spec-clone.rb">そのリポジトリ</a>です。ここで紹介するのは、その作りのためです。<a href="/ja/gems/spectus/">spectus</a>がすべての期待を判定し、<a href="/ja/gems/matchi/">matchi</a>がすべてのマッチャーを提供し、<a href="/ja/gems/defi/">defi</a>が<code>its</code>のメソッドを送ります。いずれも、Fix 1.0を支えるライブラリです。残る仕事、つまりRSpecの言葉を書くのに必要だったのは、約250行でした。</p>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>2.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降、<code>fork</code>が必要</dd>
+        <dt>依存gem</dt>
+        <dd><a href="/ja/gems/defi/">defi</a>、<a href="/ja/gems/matchi/">matchi</a>、<a href="/ja/gems/spectus/">spectus</a></dd>
+        <dt>コード</dt>
+        <dd>約250行</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">ひとつのファイルで</a></li>
+          <li><a href="#differences">省いたもの</a></li>
+          <li><a href="#engine">どう作られているか</a></li>
+          <li><a href="#fix">RSpec cloneか、Fixか</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "r_spec-clone"</code>を加えるか、<code>gem install r_spec-clone</code>を実行し、<code>require "r_spec"</code>してください。</p>
+
+      <h2 id="usage">ひとつのファイルで</h2>
+      <p>specファイルは<code>r_spec</code>をrequireし、そのexampleはファイルの読み込みとともに、書かれた順に実行されます。覚えるコマンドはありません。<code>ruby</code>がファイルを実行します。<a href="/ja/">トップページ</a>と同じくアヒルを、今度はRSpecの言葉で書いてみます。</p>
+      <pre data-example="examples/rspec-clone/duck_spec.rb"><code>require <span class="string">"r_spec"</span>
+
+<span class="comment"># A duck, in the words of RSpec.</span>
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+<span class="keyword">end</span>
+
+<span class="constant">RSpec</span>.describe <span class="constant">Duck</span> <span class="keyword">do</span>
+  subject { described_class.new }
+
+  its(<span class="string">:walk</span>) { is_expected.to eq <span class="string">"Klop klop!"</span> }
+  its(<span class="string">:swim</span>) { is_expected.to eq <span class="string">"Swoosh..."</span> }
+
+  context <span class="string">"when asked to speak"</span> <span class="keyword">do</span>
+    its(<span class="string">:speak</span>) { is_expected.to raise_exception <span class="constant">NoMethodError</span> }
+  <span class="keyword">end</span>
+
+  it <span class="string">"walks before it swims"</span> <span class="keyword">do</span>
+    expect(subject.walk).to match(<span class="string">/Klop/</span>)
+    expect { subject.swim }.not_to raise_exception <span class="constant">StandardError</span>
+  <span class="keyword">end</span>
+
+  pending <span class="string">"flies"</span>
+<span class="keyword">end</span>
+</code></pre>
+      <pre data-directory="examples/rspec-clone"><kbd>ruby duck_spec.rb</kbd>
+<samp>duck_spec.rb:12: Success: expected "Klop klop!" to eq "Klop klop!"
+duck_spec.rb:13: Success: expected "Swoosh..." to eq "Swoosh..."
+duck_spec.rb:16: Success: expected #&lt;NoMethodError: undefined method 'speak' for an instance of Duck> to raise exception NoMethodError
+duck_spec.rb:20: Success: expected "Klop klop!" to match /Klop/
+duck_spec.rb:21: Success: expected "Swoosh..." not to raise exception StandardError
+duck_spec.rb:24: Pending: flies</samp></pre>
+      <p>期待ごとに1行です。書かれた場所、判定、そしてspectusのサマリーが並びます。判定するものが同じなので、Fixと同じレポートになります。<code>context</code>は子プロセスで実行されました。<code>its</code>は期待の中で<code>speak</code>を送ったので、そこで発生した例外を期待できました。<code>pending</code>は1行を書いただけで、何も実行していません。すべての期待が満たされたので、ファイルは0で終了します。満たされない期待があれば、最初のひとつで実行は終了ステータス1で止まります。その先は、誤った前提の上で実行されることになるからです。</p>
+
+      <h2 id="differences">省いたもの</h2>
+      <p>RSpecは大きなフレームワークで、毎日使っていて気持ちのよい道具です。cloneはその言葉を借り、残りは意図して省きました。省いたものがひとつ増えるたびに、specファイルを読む前に知っておくべきことがひとつ減ります。</p>
+      <ul>
+        <li>モンキーパッチは一切なく、<code>at_exit</code>フックから実行されるものもありません。<code>rspec</code>コマンドも、フィルターも、ランダムな実行順も、フォーマッターもありません。</li>
+        <li><code>let</code>と<code>subject</code>はただのメソッドで、使うたびに呼ばれます。メモ化はしません。</li>
+        <li>フックは<code>before</code>だけです。<code>after</code>も<code>around</code>もありません。</li>
+        <li><code>context</code>は子プロセスで実行されます。そのexampleがRubyのプロセスに加えた変更は、そこにとどまります。</li>
+        <li>比較を受け取るのは期待値のほうです。<code>==</code>について嘘をつく実際の値は、合格できません。</li>
+        <li>満たされない期待があれば、最初のひとつで実行が止まります。</li>
+      </ul>
+      <p>すべての違いは<a href="https://github.com/cyril/r_spec-clone.rb/blob/v2.0.0/README.md#differences-from-rspec">README</a>にあり、RSpecにあるものの代わりに何を書くかは、wikiの<a href="https://github.com/cyril/r_spec-clone.rb/wiki/Coming-from-RSpec">Coming from RSpec</a>にあります。RSpec cloneは独立したプロジェクトで、RSpecの一部ではなく、RSpecチームの公認でもありません。その言葉を借りているRSpecチームに<a href="https://rspec.info/about/">感謝します</a>。</p>
+
+      <h2 id="engine">どう作られているか</h2>
+      <p>cloneの期待は、ライブラリへのいくつかの呼び出しにすぎません。<code>expect { … }.to(matcher)</code>は、ブロックとともに呼ばれる<code>Spectus.must(matcher)</code>で、<code>not_to</code>は<code>Spectus.must_not</code>です。どの期待もMUST、つまりFixの3つのレベルの最初のものです。<code>eq</code>、<code>be_nil</code>、<code>match</code>などは、それぞれmatchiのマッチャーを組み立てます。<code>its</code>はメソッドをdefiに渡し、defiがブロックの中でそれをサブジェクトに送ります。cloneを使わずに書くと、3つの期待はこうなります。</p>
+      <pre data-example="examples/rspec-clone/engine.rb"><code>require <span class="string">"defi"</span>
+require <span class="string">"matchi"</span>
+require <span class="string">"spectus"</span>
+
+<span class="comment"># expect { "foo".upcase }.to eq "FOO": a matcher of Matchi, in a MUST of</span>
+<span class="comment"># Spectus, called with the block.</span>
+upcase = <span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="string">"FOO"</span>)).call { <span class="string">"foo"</span>.upcase }
+upcase.to_s <span class="comment"># => "Success: expected \"FOO\" to eq \"FOO\""</span>
+
+<span class="comment"># expect("foo").not_to be_nil: a MUST NOT.</span>
+present = <span class="constant">Spectus</span>.must_not(<span class="constant">Matchi</span>::<span class="constant">Be</span>.new(<span class="keyword">nil</span>)).call { <span class="string">"foo"</span> }
+present.to_s <span class="comment"># => "Success: expected \"foo\" not to be nil"</span>
+
+<span class="comment"># its(:size) { is_expected.to eq 3 }, on "foo": Defi sends the method inside</span>
+<span class="comment"># the block, so that what it raises can be judged too.</span>
+size = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:size</span>)
+sized = <span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">3</span>)).call { size.to(<span class="string">"foo"</span>).call }
+sized.to_s <span class="comment"># => "Success: expected 3 to eq 3"</span>
+</code></pre>
+      <figure>
+        <img src="/built-with/rspec-clone/img/engine.svg" alt="4つのライブラリの上に2つのフレームワーク。Fixからの線はaw、defi、matchi、spectusへ、RSpec cloneからの線はdefi、matchi、spectusへつながる図。" width="408" height="208">
+        <figcaption>2つのフレームワークに、ひとつのエンジン。Fixはaw、defi、matchi、spectusの上に立ちます。RSpec cloneはdefi、matchi、spectusの上に立ち、forkは自分で行います。</figcaption>
+      </figure>
+      <p>cloneが加えるのは言葉です。グループはクラスで、入れ子のグループはそのサブクラスです。<code>let</code>はプライベートメソッドを、<code>before</code>はモジュールを定義します。exampleはインスタンスで、そこでは<code>expect</code>やマッチャーが語になります。<code>context</code>はforkします。判定、マッチング、レポートの言葉はライブラリのもので、Fixも同じものを使っています。一方で直したものは、両方で直ります。cloneは2021年に、Fixrbの別のライブラリであるtest_tubeとexpresenterの上に最初に作られ、バージョン2.0でFix 1.0のエンジンの上に作り直されました。</p>
+
+      <h2 id="fix">RSpec cloneか、Fixか</h2>
+      <p>どちらも同じように判定します。違うのは、テストファイルとは何か、です。cloneでは、RSpecと同じく、ファイルはひとつのサブジェクトを記述します。exampleはクラスを名指しし、それを組み立て、それに何かを期待します。どの期待も必須です。<a href="/ja/gems/fix/">Fix</a>では、仕様はクラスを名指ししません。一度書けば、どんなサブジェクトに対してもテストでき、何が必須で、何が推奨で、何が任意かを述べます。驚きのない小さなランナーでRSpecの習慣を続けたいならcloneを、振る舞いに独立した文書がふさわしいならFixを選んでください。</p>
+      <p>両者は一緒にも使えます。Fixの仕様は<a href="/ja/gems/matchi-fix/">matchi-fix</a>を通じてマッチャーになり、<code>to</code>はどんなマッチャーでも受け取ります。パラメーターをとる<code>let</code>が、それに語を与えます。</p>
+      <pre data-example="examples/rspec-clone/fix_spec.rb"><code>require <span class="string">"r_spec"</span>
+require <span class="string">"matchi/fix"</span>
+
+<span class="comment"># What a duck does, as a specification of Fix.</span>
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaaaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Duck</span> = <span class="constant">Struct</span>.new(<span class="string">:walk</span>)
+
+<span class="constant">RSpec</span>.describe <span class="string">"A specification of Fix, as a matcher"</span> <span class="keyword">do</span>
+  let(<span class="string">:fix</span>) { |name| <span class="constant">Matchi</span>::<span class="constant">Fix</span>.new(name) }
+
+  it { expect(<span class="constant">Duck</span>.new(<span class="string">"Klop klop!"</span>)).to fix(<span class="string">:Duck</span>) }
+  it { expect(<span class="constant">Duck</span>.new(<span class="string">"Clank!"</span>)).not_to fix(<span class="string">:Duck</span>) }
+<span class="keyword">end</span>
+</code></pre>
+      <pre data-directory="examples/rspec-clone"><kbd>ruby fix_spec.rb</kbd>
+<samp>fix_spec.rb:20: Success: expected #&lt;struct Duck walk="Klop klop!"> to fix Duck
+fix_spec.rb:21: Success: expected #&lt;struct Duck walk="Clank!"> not to fix Duck</samp></pre>
+      <p>仕様はアヒルが何をするかを述べ、specファイルはどのオブジェクトがアヒルかを述べます。</p>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/blob/v2.0.0/README.md">README</a>：言語、マッチャー、レポート、そして2.0での変更点。</li>
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/wiki">Wiki</a>：実行できる例とその出力、そしてチートシート。</li>
+        <li><a href="https://rubydoc.info/gems/r_spec-clone">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/r_spec-clone/versions/2.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/tree/v2.0.0">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/built-with/rspec-clone/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

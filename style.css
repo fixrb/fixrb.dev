@@ -1866,6 +1866,172 @@ section#gems::after {
   }
 }
 
+/* Built with Fixrb: what stands on the libraries outside the gems, set
+   apart from them, after the ground they lie in. A panel of the night, the
+   same in both themes, in the teal of RSpec clone: its scene, framed as on
+   its page, at 2 screen pixels per pixel, 3 from 62rem, beside its words
+   from 48rem. The whole panel is the link, as a card of a gem is. */
+section#built > p {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+}
+
+section#built > ul {
+  max-width: none;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+section#built li {
+  --clone: #00af8b;
+  --clone-deep: #0a4f47;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 1rem;
+  max-width: 56rem;
+  margin: 4px;
+  padding: 1.25rem;
+  color: var(--paper);
+  background: var(--night);
+  box-shadow:
+    0 -4px 0 var(--clone-deep),
+    0 4px 0 var(--clone-deep),
+    -4px 0 0 var(--clone-deep),
+    4px 0 0 var(--clone-deep);
+  transition: translate .1s steps(2), box-shadow .1s steps(2);
+}
+
+section#built li:has(h3 a:hover) {
+  translate: -4px -4px;
+  box-shadow:
+    0 -4px 0 var(--clone),
+    0 4px 0 var(--clone),
+    -4px 0 0 var(--clone),
+    4px 0 0 var(--clone),
+    8px 8px 0 var(--lift);
+}
+
+section#built li:has(h3 a:focus-visible) {
+  outline: 4px solid var(--clone);
+  outline-offset: 8px;
+}
+
+section#built li > img {
+  width: 320px;
+  max-width: calc(100% - 16px);
+  height: auto;
+  margin: 8px 8px .75rem;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 4px var(--abyss),
+    0 0 0 8px var(--clone);
+}
+
+section#built h3 {
+  margin: 0;
+  font: 400 2.0625rem/1 var(--display);
+  text-shadow: 4px 4px 0 var(--clone-deep);
+}
+
+section#built h3 a {
+  color: var(--paper);
+  text-decoration: none;
+}
+
+section#built h3 a:hover {
+  background: none;
+  color: var(--paper);
+}
+
+section#built h3 a:focus-visible {
+  outline: none;
+}
+
+section#built h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+section#built li p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--band-text);
+  line-height: 1.55;
+}
+
+section#built li p code {
+  background: var(--code-bar);
+  color: var(--band-text);
+}
+
+section#built li small {
+  display: inline-block;
+  padding: .125rem .5rem;
+  background: var(--clone-deep);
+  color: var(--paper);
+  font-size: .8125rem;
+  font-weight: 600;
+  box-shadow:
+    0 -2px 0 var(--clone-deep),
+    0 2px 0 var(--clone-deep),
+    -2px 0 0 var(--clone-deep),
+    2px 0 0 var(--clone-deep);
+}
+
+@media (min-width: 48rem) {
+  section#built li {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: 1fr auto auto auto 1fr;
+    column-gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  section#built li > img {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    margin: 8px;
+  }
+
+  section#built h3 {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  section#built li p {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  section#built li p:has(> small) {
+    grid-row: 4;
+  }
+}
+
+@media (min-width: 62rem) {
+  section#built li {
+    max-width: none;
+    column-gap: 2.5rem;
+  }
+
+  section#built li > img {
+    width: 480px;
+  }
+
+  section#built h3 {
+    font-size: 2.75rem;
+  }
+}
+
+@media (forced-colors: active) {
+  section#built li {
+    outline: 4px solid CanvasText;
+  }
+}
+
 /* matchi: a little theatre. The valance hangs over the drapes; the jester
    stands on the boards, on a playing card, as he first came. The rest of
    the page wears his colours. */
@@ -6796,6 +6962,363 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this
   }
 }
 
+/* RSpec clone: built with Fixrb, and no gem of Fixrb. Its page is dressed
+   apart from theirs: where they wear ruby, it wears the teal of its own
+   mark, a check in a ring. The header is its joke, "What did you RSpec?",
+   framed on the night like a picture, in both themes; the name of the
+   project is extruded in teal. The facts are a label of paper, the sections
+   are marked in teal, and each link of the documentation is checked. The
+   page is found by the scene in the header of its article, which the home
+   page shows too, in a panel. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) {
+  --clone: #00af8b;
+  --clone-mid: #0f7a66;
+  --clone-deep: #0a4f47;
+  --mark: var(--clone);
+  --mark-shadow: var(--clone-deep);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 2.25rem 3.5rem;
+  margin: -3rem calc(-1 * var(--gutter)) 0;
+  padding: 3.5rem 1rem calc(24px + 2.5rem);
+  color: var(--paper);
+  text-align: center;
+  background:
+    linear-gradient(var(--clone-deep) 0 4px, var(--ink) 0) 0 100% / 100% 24px no-repeat,
+    url("/img/stars.svg") 0 0 / 480px 320px,
+    var(--night);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 8px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 8px, transparent 0 16px);
+}
+
+/* The scene, 160 x 90 pixels, at a whole number of screen pixels per pixel:
+   2 on a phone (smaller below 368px), 3 from 34rem, 4 from 80rem. Its frame
+   is drawn outside it. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > img {
+  order: 1;
+  width: 320px;
+  max-width: calc(100% - 16px);
+  height: auto;
+  margin: 8px;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 4px var(--abyss),
+    0 0 0 8px var(--clone);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup {
+  max-width: none;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > p:first-child {
+  color: var(--clone);
+}
+
+/* The name in paper, extruded in the teal of the mark. A pixel of the font
+   is a whole number of screen pixels at each size: 4 at 44px, 5 at 55px, 8
+   at 88px. On a narrow phone it holds on one line, smaller. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+  margin: 0;
+  color: var(--paper);
+  font-size: min(2.75rem, (100cqw - 2 * var(--gutter) - 8px) / 5.7);
+  line-height: .9;
+  text-shadow: 4px 4px 0 var(--clone-mid);
+}
+
+/* The subtitle: the night itself behind its words, as on the page of Fix. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > p:last-child {
+  max-width: 28ch;
+  margin: 1.5rem auto 0;
+  color: var(--band-text);
+  font-size: 1.125rem;
+  text-wrap: balance;
+  background: var(--night);
+  box-shadow: 0 0 0 4px var(--night);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p {
+  margin-top: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* The facts: a label of paper, in both themes, ruled in teal inside its
+   edge. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0;
+  margin: 2.5rem 4px 0;
+  padding: 1.25rem 1.75rem;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow:
+    inset 0 0 0 4px var(--paper),
+    inset 0 0 0 8px var(--clone),
+    0 -4px 0 var(--ink),
+    0 4px 0 var(--ink),
+    -4px 0 0 var(--ink),
+    4px 0 0 var(--ink);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > dt {
+  padding: .5rem 1.5rem .5rem 0;
+  color: var(--fact-label);
+  font-size: .875rem;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > dd {
+  margin: 0;
+  padding: .5rem 0;
+  font-weight: 600;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > :is(dt, dd):not(:first-of-type) {
+  background: linear-gradient(90deg, var(--paper-rim) 50%, transparent 0) 0 0 / 8px 4px repeat-x;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl a {
+  color: var(--bordeaux);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl a:hover {
+  background: var(--bordeaux);
+  color: var(--paper);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl a:focus-visible {
+  outline-color: var(--bordeaux);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl code {
+  background: var(--paper-slot);
+  color: var(--ink);
+}
+
+/* On this page: the section being read is marked in teal. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
+  --toc-mark: var(--clone);
+}
+
+/* Two frameworks, one engine: a plate of the dark of the code, in both
+   themes, as the plates of the page of Fix, and at their scale: 2 screen
+   pixels per pixel on a narrow phone, 3 from 24rem, 4 from 31rem. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure {
+  max-width: calc(var(--measure) - 8px);
+  margin: 2rem 4px 0;
+  padding: 1.5rem 1rem;
+  background: var(--code-bg);
+  box-shadow:
+    0 -4px 0 var(--code-bg),
+    0 4px 0 var(--code-bg),
+    -4px 0 0 var(--code-bg),
+    4px 0 0 var(--code-bg);
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure > img {
+  display: block;
+  width: 204px;
+  height: auto;
+  margin: 0 auto;
+  image-rendering: pixelated;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure > figcaption {
+  max-width: 34rem;
+  margin: 1.5rem auto 0;
+  color: #d9c6dc;
+  font-size: .9375rem;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Documentation: a list on a slab, each link checked with the mark. */
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > h2#documentation + ul {
+  max-width: calc(var(--measure) - 8px);
+  margin: 2rem 4px 0;
+  padding: .5rem 1.5rem;
+  list-style: none;
+  background: var(--surface);
+  box-shadow:
+    0 -4px 0 var(--clone),
+    0 4px 0 var(--clone),
+    -4px 0 0 var(--clone),
+    4px 0 0 var(--clone);
+  break-inside: avoid;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > h2#documentation + ul > li {
+  position: relative;
+  margin: 0;
+  padding: .875rem 0 .875rem 2.5rem;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > h2#documentation + ul > li + li {
+  background: linear-gradient(90deg, var(--rim) 50%, transparent 0) 0 0 / 8px 4px repeat-x;
+}
+
+body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > h2#documentation + ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1rem;
+  width: 22px;
+  height: 20px;
+  background: url("/built-with/rspec-clone/img/mark.svg") 0 0 / 22px 20px no-repeat;
+}
+
+@media (max-width: 34rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > dt {
+    padding-bottom: 0;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > dd {
+    padding-top: 0;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl > dd:not(:first-of-type) {
+    background: none;
+  }
+}
+
+@media (min-width: 24rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+    font-size: 3.4375rem;
+    text-shadow:
+      5px 5px 0 var(--clone-mid),
+      10px 10px 0 var(--clone-deep);
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure > img {
+    width: 306px;
+  }
+}
+
+@media (min-width: 31rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure {
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > figure > img {
+    width: 408px;
+  }
+}
+
+@media (min-width: 34rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > img {
+    width: 480px;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--clone),
+      8px 8px 0 var(--clone-mid),
+      12px 12px 0 var(--clone-deep);
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > p:last-child {
+    font-size: 1.25rem;
+  }
+}
+
+/* From 62rem, the words beside the scene. The name is smaller there, where
+   its column is narrow, until 72rem. */
+@media (min-width: 62rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 4rem var(--gutter) calc(24px + 3.5rem);
+    text-align: left;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > img {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+    font-size: 4.125rem;
+    text-shadow:
+      4px 4px 0 var(--clone),
+      8px 8px 0 var(--clone-deep);
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > p:last-child {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 72rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+    font-size: 5.5rem;
+    text-shadow:
+      4px 4px 0 var(--clone),
+      8px 8px 0 var(--clone-mid),
+      12px 12px 0 var(--clone-deep);
+  }
+}
+
+/* From 80rem, the scene at its largest, and the name on two lines beside
+   it. */
+@media (min-width: 80rem) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > img {
+    width: 640px;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > h1 {
+    font-size: 8.25rem;
+    line-height: .82;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > hgroup > p:last-child {
+    margin-top: 2.25rem;
+    font-size: 1.5rem;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl {
+    margin-top: 3.5rem;
+  }
+}
+
+/* Forced colours drop the colours but keep the images: without the night,
+   the facts and the documentation take an outline. */
+@media (forced-colors: active) {
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header {
+    background-image: none;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header::after {
+    content: none;
+  }
+
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header > img,
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > header + p + dl,
+  body:has(article > header > img[src="/built-with/rspec-clone/img/scene.png"]) article > h2#documentation + ul {
+    outline: 4px solid CanvasText;
+  }
+}
+
 /* The blog: the print shop. The blog is where the project writes, and what
    it writes is set in type and printed. The list and each post open on the
    forme, type locked up and seen from above, dark in both themes, ruled
@@ -7488,6 +8011,7 @@ body > footer a:hover {
   figure,
   section#gems > section,
   section#gems li,
+  section#built li,
   section#why li,
   h2#matchers + dl > *,
   body > footer {

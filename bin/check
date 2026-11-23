@@ -41,7 +41,7 @@ FILES = [
   %r{\A(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.html\z},
   %r{\Aexamples(?:/[a-z0-9_-]+)+\.(?:rb|yaml)\z},
   %r{\Afonts/[a-z0-9-]+\.woff2\z},
-  %r{\Agems/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
+  %r{\A(?:gems|built-with)/[a-z0-9_-]+/img/[a-z0-9_-]+\.(?:svg|png|ico)\z},
   %r{\Aimg/[a-z0-9_-]+\.(?:svg|png)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
   %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|bin/indexnow|
@@ -1071,17 +1071,19 @@ def llms_full
 end
 
 # Every indexed page, once, in a section: Fix, its guide, the other gems in
-# the order of the home page, the blog, and the posts before Fix 1.0, the
-# newest first, as the feed has them; then the Japanese pages, in the same
-# order.
+# the order of the home page, what is built with Fixrb outside its gems, in
+# that order too, the blog, and the posts before Fix 1.0, the newest first, as
+# the feed has them; then the Japanese pages, in the same order.
 def llms_sections(pages, times)
   home = read("index.html")
   gems = home.scan(%r{href="/gems/([a-z0-9_-]+)/"}).flatten.uniq.map { |name| "gems/#{name}/index.html" }
+  built = home.scan(%r{href="/(built-with/[a-z0-9_-]+)/"}).flatten.uniq.map { |name| "#{name}/index.html" }
   posts = times.keys.select { |path| pages.include?(path) && language_of(path) == "en" }
   english = {
     "Fix" => ["index.html", "gems/fix/index.html"],
     "Guide of Fix 1" => guide_pages(LLMS_GUIDE),
     "Gems" => gems.select { |path| pages.include?(path) } - ["gems/fix/index.html"],
+    "Built with Fixrb" => built.select { |path| pages.include?(path) },
     "Blog" => ["blog/index.html"] + (posts - ARCHIVED),
     "Before Fix 1.0" => posts & ARCHIVED
   }
@@ -1251,7 +1253,7 @@ end
 (ARCHIVED - posts).each { |post| error("bin/check", "archived post #{post} does not exist") }
 (@files.grep(%r{\Aexamples/}) - used).each { |example| error(example, "no page shows it") }
 check_stylesheet
-(@files.grep(%r{\A(?:gems/[^/]+/)?img/}) - @linked).each { |image| error(image, "neither a page nor style.css uses it") }
+(@files.grep(%r{\A(?:(?:gems|built-with)/[^/]+/)?img/}) - @linked).each { |image| error(image, "neither a page nor style.css uses it") }
 LANGUAGES.each { |language| check_feed(language, posts.select { |post| language_of(post) == language }) }
 check_sitemap(pages)
 check_robots(pages)

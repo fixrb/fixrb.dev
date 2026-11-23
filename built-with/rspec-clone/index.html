@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>RSpec clone: a minimalist RSpec, built on the libraries of Fixrb · Fixrb</title>
+  <meta name="description" content="RSpec clone speaks the language of RSpec, describe, it and expect, in about 250 lines of Ruby, on defi, matchi and spectus, libraries Fix 1.0 is built on too.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/built-with/rspec-clone/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/built-with/rspec-clone/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="RSpec clone: a minimalist RSpec, built on the libraries of Fixrb">
+  <meta property="og:description" content="RSpec clone speaks the language of RSpec, describe, it and expect, in about 250 lines of Ruby, on defi, matchi and spectus, libraries Fix 1.0 is built on too.">
+  <meta property="og:url" content="https://fixrb.dev/built-with/rspec-clone/">
+  <meta property="og:image" content="https://fixrb.dev/built-with/rspec-clone/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A pixel-art ginger cat in sunglasses, a glass of wine in its paw, beside a bottle, in a night sky, next to the words: RSpec clone, the language of RSpec, in about 250 lines, on the libraries of Fixrb.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"RSpec clone","item":"https://fixrb.dev/built-with/rspec-clone/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/built-with/rspec-clone/img/scene.png" alt="Pixel art: a ginger cat in sunglasses, in a night sky, holds a glass of wine in its paw, beside a bottle whose label bears a ruby, next to the words “What did you RSpec?”." width="640" height="360">
+        <hgroup>
+          <p>Built with Fixrb</p>
+          <h1>RSpec clone</h1>
+          <p>The language of RSpec, in about 250 lines, on the libraries of Fixrb.</p>
+        </hgroup>
+      </header>
+      <p>RSpec clone is a small test framework that speaks the language of <a href="https://rspec.info/">RSpec</a>: <code>describe</code>, <code>context</code>, <code>it</code>, <code>its</code>, <code>let</code>, <code>subject</code>, <code>before</code>, <code>expect</code>, <code>is_expected</code> and <code>pending</code>, with a few matchers, and nothing else. It is not a gem of Fixrb: it is another project of the author of Fixrb, <a href="https://cyril.email/">Cyril Kato</a>, and its home is <a href="https://github.com/cyril/r_spec-clone.rb">its repository</a>. It is here for the way it is made: <a href="/gems/spectus/">spectus</a> judges every expectation, <a href="/gems/matchi/">matchi</a> gives every matcher, and <a href="/gems/defi/">defi</a> sends the method of each <code>its</code>: three of the libraries Fix 1.0 is built on. What was left to write, the language of RSpec, took about 250 lines.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>2.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later, with <code>fork</code></dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/defi/">defi</a>, <a href="/gems/matchi/">matchi</a>, <a href="/gems/spectus/">spectus</a></dd>
+        <dt>Code</dt>
+        <dd>About 250 lines</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#usage">In one file</a></li>
+          <li><a href="#differences">What it leaves out</a></li>
+          <li><a href="#engine">How it is built</a></li>
+          <li><a href="#fix">RSpec clone or Fix?</a></li>
+          <li><a href="#documentation">Documentation</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "r_spec-clone"</code> to your Gemfile, or run <code>gem install r_spec-clone</code>, then <code>require "r_spec"</code>.</p>
+
+      <h2 id="usage">In one file</h2>
+      <p>A spec file requires <code>r_spec</code>, and its examples run as the file loads, in its order: there is no command to learn, since <code>ruby</code> runs the file. Here is a duck again, as on <a href="/">the home page</a>, this time in the words of RSpec:</p>
+      <pre data-example="examples/rspec-clone/duck_spec.rb"><code>require <span class="string">"r_spec"</span>
+
+<span class="comment"># A duck, in the words of RSpec.</span>
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+<span class="keyword">end</span>
+
+<span class="constant">RSpec</span>.describe <span class="constant">Duck</span> <span class="keyword">do</span>
+  subject { described_class.new }
+
+  its(<span class="string">:walk</span>) { is_expected.to eq <span class="string">"Klop klop!"</span> }
+  its(<span class="string">:swim</span>) { is_expected.to eq <span class="string">"Swoosh..."</span> }
+
+  context <span class="string">"when asked to speak"</span> <span class="keyword">do</span>
+    its(<span class="string">:speak</span>) { is_expected.to raise_exception <span class="constant">NoMethodError</span> }
+  <span class="keyword">end</span>
+
+  it <span class="string">"walks before it swims"</span> <span class="keyword">do</span>
+    expect(subject.walk).to match(<span class="string">/Klop/</span>)
+    expect { subject.swim }.not_to raise_exception <span class="constant">StandardError</span>
+  <span class="keyword">end</span>
+
+  pending <span class="string">"flies"</span>
+<span class="keyword">end</span>
+</code></pre>
+      <pre data-directory="examples/rspec-clone"><kbd>ruby duck_spec.rb</kbd>
+<samp>duck_spec.rb:12: Success: expected "Klop klop!" to eq "Klop klop!"
+duck_spec.rb:13: Success: expected "Swoosh..." to eq "Swoosh..."
+duck_spec.rb:16: Success: expected #&lt;NoMethodError: undefined method 'speak' for an instance of Duck> to raise exception NoMethodError
+duck_spec.rb:20: Success: expected "Klop klop!" to match /Klop/
+duck_spec.rb:21: Success: expected "Swoosh..." not to raise exception StandardError
+duck_spec.rb:24: Pending: flies</samp></pre>
+      <p>One line per expectation: where it is written, its outcome, and the summary of spectus. It is the report of Fix, since the judge is the same. The <code>context</code> ran in a child process; <code>its</code> sent <code>speak</code> inside the expectation, so that what it raised could be expected; <code>pending</code> wrote its line and ran nothing. Every expectation was met, so the file exits with 0. The first one that is not met ends the run, with the status 1: the rest of the file would run on a false premise.</p>
+
+      <h2 id="differences">What it leaves out</h2>
+      <p>RSpec is a large framework, and a pleasure to work with every day. The clone borrows its language and leaves the rest out, on purpose: each thing left out is one thing less to know before reading a spec file.</p>
+      <ul>
+        <li>Nothing is monkey-patched, and nothing runs from an <code>at_exit</code> hook: no <code>rspec</code> command, no filter, no random order, no formatter.</li>
+        <li><code>let</code> and <code>subject</code> are plain methods, called each time: nothing is memoized.</li>
+        <li><code>before</code> is the only hook: no <code>after</code>, no <code>around</code>.</li>
+        <li>A <code>context</code> runs in a child process: what its examples change in the Ruby process stays there.</li>
+        <li>The expected value is the one that receives the comparison: an actual value that lies about <code>==</code> cannot pass.</li>
+        <li>The run stops at the first expectation that is not met.</li>
+      </ul>
+      <p>The <a href="https://github.com/cyril/r_spec-clone.rb/blob/v2.0.0/README.md#differences-from-rspec">README</a> lists every difference, and <a href="https://github.com/cyril/r_spec-clone.rb/wiki/Coming-from-RSpec">Coming from RSpec</a>, in its wiki, what to write instead of what RSpec has. RSpec clone is an independent project, neither part of RSpec nor endorsed by its team, to whom it owes its language: <a href="https://rspec.info/about/">thanks to them</a>.</p>
+
+      <h2 id="engine">How it is built</h2>
+      <p>An expectation of the clone is a few calls into the libraries. <code>expect { … }.to(matcher)</code> is <code>Spectus.must(matcher)</code>, called with the block, and <code>not_to</code> is <code>Spectus.must_not</code>: every expectation is a MUST, the first of the three levels of Fix. <code>eq</code>, <code>be_nil</code>, <code>match</code> and the others each build a matcher of matchi. <code>its</code> hands its method to defi, which sends it to the subject inside the block. Without the clone, three expectations read:</p>
+      <pre data-example="examples/rspec-clone/engine.rb"><code>require <span class="string">"defi"</span>
+require <span class="string">"matchi"</span>
+require <span class="string">"spectus"</span>
+
+<span class="comment"># expect { "foo".upcase }.to eq "FOO": a matcher of Matchi, in a MUST of</span>
+<span class="comment"># Spectus, called with the block.</span>
+upcase = <span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="string">"FOO"</span>)).call { <span class="string">"foo"</span>.upcase }
+upcase.to_s <span class="comment"># => "Success: expected \"FOO\" to eq \"FOO\""</span>
+
+<span class="comment"># expect("foo").not_to be_nil: a MUST NOT.</span>
+present = <span class="constant">Spectus</span>.must_not(<span class="constant">Matchi</span>::<span class="constant">Be</span>.new(<span class="keyword">nil</span>)).call { <span class="string">"foo"</span> }
+present.to_s <span class="comment"># => "Success: expected \"foo\" not to be nil"</span>
+
+<span class="comment"># its(:size) { is_expected.to eq 3 }, on "foo": Defi sends the method inside</span>
+<span class="comment"># the block, so that what it raises can be judged too.</span>
+size = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:size</span>)
+sized = <span class="constant">Spectus</span>.must(<span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">3</span>)).call { size.to(<span class="string">"foo"</span>).call }
+sized.to_s <span class="comment"># => "Success: expected 3 to eq 3"</span>
+</code></pre>
+      <figure>
+        <img src="/built-with/rspec-clone/img/engine.svg" alt="Two frameworks over four libraries: a line from Fix leads to aw, defi, matchi and spectus; a line from RSpec clone leads to defi, matchi and spectus." width="408" height="208">
+        <figcaption>Two frameworks, one engine. Fix stands on aw, defi, matchi and spectus; RSpec clone stands on defi, matchi and spectus, and forks by itself.</figcaption>
+      </figure>
+      <p>What the clone adds is the language. A group is a class, and a nested group a subclass of it; <code>let</code> defines a private method, <code>before</code> a module, and an example is an instance, where <code>expect</code> and the matchers are words; a <code>context</code> forks. The judging, the matching and the words of the report come from the libraries, where Fix uses them too: what is fixed in one is fixed for both. The clone was first built, in 2021, on test_tube and expresenter, two other libraries of Fixrb; its version 2.0 was built again, on the engine of Fix 1.0.</p>
+
+      <h2 id="fix">RSpec clone or Fix?</h2>
+      <p>Both judge the same way; they differ in what a test file is. In the clone, as in RSpec, a file describes one subject: its examples name a class, build it and expect things of it, each one required. In <a href="/gems/fix/">Fix</a>, a specification names no class: it is written once, tested against any subject, and says what is required, what is recommended and what is optional. Take the clone to keep the habits of RSpec in a small runner without surprises; take Fix when a behaviour deserves a document of its own.</p>
+      <p>They also work together. A specification of Fix is a matcher, through <a href="/gems/matchi-fix/">matchi-fix</a>, and <code>to</code> takes any matcher; a <code>let</code> with a parameter gives it a word:</p>
+      <pre data-example="examples/rspec-clone/fix_spec.rb"><code>require <span class="string">"r_spec"</span>
+require <span class="string">"matchi/fix"</span>
+
+<span class="comment"># What a duck does, as a specification of Fix.</span>
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaaaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Duck</span> = <span class="constant">Struct</span>.new(<span class="string">:walk</span>)
+
+<span class="constant">RSpec</span>.describe <span class="string">"A specification of Fix, as a matcher"</span> <span class="keyword">do</span>
+  let(<span class="string">:fix</span>) { |name| <span class="constant">Matchi</span>::<span class="constant">Fix</span>.new(name) }
+
+  it { expect(<span class="constant">Duck</span>.new(<span class="string">"Klop klop!"</span>)).to fix(<span class="string">:Duck</span>) }
+  it { expect(<span class="constant">Duck</span>.new(<span class="string">"Clank!"</span>)).not_to fix(<span class="string">:Duck</span>) }
+<span class="keyword">end</span>
+</code></pre>
+      <pre data-directory="examples/rspec-clone"><kbd>ruby fix_spec.rb</kbd>
+<samp>fix_spec.rb:20: Success: expected #&lt;struct Duck walk="Klop klop!"> to fix Duck
+fix_spec.rb:21: Success: expected #&lt;struct Duck walk="Clank!"> not to fix Duck</samp></pre>
+      <p>The specification says what a duck does; the spec file says which objects are ducks.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul role="list">
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/blob/v2.0.0/README.md">README</a>: the language, the matchers, the report, and the changes in 2.0.</li>
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/wiki">Wiki</a>: examples to run, each with what it writes, and a cheat sheet.</li>
+        <li><a href="https://rubydoc.info/gems/r_spec-clone">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/r_spec-clone/versions/2.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/cyril/r_spec-clone.rb/tree/v2.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/ja/built-with/rspec-clone/" hreflang="ja" lang="ja">日本語</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
