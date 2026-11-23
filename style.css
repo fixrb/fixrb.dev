@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*
  * fixrb.dev, one stylesheet.
  *
@@ -8,7 +9,8 @@
  * /fonts/OFL.txt) draws 11 pixels per em: it is set at multiples of 11px, at
  * its regular weight, for large titles, the site name, menus, gem names and
  * labels only, since at small sizes its C reads as an O. Everything else
- * uses the reader's system font.
+ * uses the reader's system font. It draws Latin letters only: on a Japanese
+ * page, the system's sans serif draws the kana and kanji.
  *
  * The shared rules come first. A page with a design of its own is then found
  * by its drawing, with :has(), in the order of the site: the home page,
@@ -131,6 +133,20 @@ body {
   background: var(--bg);
   color: var(--text);
   font: 1.0625rem/1.6 var(--body);
+}
+
+/* Japanese, on a page or a link: Pixelify Sans holds no kana or kanji, which
+   then come from the system's sans serif rather than its monospace; and a
+   title, a subtitle, a caption, the line of a page under its title or the
+   links of a nav break between phrases, where the browser can, rather than
+   inside a word. The labels of the navs are in the language of the page:
+   the selectors of each nav name it in both. */
+:lang(ja) {
+  --display: "Pixelify Sans", system-ui, sans-serif;
+}
+
+:lang(ja):is(h1, h2, h3, h4, hgroup > p, figcaption, main > p, nav) {
+  word-break: auto-phrase;
 }
 
 img {
@@ -708,7 +724,7 @@ article > footer {
    section being read marked on it. A page with a design of its own dresses
    it, by the custom properties --toc-link, --toc-text, --toc-current,
    --toc-track and --toc-mark. */
-nav[aria-label="On this page"] {
+nav:is([aria-label="On this page"], [aria-label="目次"]) {
   max-width: calc(var(--measure) - 8px);
   margin: 2.25rem 4px 0;
   padding: 1rem 1.25rem 1.125rem;
@@ -724,7 +740,7 @@ nav[aria-label="On this page"] {
 
 /* The label is shown from the attribute, which already names the nav: where
    the browser allows it, the copy on screen is not read out a second time. */
-nav[aria-label="On this page"]::before {
+nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   content: attr(aria-label);
   content: attr(aria-label) / "";
   display: block;
@@ -733,7 +749,7 @@ nav[aria-label="On this page"]::before {
   font: 400 1.375rem/1 var(--display);
 }
 
-nav[aria-label="On this page"] > ol {
+nav:is([aria-label="On this page"], [aria-label="目次"]) > ol {
   display: flex;
   flex-wrap: wrap;
   gap: 0 1.25rem;
@@ -742,22 +758,22 @@ nav[aria-label="On this page"] > ol {
   list-style: none;
 }
 
-nav[aria-label="On this page"] li {
+nav:is([aria-label="On this page"], [aria-label="目次"]) li {
   margin: 0;
 }
 
-nav[aria-label="On this page"] a {
+nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   display: block;
   padding: .25rem 0;
   color: var(--toc-link, var(--text));
   text-decoration-color: var(--accent);
 }
 
-nav[aria-label="On this page"] a:hover {
+nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   color: var(--bg);
 }
 
-nav[aria-label="On this page"] a > code {
+nav:is([aria-label="On this page"], [aria-label="目次"]) a > code {
   padding: 0;
   background: none;
 }
@@ -766,7 +782,7 @@ nav[aria-label="On this page"] a > code {
    page of many sections does not push its text a screen further down. The
    line has room around it for the outline of a link. */
 @media (max-width: 39.99rem) {
-  nav[aria-label="On this page"] > ol {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) > ol {
     flex-wrap: nowrap;
     margin: -6px;
     padding: 6px;
@@ -775,11 +791,11 @@ nav[aria-label="On this page"] a > code {
     scrollbar-color: var(--toc-track, var(--rim)) transparent;
   }
 
-  nav[aria-label="On this page"] li {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li {
     flex: none;
   }
 
-  nav[aria-label="On this page"] a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     white-space: nowrap;
   }
 }
@@ -790,37 +806,37 @@ nav[aria-label="On this page"] a > code {
    view down to the foot of the article. Beside the rail, code may be wider
    than the text. */
 @media (min-width: 80rem) {
-  article:has(> nav[aria-label="On this page"]) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) {
     --rail: 23rem;
     display: flow-root;
   }
 
   /* The first paragraph leaves under it the room a title has over it. */
-  main > article:has(> dl + nav[aria-label="On this page"]) > header + p {
+  main > article:has(> dl + nav:is([aria-label="On this page"], [aria-label="目次"])) > header + p {
     float: left;
     margin-bottom: 4.5rem;
   }
 
-  article > nav[aria-label="On this page"] + * {
+  article > nav:is([aria-label="On this page"], [aria-label="目次"]) + * {
     clear: left;
   }
 
-  main > article:has(> nav[aria-label="On this page"]) > dl:has(+ nav[aria-label="On this page"]),
-  main > article > nav[aria-label="On this page"] {
+  main > article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > dl:has(+ nav:is([aria-label="On this page"], [aria-label="目次"])),
+  main > article > nav:is([aria-label="On this page"], [aria-label="目次"]) {
     float: right;
     clear: right;
     width: calc(var(--rail) - 8px);
     max-width: none;
   }
 
-  article > nav[aria-label="On this page"] {
+  article > nav:is([aria-label="On this page"], [aria-label="目次"]) {
     position: sticky;
     top: 1.5rem;
     max-height: calc(100vh - 3rem);
     overflow-y: auto;
   }
 
-  nav[aria-label="On this page"] > ol {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) > ol {
     display: block;
   }
 
@@ -828,7 +844,7 @@ nav[aria-label="On this page"] a > code {
      the sign of the page, if it has one. --toc-lit is 1 on its link and 0 on
      the others; the colours of the link and the opacity of its sign follow
      it. */
-  nav[aria-label="On this page"] a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     --toc-lit: calc(var(--toc-on) - var(--toc-off));
     position: relative;
     padding: .375rem 0 .375rem 1rem;
@@ -848,128 +864,128 @@ nav[aria-label="On this page"] a > code {
      listens to the nth title and to the one after it, so every h2 of a page
      with this nav carries an id and is listed, which bin/check verifies.
      Fourteen sections are provided for; the longest page has twelve. */
-  article:has(> nav[aria-label="On this page"]) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) {
     timeline-scope: --section-1, --section-2, --section-3, --section-4, --section-5, --section-6, --section-7, --section-8, --section-9, --section-10, --section-11, --section-12, --section-13, --section-14;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(1) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(1) {
     view-timeline-name: --section-1;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(2) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(2) {
     view-timeline-name: --section-2;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(3) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(3) {
     view-timeline-name: --section-3;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(4) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(4) {
     view-timeline-name: --section-4;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(5) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(5) {
     view-timeline-name: --section-5;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(6) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(6) {
     view-timeline-name: --section-6;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(7) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(7) {
     view-timeline-name: --section-7;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(8) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(8) {
     view-timeline-name: --section-8;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(9) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(9) {
     view-timeline-name: --section-9;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(10) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(10) {
     view-timeline-name: --section-10;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(11) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(11) {
     view-timeline-name: --section-11;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(12) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(12) {
     view-timeline-name: --section-12;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(13) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(13) {
     view-timeline-name: --section-13;
   }
 
-  article:has(> nav[aria-label="On this page"]) > h2:nth-of-type(14) {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > h2:nth-of-type(14) {
     view-timeline-name: --section-14;
   }
 
-  nav[aria-label="On this page"] li:nth-child(1) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(1) > a {
     animation-timeline: --section-1, --section-2;
   }
 
-  nav[aria-label="On this page"] li:nth-child(2) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(2) > a {
     animation-timeline: --section-2, --section-3;
   }
 
-  nav[aria-label="On this page"] li:nth-child(3) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(3) > a {
     animation-timeline: --section-3, --section-4;
   }
 
-  nav[aria-label="On this page"] li:nth-child(4) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(4) > a {
     animation-timeline: --section-4, --section-5;
   }
 
-  nav[aria-label="On this page"] li:nth-child(5) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(5) > a {
     animation-timeline: --section-5, --section-6;
   }
 
-  nav[aria-label="On this page"] li:nth-child(6) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(6) > a {
     animation-timeline: --section-6, --section-7;
   }
 
-  nav[aria-label="On this page"] li:nth-child(7) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(7) > a {
     animation-timeline: --section-7, --section-8;
   }
 
-  nav[aria-label="On this page"] li:nth-child(8) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(8) > a {
     animation-timeline: --section-8, --section-9;
   }
 
-  nav[aria-label="On this page"] li:nth-child(9) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(9) > a {
     animation-timeline: --section-9, --section-10;
   }
 
-  nav[aria-label="On this page"] li:nth-child(10) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(10) > a {
     animation-timeline: --section-10, --section-11;
   }
 
-  nav[aria-label="On this page"] li:nth-child(11) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(11) > a {
     animation-timeline: --section-11, --section-12;
   }
 
-  nav[aria-label="On this page"] li:nth-child(12) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(12) > a {
     animation-timeline: --section-12, --section-13;
   }
 
-  nav[aria-label="On this page"] li:nth-child(13) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(13) > a {
     animation-timeline: --section-13, --section-14;
   }
 
-  nav[aria-label="On this page"] li:nth-child(14) > a {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) li:nth-child(14) > a {
     animation-timeline: --section-14, --section-15;
   }
 
-  nav[aria-label="On this page"] a:hover {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
     border-left-color: var(--link);
     color: var(--bg);
   }
 
-  article:has(> nav[aria-label="On this page"]) > pre {
+  article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > pre {
     max-width: calc(100% - var(--rail) - 3.5rem - 8px);
   }
 }
@@ -1029,7 +1045,7 @@ article > h2 ~ h2 {
 /* In forced colours, the slab of the nav, whose edge is a shadow, takes an
    outline. */
 @media (forced-colors: active) {
-  nav[aria-label="On this page"] {
+  nav:is([aria-label="On this page"], [aria-label="目次"]) {
     outline: 4px solid CanvasText;
   }
 }
@@ -2284,7 +2300,7 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) article > h2#documentation + ul
    being read. From 80rem, the ticket stands in the rail as on a phone, a
    fact per line, and the deck keeps to the column: five cards abreast,
    narrower. */
-body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: var(--perforation);
   --toc-text: #3b2c40;
   --toc-current: var(--ink);
@@ -2301,21 +2317,21 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] 
     4px 0 0 var(--jester-ink);
 }
 
-body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--fact-label);
 }
 
-body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--ink);
   text-decoration-color: var(--jester-red);
 }
 
-body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--ink);
   color: var(--paper);
 }
 
-body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--jester-blue);
 }
 
@@ -2351,12 +2367,12 @@ body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] 
     font-size: .875rem;
   }
 
-  body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.5rem;
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/matchi/img/jester.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/matchi/img/jester.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 8px);
@@ -2721,7 +2737,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) article > h2#documentation + ul a:foc
    the screen and the dialogue box are shown before the first paragraph: the
    status window beside that paragraph and the title after it, the menu
    under it, in view down to the foot of the article. */
-body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: transparent;
   --toc-text: var(--paper);
   --toc-current: var(--gold-light);
@@ -2739,21 +2755,21 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] {
   box-shadow: none;
 }
 
-body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--gold-light);
 }
 
-body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--paper);
   text-decoration-color: var(--gold);
 }
 
-body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--gold-light);
   color: var(--gold-ink);
 }
 
-body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--gold-light);
 }
 
@@ -2786,7 +2802,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focu
     margin-top: 1.25rem;
   }
 
-  body:has(img[src="/gems/aw/img/hero.svg"]) main > article > nav[aria-label="On this page"] {
+  body:has(img[src="/gems/aw/img/hero.svg"]) main > article > nav:is([aria-label="On this page"], [aria-label="目次"]) {
     grid-column: 2;
     grid-row: 5 / span 999;
     align-self: start;
@@ -2798,12 +2814,12 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focu
     max-width: none;
   }
 
-  body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 2.25rem;
     border-left: 0;
   }
 
-  body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 9px);
@@ -2817,7 +2833,7 @@ body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] a:focu
 
 /* In forced colours, the tiles of the window go from behind the sections. */
 @media (forced-colors: active) {
-  body:has(img[src="/gems/aw/img/hero.svg"]) nav[aria-label="On this page"] {
+  body:has(img[src="/gems/aw/img/hero.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
     background-image: none;
   }
 }
@@ -3195,7 +3211,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) article > h2#documentation + ul 
 /* On this page: a plank of pine, in both themes, a nail at each corner; the
    axe is struck in at the section being read. From 80rem, the scene keeps
    the left, and the facts start the rail beside it. */
-body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: #c79a5b;
   --toc-text: var(--pine-ink);
   --toc-current: var(--pine-ink);
@@ -3217,22 +3233,22 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] {
     4px 0 0 var(--pine-edge);
 }
 
-body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--pine-ink);
 }
 
-body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--pine-ink);
   font-weight: 600;
   text-decoration-color: var(--pine-link);
 }
 
-body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--pine-link);
   color: var(--pine);
 }
 
-body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--pine-link);
 }
 
@@ -3251,11 +3267,11 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a
     margin-top: calc(2.5rem + 4px);
   }
 
-  body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.5rem;
   }
 
-  body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 10px);
@@ -3269,7 +3285,7 @@ body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] a
 
 /* In forced colours, the wood and the nails go from behind the sections. */
 @media (forced-colors: active) {
-  body:has(img[src="/gems/brutal/img/scene.png"]) nav[aria-label="On this page"] {
+  body:has(img[src="/gems/brutal/img/scene.png"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
     background-image: none;
   }
 }
@@ -3750,7 +3766,7 @@ body:has(article > header > img[src="/logo.svg"]) article > h2#documentation + u
 
 /* On this page: a lining of the jewel case, ruby inside its rim; the glyph
    of MUST is set at the section being read. */
-body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"] {
+body:has(article > header > img[src="/logo.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: var(--rim);
   --toc-mark: var(--ruby);
   box-shadow:
@@ -3768,11 +3784,11 @@ body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"]
     margin-top: 1.5rem;
   }
 
-  body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"] a {
+  body:has(article > header > img[src="/logo.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.25rem;
   }
 
-  body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(article > header > img[src="/logo.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 7px);
@@ -3791,7 +3807,7 @@ body:has(article > header > img[src="/logo.svg"]) nav[aria-label="On this page"]
    From 62rem, the nav takes a column on the left and stays in view; on a
    narrower screen it comes after the page, below the links to the pages
    around it. */
-main:has(> nav[aria-label="Guide"]) {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 3.5rem;
@@ -3800,7 +3816,7 @@ main:has(> nav[aria-label="Guide"]) {
 
 /* The mouth of a gallery: rock, under a lintel on two posts, a track on its
    floor. The timber is a frame in nine parts. */
-main:has(> nav[aria-label="Guide"]) > article > header {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header {
   padding: 2rem 1.5rem 2.25rem;
   border: 24px solid transparent;
   border-image: url("/gems/fix/img/timber.svg") 24 / 24px / 0 repeat;
@@ -3808,17 +3824,17 @@ main:has(> nav[aria-label="Guide"]) > article > header {
   color: var(--paper);
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:first-child {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p:first-child {
   margin: 0;
   color: var(--rose);
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:first-child a:hover {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p:first-child a:hover {
   background: var(--rose);
   color: var(--abyss);
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header h1 {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header h1 {
   margin: .75rem 0 0;
   color: var(--paper);
   font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 48px - 3rem) / 7.15);
@@ -3828,16 +3844,16 @@ main:has(> nav[aria-label="Guide"]) > article > header h1 {
 /* Below 20rem, the gallery is narrower inside its frame, to leave its title
    room. */
 @media (max-width: 19.99rem) {
-  main:has(> nav[aria-label="Guide"]) > article > header {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header {
     padding-inline: .75rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article > header h1 {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header h1 {
     font-size: min(2.0625rem, (100cqw - 2 * var(--gutter) - 48px - 1.5rem) / 7.15);
   }
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p:last-child {
   max-width: 36rem;
   margin: 1.5rem 0 0;
   color: #ecdcec;
@@ -3846,25 +3862,25 @@ main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child {
   text-wrap: balance;
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p code {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p code {
   background: var(--abyss);
   color: var(--paper);
 }
 
 /* A link under the title of a page of the guide, in the rose of the
    eyebrow over it. */
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child a {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p:last-child a {
   color: var(--rose);
 }
 
-main:has(> nav[aria-label="Guide"]) > article > header > hgroup > p:last-child a:hover {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header > hgroup > p:last-child a:hover {
   background: var(--rose);
   color: var(--abyss);
 }
 
 /* The first page: the surface at night, the headframe over the shaft, and
    the rock it goes down into. */
-main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header {
   padding: 2.5rem 1.5rem calc(96px + 128px + 2rem);
   border: 0;
   border-image: none;
@@ -3879,7 +3895,7 @@ main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
     var(--night);
 }
 
-main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header h1 {
   font-size: min(4.125rem, (100cqw - 2 * var(--gutter) - 3rem) / 2.55);
   text-shadow:
     4px 4px 0 var(--ruby),
@@ -3887,7 +3903,7 @@ main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
 }
 
 /* The shaft: a dark slab in both themes, like the code. */
-nav[aria-label="Guide"] {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) {
   margin: 0 4px;
   padding: 1.25rem 1.25rem 1.5rem;
   background: var(--code-bg);
@@ -3900,7 +3916,7 @@ nav[aria-label="Guide"] {
     4px 0 0 var(--code-bg);
 }
 
-nav[aria-label="Guide"] > p {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p {
   display: flex;
   align-items: flex-end;
   min-height: 64px;
@@ -3910,32 +3926,32 @@ nav[aria-label="Guide"] > p {
   font: 400 1.375rem/1.1 var(--display);
 }
 
-nav[aria-label="Guide"] > p:has(> [aria-current]) {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p:has(> [aria-current]) {
   background:
     url("/gems/fix/img/cart.svg") 4px calc(100% - 6px) / 24px 22px no-repeat,
     url("/gems/fix/img/headframe.svg") 0 100% / 48px 64px no-repeat;
 }
 
-nav[aria-label="Guide"] a {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) a {
   color: #e6d6e8;
   text-decoration: none;
 }
 
-nav[aria-label="Guide"] a:hover {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) a:hover {
   background: #ff7a92;
   color: var(--code-bg);
 }
 
-nav[aria-label="Guide"] [aria-current="page"] {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) [aria-current="page"] {
   color: var(--paper);
 }
 
-nav[aria-label="Guide"] li > [aria-current="page"] {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) li > [aria-current="page"] {
   font-weight: 700;
 }
 
 /* The track, and a station per page, numbered. */
-nav[aria-label="Guide"] ol {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) ol {
   counter-reset: station;
   max-width: none;
   margin: 0;
@@ -3944,7 +3960,7 @@ nav[aria-label="Guide"] ol {
   background: url("/gems/fix/img/rails.svg") 4px 0 / 24px 16px repeat-y;
 }
 
-nav[aria-label="Guide"] li {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) li {
   counter-increment: station;
   position: relative;
   display: grid;
@@ -3954,17 +3970,17 @@ nav[aria-label="Guide"] li {
   padding: .375rem 0;
 }
 
-nav[aria-label="Guide"] li::before {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) li::before {
   content: counter(station, decimal-leading-zero);
   color: var(--token-comment);
   font: 400 1.375rem/1 var(--display);
 }
 
-nav[aria-label="Guide"] li:has(> [aria-current])::before {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) li:has(> [aria-current])::before {
   color: var(--coral);
 }
 
-nav[aria-label="Guide"] li:has(> [aria-current])::after {
+nav:is([aria-label="Guide"], [aria-label="ガイド"]) li:has(> [aria-current])::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -3977,7 +3993,7 @@ nav[aria-label="Guide"] li:has(> [aria-current])::after {
 
 /* The pages around: the next one a ruby button, the previous one a plate;
    the cart rolls a pixel towards where the link leads. */
-nav[aria-label="Pages"] ul {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) ul {
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem 1.5rem;
@@ -3987,15 +4003,15 @@ nav[aria-label="Pages"] ul {
   list-style: none;
 }
 
-nav[aria-label="Pages"] li {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) li {
   margin: 0;
 }
 
-nav[aria-label="Pages"] li:has(> [rel="next"]) {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) li:has(> [rel="next"]) {
   margin-left: auto;
 }
 
-nav[aria-label="Pages"] a {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a {
   display: flex;
   align-items: center;
   gap: .875rem;
@@ -4015,12 +4031,12 @@ nav[aria-label="Pages"] a {
     8px 8px 0 var(--lift);
 }
 
-nav[aria-label="Pages"] a:hover {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a:hover {
   background: var(--rim);
   color: var(--text);
 }
 
-nav[aria-label="Pages"] a[rel="next"] {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="next"] {
   background: var(--button);
   color: var(--paper);
   box-shadow:
@@ -4031,7 +4047,7 @@ nav[aria-label="Pages"] a[rel="next"] {
     8px 8px 0 var(--lift);
 }
 
-nav[aria-label="Pages"] a[rel="next"]:hover {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="next"]:hover {
   background: var(--bordeaux);
   color: var(--paper);
   box-shadow:
@@ -4042,8 +4058,8 @@ nav[aria-label="Pages"] a[rel="next"]:hover {
     8px 8px 0 var(--lift);
 }
 
-nav[aria-label="Pages"] a::before,
-nav[aria-label="Pages"] a::after {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a::before,
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a::after {
   flex: none;
   width: 24px;
   height: 22px;
@@ -4051,42 +4067,42 @@ nav[aria-label="Pages"] a::after {
   transition: translate .2s steps(2);
 }
 
-nav[aria-label="Pages"] a[rel="prev"]::before {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="prev"]::before {
   content: "";
   scale: -1 1;
 }
 
-nav[aria-label="Pages"] a[rel="next"]::after {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="next"]::after {
   content: "";
 }
 
-nav[aria-label="Pages"] a[rel="prev"]:hover::before {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="prev"]:hover::before {
   translate: -4px 0;
 }
 
-nav[aria-label="Pages"] a[rel="next"]:hover::after {
+nav:is([aria-label="Pages"], [aria-label="前後のページ"]) a[rel="next"]:hover::after {
   translate: 4px 0;
 }
 
 @media (min-width: 30rem) {
-  main:has(> nav[aria-label="Guide"]) > article > header h1 {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header h1 {
     font-size: 2.75rem;
   }
 }
 
 @media (min-width: 42rem) {
-  main:has(> nav[aria-label="Guide"]) > article > header {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header {
     padding: 2.5rem 2.5rem 2.75rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article > header h1 {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header h1 {
     font-size: 4.125rem;
     text-shadow:
       4px 4px 0 var(--ruby),
       8px 8px 0 var(--garnet);
   }
 
-  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header {
     min-height: 26rem;
     padding: 3rem 2.5rem calc(96px + 2.5rem);
     background-position:
@@ -4105,11 +4121,11 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
       16px 436px;
   }
 
-  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header > hgroup {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header > hgroup {
     max-width: calc(100% - 220px);
   }
 
-  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header h1 {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header h1 {
     font-size: 5.5rem;
     text-shadow:
       4px 4px 0 var(--ruby),
@@ -4119,17 +4135,17 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
 }
 
 @media (min-width: 62rem) {
-  main:has(> nav[aria-label="Guide"]) {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) {
     grid-template-columns: 15rem minmax(0, 1fr);
     column-gap: 3.5rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article {
     grid-column: 2;
     grid-row: 1;
   }
 
-  main > nav[aria-label="Guide"] {
+  main > nav:is([aria-label="Guide"], [aria-label="ガイド"]) {
     position: sticky;
     top: 1.5rem;
     grid-column: 1;
@@ -4142,17 +4158,17 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
    room left for the headframe with them; the timber stays; the shaft, whose
    edge is a shadow, takes an outline, and keeps its rails. */
 @media (forced-colors: active) {
-  main:has(> nav[aria-label="Guide"]) > article > header,
-  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > header,
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header {
     background-image: none;
   }
 
-  main:has(> nav[aria-label="Guide"] > p > [aria-current]) > article > header {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"]) > p > [aria-current]) > article > header {
     min-height: 0;
     padding-bottom: 2.5rem;
   }
 
-  nav[aria-label="Guide"] {
+  nav:is([aria-label="Guide"], [aria-label="ガイド"]) {
     outline: 4px solid CanvasText;
   }
 }
@@ -4161,7 +4177,7 @@ nav[aria-label="Pages"] a[rel="next"]:hover::after {
    the shaft in both themes. From 80rem, a ladder down the right of the
    gallery, and the lamp hung at the section being read; the shaft is a
    little narrower, to leave it room. */
-main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: transparent;
   --toc-text: #d9c6dc;
   --toc-current: var(--paper);
@@ -4175,26 +4191,26 @@ main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] {
     4px 0 0 var(--code-bg);
 }
 
-main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"]::before {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--token-comment);
 }
 
-main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: #e6d6e8;
   text-decoration-color: var(--coral);
 }
 
-main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a:hover {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: #ff7a92;
   color: var(--code-bg);
 }
 
-main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a > code {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) a > code {
   color: inherit;
 }
 
 /* Titles: the pick of the miner in place of the square. */
-main:has(> nav[aria-label="Guide"]) > article > h2::before {
+main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > h2::before {
   width: 24px;
   height: 22px;
   margin-right: 12px;
@@ -4204,36 +4220,36 @@ main:has(> nav[aria-label="Guide"]) > article > h2::before {
 }
 
 @media (min-width: 80rem) {
-  main:has(> nav[aria-label="Guide"]) {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) {
     grid-template-columns: 14rem minmax(0, 1fr);
     column-gap: 2.5rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article {
     --rail: 14rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article > nav[aria-label="On this page"] {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > nav:is([aria-label="On this page"], [aria-label="目次"]) {
     margin-top: 2.5rem;
     margin-left: 2.5rem;
     padding: 1rem 1rem 1.125rem;
     font-size: .875rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article > pre {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > pre {
     max-width: calc(var(--measure) - 8px);
   }
 
-  main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] > ol {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) > ol {
     background: url("/gems/fix/img/ladder.svg") 0 0 / 20px 16px repeat-y;
   }
 
-  main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 2rem;
     border-left: 0;
   }
 
-  main:has(> nav[aria-label="Guide"]) nav[aria-label="On this page"] a::before {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -4249,18 +4265,18 @@ main:has(> nav[aria-label="Guide"]) > article > h2::before {
    closer, and a word longer than its column breaks rather than widen the
    page. From 62rem, the code of a first column stays on its line. */
 @media (max-width: 26rem) {
-  main:has(> nav[aria-label="Guide"]) > article > table {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > table {
     font-size: .8125rem;
   }
 
-  main:has(> nav[aria-label="Guide"]) > article > table :is(th, td) {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > table :is(th, td) {
     padding-right: .375rem;
     overflow-wrap: anywhere;
   }
 }
 
 @media (min-width: 62rem) {
-  main:has(> nav[aria-label="Guide"]) > article > table td:first-child > :is(a, code) {
+  main:has(> nav:is([aria-label="Guide"], [aria-label="ガイド"])) > article > table td:first-child > :is(a, code) {
     white-space: nowrap;
   }
 }
@@ -4822,7 +4838,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) article > h2#documentation +
 /* On this page: a bridge of the movement, steel in both themes, a screw at
    each corner; a groove runs down the sections, and the jewel of a bearing
    is set at the one being read. */
-body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: var(--groove);
   --toc-text: #3b2c40;
   --toc-current: var(--ink);
@@ -4845,21 +4861,21 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
     4px 0 0 var(--steel-0);
 }
 
-body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--fact-label);
 }
 
-body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--ink);
   text-decoration-color: var(--bordeaux);
 }
 
-body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--bordeaux);
   color: var(--paper);
 }
 
-body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--bordeaux);
 }
 
@@ -4868,12 +4884,12 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
     margin-top: 1.5rem;
   }
 
-  body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.5rem;
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 8px);
@@ -4887,7 +4903,7 @@ body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page
 
 /* In forced colours, the perlage and the screws go from behind the sections. */
 @media (forced-colors: active) {
-  body:has(img[src="/gems/spectus/img/movement.svg"]) nav[aria-label="On this page"] {
+  body:has(img[src="/gems/spectus/img/movement.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
     background-image: none;
   }
 }
@@ -5201,7 +5217,7 @@ body:has(img[src="/gems/defi/img/letter.svg"]) article > h2#documentation + ul >
 /* On this page: a sheet of the letter, paper in both themes, a line ruled
    under each section and the margin of the letter down its left; the seal is
    pressed beside the section being read. */
-body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: var(--letter-margin);
   --toc-text: var(--ink);
   --toc-current: var(--bordeaux);
@@ -5215,21 +5231,21 @@ body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] {
     4px 0 0 var(--ink);
 }
 
-body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--fact-label);
 }
 
-body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--ink);
   text-decoration-color: var(--airmail-ruby);
 }
 
-body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--bordeaux);
   color: var(--paper);
 }
 
-body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--bordeaux);
 }
 
@@ -5248,16 +5264,16 @@ body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a:
     background-size: 80px 52px;
   }
 
-  body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] li + li {
+  body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) li + li {
     background: linear-gradient(90deg, var(--rule) 50%, transparent 0) 20px 0 / 8px 4px repeat-x;
   }
 
-  body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding: .5rem 0 .5rem 1.75rem;
     font-weight: 600;
   }
 
-  body:has(img[src="/gems/defi/img/letter.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/defi/img/letter.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 9px);
@@ -5676,7 +5692,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) article > h2#documentat
 /* On this page: the same screen as the header, in both themes, a menu in
    the type of the terminal; the prompt stands before the section being
    read. */
-body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: transparent;
   --toc-text: var(--phosphor);
   --toc-current: var(--paper);
@@ -5691,21 +5707,21 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this
     4px 0 0 var(--case);
 }
 
-body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--coral);
 }
 
-body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--phosphor);
   text-decoration-color: var(--coral);
 }
 
-body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--phosphor);
   color: var(--screen);
 }
 
-body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--phosphor);
 }
 
@@ -5714,12 +5730,12 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this
     margin-top: 2.25rem;
   }
 
-  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.5rem;
     border-left: 0;
   }
 
-  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: ">";
     position: absolute;
     left: 0;
@@ -5731,7 +5747,7 @@ body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this
 
 /* In forced colours, the lines of the screen go from behind the sections. */
 @media (forced-colors: active) {
-  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav[aria-label="On this page"] {
+  body:has(img[src="/gems/fix-command/img/processes.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
     background-image: none;
   }
 }
@@ -6151,7 +6167,7 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) article > h2#documentation + ul
 /* On this page: a pad of the velvet of the case, in both themes; the loupe
    rests on the section being read. From 80rem, the tag hangs in the rail,
    over the pad. */
-body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: #6b2147;
   --toc-text: #e9cfd9;
   --toc-current: var(--paper);
@@ -6165,36 +6181,36 @@ body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] 
     4px 0 0 var(--bordeaux);
 }
 
-body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--satin);
 }
 
-body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--paper);
   text-decoration-color: var(--coral);
 }
 
-body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--satin);
   color: var(--velvet);
 }
 
-body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--satin);
 }
 
 @media (min-width: 80rem) {
   /* The tag has no side margins: it takes the whole width of the rail. */
-  body:has(img[src="/gems/fix-its/img/loupe.svg"]) main > article:has(> nav[aria-label="On this page"]) > header + p + dl {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) main > article:has(> nav:is([aria-label="On this page"], [aria-label="目次"])) > header + p + dl {
     width: var(--rail);
     margin-top: 4.75rem;
   }
 
-  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.75rem;
   }
 
-  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/fix-its/img/loupe.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -6617,7 +6633,7 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) article > h2#documentation 
 
 /* On this page: a slab of the board, in both themes; the piece that fits
    lies on the section being read. */
-body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] {
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) {
   --toc-track: var(--piece-blue);
   --toc-text: var(--board-text);
   --toc-current: var(--paper);
@@ -6630,21 +6646,21 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this pag
     4px 0 0 var(--piece-blue);
 }
 
-body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"]::before {
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"])::before {
   color: var(--board-text);
 }
 
-body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a {
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
   --toc-link: var(--paper);
   text-decoration-color: var(--matcher);
 }
 
-body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a:hover {
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:hover {
   background: var(--board-text);
   color: var(--board);
 }
 
-body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a:focus-visible {
+body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a:focus-visible {
   outline-color: var(--board-text);
 }
 
@@ -6653,11 +6669,11 @@ body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this pag
     margin-top: 2.25rem;
   }
 
-  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a {
     padding-left: 1.75rem;
   }
 
-  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav[aria-label="On this page"] a::before {
+  body:has(img[src="/gems/matchi-fix/img/pieces.svg"]) nav:is([aria-label="On this page"], [aria-label="目次"]) a::before {
     content: "";
     position: absolute;
     top: calc(50% - 12px);
@@ -6728,7 +6744,7 @@ main:has(> ul > li > article) > h1 + p {
 }
 
 /* The feed, marked by its sign. */
-main:has(> ul > li > article) > h1 + p a[href="/feed.xml"]::before {
+main:has(> ul > li > article) > h1 + p a:is([href="/feed.xml"], [href="/ja/feed.xml"])::before {
   content: "";
   display: inline-block;
   width: 16px;
@@ -6740,7 +6756,7 @@ main:has(> ul > li > article) > h1 + p a[href="/feed.xml"]::before {
 
 /* Pointed at, the link takes its colour: the sign keeps the page under
    it. */
-main:has(> ul > li > article) > h1 + p a[href="/feed.xml"]:hover::before {
+main:has(> ul > li > article) > h1 + p a:is([href="/feed.xml"], [href="/ja/feed.xml"]):hover::before {
   background-color: var(--bg);
   box-shadow: 0 0 0 2px var(--bg);
 }
@@ -7058,9 +7074,9 @@ main > article:has(> header > p > time) > footer {
    holds no stone, its claws closed on nothing, the outline of the ruby that
    is not there dotted where it would sit. The whole page is the night, the
    same in both themes; the way back is the buttons of the home page. The
-   page is found by its structure: a title, a paragraph, then a list of
-   links, one of them to the home page. */
-main:has(> h1 + p + ul > li > a[href="/"]) {
+   page is found by its structure: a title, a paragraph, the same in
+   Japanese, then a list of links, one of them to the home page. */
+main:has(> h1 + p + p + ul > li > a[href="/"]) {
   padding: calc(3rem + 192px + 2.5rem) var(--gutter) 17rem;
   color: var(--paper);
   text-align: center;
@@ -7073,17 +7089,17 @@ main:has(> h1 + p + ul > li > a[href="/"]) {
     var(--night);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
   margin-inline: auto;
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > h1 {
   margin-bottom: 0;
   line-height: 1;
   text-shadow: 4px 4px 0 var(--ruby);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > p {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > p {
   max-width: 30ch;
   margin-top: 1.5rem;
   color: var(--band-text);
@@ -7094,7 +7110,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) > p {
 /* The way back: the link to the home page a ruby slab, as on the home
    page; those to the blog and the guide slabs of the night. Each sinks a
    pixel when pressed; the border shows in forced colours only. */
-main:has(> h1 + p + ul > li > a[href="/"]) > ul {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -7104,11 +7120,11 @@ main:has(> h1 + p + ul > li > a[href="/"]) > ul {
   list-style: none;
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul li {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul li {
   margin: 0;
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul a {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul a {
   --slab: var(--night-rim);
   --drop: var(--abyss);
   display: inline-block;
@@ -7127,17 +7143,17 @@ main:has(> h1 + p + ul > li > a[href="/"]) > ul a {
     8px 8px 0 var(--drop);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul a[href="/"] {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul a[href="/"] {
   --slab: var(--button);
   --drop: var(--wine);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul a:hover {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul a:hover {
   --slab: var(--coral);
   color: var(--night);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul a:active {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul a:active {
   translate: 4px 4px;
   box-shadow:
     0 -4px 0 var(--slab),
@@ -7147,7 +7163,7 @@ main:has(> h1 + p + ul > li > a[href="/"]) > ul a:active {
     4px 4px 0 var(--drop);
 }
 
-main:has(> h1 + p + ul > li > a[href="/"]) > ul a:focus-visible {
+main:has(> h1 + p + p + ul > li > a[href="/"]) > ul a:focus-visible {
   outline-color: var(--paper);
 }
 
@@ -7155,16 +7171,16 @@ main:has(> h1 + p + ul > li > a[href="/"]) > ul a:focus-visible {
    is the abyss in both themes, the browser's own parts are dark, and on a
    screen taller than the page, the page under the footer takes its
    colour. */
-main:has(> h1 + p + ul > li > a[href="/"]) + footer {
+main:has(> h1 + p + p + ul > li > a[href="/"]) + footer {
   margin-top: 0;
 }
 
-html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
+html:has(> body > main > h1 + p + p + ul > li > a[href="/"]) {
   --foot: var(--abyss);
 }
 
 @media screen {
-  html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
+  html:has(> body > main > h1 + p + p + ul > li > a[href="/"]) {
     color-scheme: dark;
     background: var(--foot);
   }
@@ -7172,7 +7188,7 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
 
 /* The title at 66px from 42rem, with a second step. */
 @media (min-width: 42rem) {
-  main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) > h1 {
     text-shadow:
       4px 4px 0 var(--ruby),
       8px 8px 0 var(--garnet);
@@ -7182,7 +7198,7 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
 /* From 62rem, the words on the left and the ring on the right, at 6
    screen pixels per pixel; the gems where the home page has them. */
 @media (min-width: 62rem) {
-  main:has(> h1 + p + ul > li > a[href="/"]) {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) {
     min-height: calc(288px + 23rem);
     padding: 5rem var(--gutter) 17rem;
     text-align: left;
@@ -7190,18 +7206,18 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
     background-size: 288px 288px, 1440px 256px, 100% 24px, 480px 320px, 16px 436px;
   }
 
-  main:has(> h1 + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) > :is(h1, p, ul) {
     margin-inline: 0;
   }
 
-  main:has(> h1 + p + ul > li > a[href="/"]) > ul {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) > ul {
     justify-content: start;
   }
 }
 
 /* The title at 88px from 72rem, where it holds beside the ring. */
 @media (min-width: 72rem) {
-  main:has(> h1 + p + ul > li > a[href="/"]) > h1 {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) > h1 {
     font-size: 5.5rem;
     text-shadow:
       4px 4px 0 var(--ruby),
@@ -7214,7 +7230,7 @@ html:has(> body > main > h1 + p + ul > li > a[href="/"]) {
    gems go, and the room left for the gems with them; the ring stays; the
    slabs keep their border. */
 @media (forced-colors: active) {
-  main:has(> h1 + p + ul > li > a[href="/"]) {
+  main:has(> h1 + p + p + ul > li > a[href="/"]) {
     min-height: calc(288px + 9rem);
     padding-bottom: 6rem;
     background-image: url("/img/setting.svg"), none, none, none, none;
@@ -7327,7 +7343,7 @@ body > footer a:hover {
    mark of the section being read is no movement: its link keeps listening
    to the scroll. */
 @media (prefers-reduced-motion: reduce) {
-  *:not(nav[aria-label="On this page"] a),
+  *:not(nav:is([aria-label="On this page"], [aria-label="目次"]) a),
   *::before,
   *::after {
     animation: none !important;
@@ -7390,7 +7406,7 @@ body > footer a:hover {
 
   /* On paper, a page is read for itself: the nav of its sections, the
      shaft of a guide and the links to the pages around stay on the screen. */
-  nav:is([aria-label="Guide"], [aria-label="Pages"], [aria-label="On this page"]) {
+  nav:is(:is([aria-label="Guide"], [aria-label="ガイド"]), :is([aria-label="Pages"], [aria-label="前後のページ"]), :is([aria-label="On this page"], [aria-label="目次"])) {
     display: none;
   }
 }

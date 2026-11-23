@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fix 1.0をリリースしました · Fixrb</title>
+  <meta name="description" content="Fix 1.0を公開しました。テストスイートがRFC 2119の仕様であり、どんなサブジェクトに対してもテストでき、各コンテキストが専用のプロセスで動く、Rubyのテストフレームワークです。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/framework/release/2026/10/31/fix-1.html">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/framework/release/2026/10/31/fix-1.html">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-10-31">
+  <meta property="article:author" content="https://cyril.email/">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="Fix 1.0をリリースしました">
+  <meta property="og:description" content="Fix 1.0を公開しました。テストスイートがRFC 2119の仕様であり、どんなサブジェクトに対してもテストでき、各コンテキストが専用のプロセスで動く、Rubyのテストフレームワークです。">
+  <meta property="og:url" content="https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","@id":"https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html#post","headline":"Fix 1.0をリリースしました","description":"Fix 1.0を公開しました。テストスイートがRFC 2119の仕様であり、どんなサブジェクトに対してもテストでき、各コンテキストが専用のプロセスで動く、Rubyのテストフレームワークです。","image":"https://fixrb.dev/gems/fix/img/card-ja.png","datePublished":"2026-10-31T00:00:00+00:00","dateModified":"2026-11-23T00:00:00+00:00","author":{"@type":"Person","name":"Cyril Kato","url":"https://cyril.email/"},"publisher":{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},"mainEntityOfPage":"https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"ブログ","item":"https://fixrb.dev/ja/blog/"},{"@type":"ListItem","position":3,"name":"Fix 1.0をリリースしました","item":"https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>Fix 1.0をリリースしました</h1>
+        <p><time datetime="2026-10-31">2026年10月31日</time> · Cyril Kato</p>
+      </header>
+      <p>Fix 1.0を公開しました。Fixは、テストスイートが仕様であるRubyのテストフレームワークです。仕様とは、サブジェクトが何を<strong>MUST</strong>（しなければならない）、<strong>SHOULD</strong>（すべきである）、<strong>MAY</strong>（してもよい）かを<a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>の言葉で述べ、サブジェクトがどう作られているかには触れない文書のことです。2014年に大阪で書き始め、それから何度も作り直してきました。これが、完成したと思える最初のバージョンです。</p>
+
+      <h2 id="if-it-quacks">アヒルのように鳴くなら</h2>
+      <p>Rubyは、アヒルをその振る舞いで見分けます。それが<a href="https://en.wikipedia.org/wiki/Duck_typing">ダックタイピング</a>です。Fixの仕様も同じで、クラスを名指しせず、ファイルの最後のテストがサブジェクトを選びます。ここでは、アヒルとゴムのアヒルを、ひとつの仕様に照らします。</p>
+      <pre data-example="examples/posts/fix-1/duck_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:quack</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Quack!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Splash!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:fly</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> quack = <span class="string">"Quack!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Splash!"</span>
+  <span class="keyword">def</span> fly = <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">RubberDuck</span>
+  <span class="keyword">def</span> quack = <span class="string">"Quack!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Splash!"</span>
+<span class="keyword">end</span>
+
+exit([
+  <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new },
+  <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">RubberDuck</span>.new }
+].all?)
+</code></pre>
+      <pre data-directory="examples/posts/fix-1"><kbd>ruby duck_fix.rb</kbd>
+<samp>duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+duck_fix.rb:9: Success: expected "Splash!" to eq "Splash!"
+duck_fix.rb:13: Success: expected true to be true
+duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+duck_fix.rb:9: Success: expected "Splash!" to eq "Splash!"
+duck_fix.rb:13: Info: NoMethodError: undefined method 'fly' for an instance of RubberDuck</samp></pre>
+      <p>ゴムのアヒルは飛べませんが、飛ぶことはMAYにすぎなかったので、その行はInfoとなり、どちらのアヒルも仕様を満たします。3つのレベルが、必須のもの、推奨されるもの、任意のものを分け、行は期待ごとに1行ずつ、何が起きたかを正確に伝えます。全体が満たされたかどうかは、プロセスの終了ステータスが伝えます。同じ仕様で、自分のクラスも、依存しているライブラリも、そのどちらかの次のバージョンもテストできます。</p>
+
+      <h2 id="what-1-0-brings">1.0がもたらすもの</h2>
+      <ul>
+        <li>仕様はファイルの読み込み時に一度だけ組み立てられ、データとして保持されます。誤りがあれば、テストが走る前に例外になります。</li>
+        <li>各コンテキストは子プロセスで実行されます。サブジェクトがグローバル変数や定数、<code>ENV</code>に対して行ったことはそのコンテキストの中にとどまり、コンテキストの順序が結果を変えることはありません。</li>
+        <li>マッチャーは<a href="/ja/gems/matchi/">Matchi</a>のもので、比較を行うのは期待値の側です。テスト対象のオブジェクトが自分で自分を保証することはできません。</li>
+        <li><code>test</code>は期待ごとに1行を書き、仕様が満たされたかどうかを返します。<code>run</code>は結果をデータとして返します。<code>match?</code>は仕様をマッチャーにするので、仕様は<code>fix(:Name)</code>で別の仕様を求められます。</li>
+        <li>コードは約300行で、テストは手で書き、カバレッジは100%です。Ruby 3.3、3.4、4.0で動き、4つの小さなgem、<a href="/ja/gems/matchi/">matchi</a>、<a href="/ja/gems/spectus/">spectus</a>、<a href="/ja/gems/aw/">aw</a>、<a href="/ja/gems/defi/">defi</a>の上に成り立っています。どれも、信頼する前に読めるほど短いものです。</li>
+        <li>その周りには、プロジェクトのファイルを実行する<a href="/ja/gems/fix-command/">fix-command</a>、<code>its</code>という語を加える<a href="/ja/gems/fix-its/">fix-its</a>、仕様をほかのどのテストフレームワークにも持ち込む<a href="/ja/gems/matchi-fix/">matchi-fix</a>があります。</li>
+      </ul>
+
+      <h2 id="try-it">試してみる</h2>
+      <pre><kbd>gem install fix-command</kbd></pre>
+      <p>それから<a href="/ja/gems/fix/v1/">ガイド</a>へ。最初の仕様、言語、ひとつずつのマッチャー、コマンド、そして<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecから移るときに変わること</a>です。ページにあるすべての例は、公開する前に実行しています。リファレンスは<a href="https://github.com/fixrb/fix/blob/v1.0.0/README.md">README</a>です。FixにはRuby 3.3以降と<code>fork(2)</code>が必要です。</p>
+      <p>手元にあるものについて仕様を書き、それが何を言うかを見てください。Fixは、そのためにあります。</p>
+      <footer>
+        <p>カテゴリー：frameworkとrelease。<a href="/ja/blog/">すべての記事</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/framework/release/2026/10/31/fix-1.html" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

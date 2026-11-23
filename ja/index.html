@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fixrb：RubyのテストフレームワークFixと、その周りのgem</title>
+  <meta name="description" content="Fixは、RFC 2119の言葉で一度だけ書き、どの実装からも切り離した仕様でRubyのコードをテストするテストフレームワークです。FixrbはFixとその周りのgemをまとめています。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="Fixrb：RubyのテストフレームワークFixと、その周りのgem">
+  <meta property="og:description" content="Fixは、RFC 2119の言葉で一度だけ書き、どの実装からも切り離した仕様でRubyのコードをテストするテストフレームワークです。FixrbはFixとその周りのgemをまとめています。">
+  <meta property="og:url" content="https://fixrb.dev/ja/">
+  <meta property="og:image" content="https://fixrb.dev/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「Fixrb」と「Rubyのテストライブラリ：Fix、Matchi、そしてその周りのgem」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},{"@type":"WebSite","@id":"https://fixrb.dev/#website","name":"Fixrb","alternateName":"fixrb.dev","url":"https://fixrb.dev/","publisher":{"@id":"https://fixrb.dev/#organization"}}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="fix" aria-labelledby="fix-title">
+      <hgroup>
+        <p>Fixrbの中心となるgem</p>
+        <h1 id="fix-title">Fix</h1>
+        <p>Rubyのオブジェクトがすべきことを一度だけ書き、どの実装もそれでテストする。</p>
+      </hgroup>
+      <p>FixはRubyのテストフレームワークです。仕様は、サブジェクトが何を<strong>MUST</strong>（しなければならない）、<strong>SHOULD</strong>（すべきである）、<strong>MAY</strong>（してもよい）かを<a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>の言葉で述べ、それがどう作られているかには触れません。一度書けば、今日はArrayを、明日は自分のクラスを、依存しているライブラリを、あるいはそのどれかの次のバージョンを、<a href="/ja/gems/fix/v1/questions/#compared">すでにあるRSpecやminitestのテストスイート</a>と並べてテストできます。</p>
+      <ul role="list">
+        <li><a href="/ja/gems/fix/v1/getting-started/">ガイドを始める</a></li>
+        <li><a href="/ja/gems/fix/">Fixについて読む</a></li>
+      </ul>
+      <dl>
+        <dt>インストール</dt>
+        <dd><code>gem install fix</code></dd>
+        <dt>バージョン</dt>
+        <dd>1.0.1、Ruby 3.3以降</dd>
+        <dt>ソースコード</dt>
+        <dd><a href="https://github.com/fixrb/fix">github.com/fixrb/fix</a>、MITライセンス</dd>
+        <dt>RSpecから</dt>
+        <dd><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>：それぞれのイディオムがどうなるか、何を省いたか</dd>
+      </dl>
+      <figure>
+        <pre data-example="examples/home/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># A stack, whatever it is made of.</span>
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:pop</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:peek</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># A test picks the subject: an Array.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+        <pre data-directory="examples/home"><kbd>ruby stack.rb</kbd>
+<samp>stack.rb:7: Success: expected 1 to eq 1
+stack.rb:12: Success: expected nil to be nil
+stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Array</samp></pre>
+        <figcaption>期待ごとに1行、全体の成否はプロセスの終了ステータスで。MAYのもとでは、サブジェクトにないメソッドはInfoとなり、実行は成功します。この出力は、gemとガイドのページにあるすべての出力と同じく、ファイルを実際に実行して書き出したものです。</figcaption>
+      </figure>
+    </section>
+
+    <section id="why" aria-labelledby="why-title">
+      <h2 id="why-title">Fixのどこが違うのか</h2>
+      <ul role="list">
+        <li>
+          <h3>仕様は文書である</h3>
+          <p>仕様はファイルの読み込み時に一度だけ読まれます。セットアップもモックもロジックもなく、仕様に誤りがあればテストが走る前に例外になります。仕様はクラスを名指ししません。サブジェクトを選ぶのはテストで、ひとつの仕様をいくつの実装にも使えます。</p>
+        </li>
+        <li>
+          <h3>3つの要求レベル</h3>
+          <p>MUST、SHOULD、MAYは、必須のもの、推奨されるもの、任意のものを区別します。そのため、ライブラリと利用者の間、あるいは2つのチームの間の契約で、何がビルドを止め、何が止めないかを示せます。満たされないSHOULDはWarning、サブジェクトにないメソッドへのMAYはInfoとなり、どちらも成功として扱われます。</p>
+        </li>
+        <li>
+          <h3>コンテキストごとにひとつのプロセス</h3>
+          <p>各コンテキストは子プロセスで実行されます。サブジェクトがグローバル変数や定数、<code>ENV</code>に加えた変更はそのコンテキストの中にとどまり、コンテキストの順序が結果を変えることはありません。プロセスでは隔離できないデータベースの場合は、<a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a>で示しています。</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="gems" aria-labelledby="gems-title">
+      <h2 id="gems-title">ほかのgem</h2>
+      <p>Fixは小さなライブラリから作られ、小さなgemで拡張されます。どれもひとつのことだけを、せいぜい数百行のコードで行うので、信頼する前に読むことができます。</p>
+
+      <section id="extensions">
+        <h3>Fixの周辺</h3>
+        <p>Fixを拡張したり、その仕様をほかのテストフレームワークに持ち込んだりするgem。</p>
+        <ul role="list">
+          <li>
+            <h4><img src="/gems/fix-its/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/fix-its/">fix-its</a></h4>
+            <p>仕様に<code>its</code>という語を加えます。サブジェクトのメソッドとその期待を1行で書けます。</p>
+            <p><small>バージョン1.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/matchi-fix/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/matchi-fix/">matchi-fix</a></h4>
+            <p>どのテストフレームワークからでも、値をFixの仕様でテストするmatchiのマッチャー。</p>
+            <p><small>バージョン4.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/fix-command/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/fix-command/">fix-command</a></h4>
+            <p><code>fix</code>コマンド。仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。</p>
+            <p><small>バージョン1.0</small></p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="libraries">
+        <h3>ライブラリ</h3>
+        <p>Fixに依存しない部品です。単独でも、どのテストフレームワークとでも、テストフレームワークを作るためにも使えます。Fix 1.0はaw、defi、matchi、spectusの上に作られています。</p>
+        <ul role="list">
+          <li>
+            <h4><img src="/gems/matchi/img/icon.svg" alt="" width="62" height="64"><a href="/ja/gems/matchi/">matchi</a></h4>
+            <p>どのテストフレームワークでも使えるマッチャー。比較を行うのはテスト対象のオブジェクトではなく、期待値です。</p>
+            <p><small>バージョン6.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/spectus/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/spectus/">spectus</a></h4>
+            <p>RFC 2119の要求レベル、MUST、SHOULD、MAYを備えた期待。例外を発生させる代わりに結果を返します。Fix 1.0のエンジンで、defiの上に作られています。</p>
+            <p><small>バージョン6.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/aw/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/aw/">aw</a></h4>
+            <p>ブロックをforkしたプロセスで実行し、その結果を返します。Fix 1.0はこれでコンテキストを互いに切り離しています。</p>
+            <p><small>バージョン1.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/defi/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/defi/">defi</a></h4>
+            <p>メソッド呼び出し（名前と引数）を用意し、どのオブジェクトにも送って、返ってきたものを保持します。</p>
+            <p><small>バージョン4.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/test_tube/img/icon.svg" alt="" width="64" height="64"><a href="https://github.com/fixrb/test_tube">test_tube</a></h4>
+            <p>値、あるいはブロックが返すものや発生させる例外を、マッチャーで確かめます。defiの上に作られています。Fix 1.0では使われていません。</p>
+            <p><small>バージョン4.0</small></p>
+          </li>
+          <li>
+            <h4><img src="/gems/expresenter/img/icon.svg" alt="" width="64" height="64"><a href="https://github.com/fixrb/expresenter">expresenter</a></h4>
+            <p>期待の結果（Success、Warning、Info、Failure、Error）を表示します。Fix 1.0では使われていません。</p>
+            <p><small>バージョン1.5</small></p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="tools">
+        <h3>ツール</h3>
+        <p>その上に何かを作るライブラリではなく、そのまま実行するコマンド。</p>
+        <ul role="list">
+          <li>
+            <h4><img src="/gems/brutal/img/icon.svg" alt="" width="64" height="64"><a href="/ja/gems/brutal/">brutal</a></h4>
+            <p>YAMLのマニフェストから、コンテキストのあらゆる組み合わせでコードが返すものを記録して、素のRubyのテストファイルを書き出します。awの上に作られています。</p>
+            <p><small>バージョン2.0</small></p>
+          </li>
+        </ul>
+      </section>
+    </section>
+
+    <section aria-labelledby="blog-title">
+      <h2 id="blog-title">ブログから</h2>
+      <ul role="list">
+        <li>
+          <article>
+            <h3><a href="/ja/framework/release/2026/10/31/fix-1.html">Fix 1.0をリリースしました</a></h3>
+            <p><time datetime="2026-10-31">2026年10月31日</time></p>
+            <p>Fix 1.0を公開しました。テストスイートがRFC 2119の仕様であり、どんなサブジェクトに対してもテストでき、各コンテキストが専用のプロセスで動く、Rubyのテストフレームワークです。</p>
+          </article>
+        </li>
+        <li>
+          <article>
+            <h3><a href="/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">RFC 2119に着想を得た3つの要求レベル</a></h3>
+            <p><time datetime="2024-12-30">2024年12月30日</time></p>
+            <p>FixがMUST、SHOULD、MAYの要求レベルをどう実装し、仕様をより正確にしているか。そしてRSpecがたどってきた変遷とどう違うか。</p>
+          </article>
+        </li>
+        <li>
+          <article>
+            <h3><a href="/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">仕様を明確に分離してテストの設計を考え直す</a></h3>
+            <p><time datetime="2024-12-29">2024年12月29日</time></p>
+            <p>RubyのテストでFixが仕様を実装から切り離し、保守も再利用もしやすいテストスイートにする方法。</p>
+          </article>
+        </li>
+      </ul>
+      <p><a href="/ja/blog/">すべての記事</a></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

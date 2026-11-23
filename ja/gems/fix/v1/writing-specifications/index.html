@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Rubyの仕様を書く · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="Fixの仕様を書く4つの語「on」「let」「with」「it」と、3つの要求レベルMUST、SHOULD、MAY、そしてその5つの判定。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/writing-specifications/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/writing-specifications/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/writing-specifications/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/writing-specifications/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="Rubyの仕様を書く · Fix 1ガイド">
+  <meta property="og:description" content="Fixの仕様を書く4つの語「on」「let」「with」「it」と、3つの要求レベルMUST、SHOULD、MAY、そしてその5つの判定。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/writing-specifications/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"仕様を書く","item":"https://fixrb.dev/ja/gems/fix/v1/writing-specifications/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>仕様を書く</h1>
+          <p>4つの語<code>on</code>、<code>let</code>、<code>with</code>、<code>it</code>と、3つの要求レベル。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#on">メソッド：<code>on</code></a></li>
+          <li><a href="#let-and-with">パラメーター：<code>let</code>と<code>with</code></a></li>
+          <li><a href="#it">期待：<code>it</code></a></li>
+          <li><a href="#processes">コンテキストごとにひとつのプロセス</a></li>
+        </ol>
+      </nav>
+      <p><code>Fix</code>のブロックは文書です。ファイルの読み込み時に一度だけ読まれ、サブジェクトが存在する前に仕様を組み立てます。セットアップも後片付けも状態もありません。要求のない<code>it</code>や、ひとつのコンテキストで2回宣言された<code>let</code>など、誤りがあればその時点で、どのテストよりも前に例外になります。</p>
+
+      <h2 id="on">メソッド：<code>on</code></h2>
+      <p><code>on</code>は、サブジェクトにメソッドを引数とともに送るコンテキストを開きます。その中の期待は、返ってきた値を判定します。ほかの<code>on</code>の中に置くと、その値にメソッドを送り、以下同様に続きます。どの<code>on</code>にも入っていない<code>it</code>は、サブジェクトそのものを判定します。</p>
+      <pre data-example="examples/fix/v1/writing-specifications/phrase_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Phrase</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+
+  on <span class="string">:upcase</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"HELLO WORLD"</span>
+
+    on <span class="string">:length</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">11</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:split</span>, <span class="string">" "</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">%w[hello world]</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:start_with?</span>, <span class="string">"hello"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Phrase</span>].test { <span class="string">"hello world"</span> })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby phrase_fix.rb</kbd>
+<samp>phrase_fix.rb:4: Success: expected "hello world" to be an instance of String
+phrase_fix.rb:7: Success: expected "HELLO WORLD" to eq "HELLO WORLD"
+phrase_fix.rb:10: Success: expected 11 to eq 11
+phrase_fix.rb:15: Success: expected ["hello", "world"] to eq ["hello", "world"]
+phrase_fix.rb:19: Success: expected true to be true</samp></pre>
+      <p>問い合わせもメソッドです。<code>on :start_with?, "hello"</code>がそれを尋ね、<code>be_true</code>は答えが<code>true</code>であることを求めます。例外を発生させたメソッドは、そこで連鎖を終わらせ、その期待はErrorになります。ただし、そのためにあるマッチャー<a href="/ja/gems/fix/v1/matchers/#raise_exception"><code>raise_exception</code></a>を使う期待は別です。<code>on</code>のブロックはコンテキストなので、メソッドはブロックなしで送られます。</p>
+
+      <h2 id="let-and-with">パラメーター：<code>let</code>と<code>with</code></h2>
+      <p><code>let</code>はサブジェクトのパラメーターで、名前と、その値を与えるブロックからなります。<code>test</code>のブロックがそれを呼んでサブジェクトを作ります。<code>with</code>は、パラメーターが別の値をとるコンテキストを開きます。</p>
+      <pre data-example="examples/fix/v1/writing-specifications/price_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Price</span>
+  <span class="keyword">def</span> initialize(amount, <span class="string">rate:</span> <span class="number">0</span>)
+    @amount = amount
+    @rate = rate
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> total = @amount - (@amount * @rate / <span class="number">100</span>)
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Price</span> <span class="keyword">do</span>
+  let(<span class="string">:amount</span>) { <span class="number">100</span> }
+  let(<span class="string">:rate</span>) { <span class="number">0</span> }
+
+  on <span class="string">:total</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">100</span>
+
+    with <span class="string">rate:</span> <span class="number">20</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">80</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">amount:</span> <span class="number">50</span>, <span class="string">rate:</span> <span class="number">10</span> <span class="keyword">do</span>
+    on <span class="string">:total</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">45</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Price</span>].test { <span class="constant">Price</span>.new(amount, <span class="string">rate:</span>) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby price_fix.rb</kbd>
+<samp>price_fix.rb:17: Success: expected 100 to eq 100
+price_fix.rb:20: Success: expected 80 to eq 80
+price_fix.rb:26: Success: expected 45 to eq 45</samp></pre>
+      <p>コンテキストは、それを囲むコンテキストのパラメーターとメソッドを受け継ぎます。<code>on :total</code>の中で、<code>with rate: 20</code>は20%の価格を作り、それに<code>total</code>を送ります。<code>with</code>は<code>on</code>の前に置くことも、中に置くこともできます。</p>
+      <ul>
+        <li>letはサブジェクトブロックとほかのletからは見えますが、期待からは見えません。期待はサブジェクトが存在する前に書かれるからです。期待の中でletの名前を使うと、読み込み時に<code>NameError</code>になります。</li>
+        <li>letの値は最初に呼ばれたときに計算され、その期待の間は保持されます。期待はそれぞれサブジェクトを作り直します。<code>let(:items) { [] }</code>はそれぞれに専用の配列を与えますが、<code>with items: []</code>はそのコンテキストの期待に同じ配列を与えます。</li>
+        <li>letには、<code>format</code>のように公開・非公開を問わずどのオブジェクトにもあるメソッドの名前や、<code>eq</code>のようなFixの語の名前はつけられません。<code>let(:format)</code>は読み込み時に<code>ArgumentError</code>（<code>format is already a method of Kernel</code>）になるので、何かが黙って再定義されることはありません。</li>
+      </ul>
+
+      <h2 id="it">期待：<code>it</code></h2>
+      <p><code>it</code>は要求をとります。<code>it MUST eq 100</code>のように、レベルのあとにマッチャーを書きます。レベルは<a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>の言葉で、<code>MUST</code>、<code>SHOULD</code>、<code>MAY</code>、否定には<code>MUST_NOT</code>と<code>SHOULD_NOT</code>があります。RFC 2119には否定の<code>MAY</code>はありません。<a href="/ja/gems/fix/v1/matchers/">マッチャー</a>には専用のページがあります。</p>
+      <pre data-example="examples/fix/v1/writing-specifications/player_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Player</span> = <span class="constant">Data</span>.define(<span class="string">:name</span>, <span class="string">:score</span>)
+
+<span class="constant">Fix</span> <span class="string">:Player</span> <span class="keyword">do</span>
+  on <span class="string">:name</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Ada"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:score</span> <span class="keyword">do</span>
+    it <span class="constant">MUST_NOT</span> be_nil
+    it <span class="constant">SHOULD</span> eq <span class="number">100</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:avatar</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> match(<span class="string">/\.png\z/</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Player</span>].test { <span class="constant">Player</span>.new(<span class="string">name:</span> <span class="string">"Ada"</span>, <span class="string">score:</span> <span class="number">90</span>) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/writing-specifications"><kbd>ruby player_fix.rb</kbd>
+<samp>player_fix.rb:7: Success: expected "Ada" to eq "Ada"
+player_fix.rb:11: Success: expected 90 not to be nil
+player_fix.rb:12: Warning: expected 90 to eq 100
+player_fix.rb:16: Info: NoMethodError: undefined method 'avatar' for an instance of Player</samp></pre>
+      <p>2つの問いがレベルを分けます。メソッドは存在しなければならないか。<code>MUST</code>と<code>SHOULD</code>は「はい」、<code>MAY</code>は「いいえ」です。書かれたとおりに動かなければならないか。<code>MUST</code>と<code>MAY</code>は「はい」、<code>SHOULD</code>は推奨するだけです。そこから5つの判定が生まれます。</p>
+      <table>
+        <thead>
+          <tr><th scope="col">レベル</th><th scope="col">そのとおりに動く</th><th scope="col">そのとおりに動かない</th><th scope="col">メソッドがない</th><th scope="col">ほかの例外</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row"><code>MUST</code></th><td>Success</td><td>Failure</td><td>Error</td><td>Error</td></tr>
+          <tr><th scope="row"><code>SHOULD</code></th><td>Success</td><td>Warning</td><td>Error</td><td>Error</td></tr>
+          <tr><th scope="row"><code>MAY</code></th><td>Success</td><td>Failure</td><td>Info</td><td>Error</td></tr>
+        </tbody>
+      </table>
+      <p>Success、Warning、Infoは成功として扱われます。上の例のプレイヤーは仕様を満たし、プロセスの終了ステータスは0です。FailureとErrorはそうではありません。否定は最初の2列を入れ替えます。<code>MUST_NOT be_nil</code>は、スコアが<code>nil</code>でないときにSuccessになります。</p>
+      <p>Errorの下には、そのバックトレースのうちFixとそのgemに属さないフレームが、空白2つで字下げされて続きます。例外を発生させたコードの行がそこに示されるわけです。<a href="/ja/gems/fix/v1/matchers/#raise_exception">マッチャー</a>のページの<code>raise_exception</code>の項に例があります。</p>
+
+      <h2 id="processes">コンテキストごとにひとつのプロセス</h2>
+      <p>期待をもつコンテキストはそれぞれ、テストするプロセスの子プロセスで実行されます。ひとつのコンテキストの期待は同じ子プロセスで実行され、コンテキストは順に、外側のものが内側のものより先に実行されます。サブジェクトがプロセスの中で変えたもの、つまりグローバル変数、定数、カレントディレクトリ、<code>ENV</code>はそのコンテキストの中にとどまり、コンテキストの順序が結果を変えることはありません。プロセスの外で変えたもの、つまりファイルやデータベースはとどまりません。これについては<a href="/ja/gems/fix/v1/in-a-project/#outside-the-process">プロジェクトで使う</a>で改めて扱います。</p>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/getting-started/" rel="prev">前へ：はじめに</a></li>
+          <li><a href="/ja/gems/fix/v1/matchers/" rel="next">次へ：マッチャー</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/" aria-current="page">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/writing-specifications/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

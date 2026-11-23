@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fixガイド：仕様でRubyをテストする · Fixrb</title>
+  <meta name="description" content="Fix 1のガイド。インストールから、仕様の書き方と実行、組み合わせ方、プロジェクトやRailsでの使い方、RSpecからの移行まで。すべての例は実際に実行しています。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="Fixガイド：仕様でRubyをテストする">
+  <meta property="og:description" content="Fix 1のガイド。インストールから、仕様の書き方と実行、組み合わせ方、プロジェクトやRailsでの使い方、RSpecからの移行まで。すべての例は実際に実行しています。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/">Fix</a></p>
+          <h1>Fixガイド</h1>
+          <p>バージョン1：最初の仕様から、プロジェクトのテストまで。</p>
+        </hgroup>
+      </header>
+      <p>このガイドでは、Rubyのテストフレームワークである<a href="/ja/gems/fix/">Fix</a>のバージョン1を、前のページを土台にしながら一歩ずつ説明します。前提とするのはRubyの知識だけで、テストフレームワークの知識は求めません。RSpecを使ってきた方は<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>を、最初の仕様で出てくる疑問は<a href="/ja/gems/fix/v1/questions/">よくある質問</a>をご覧ください。</p>
+      <p>各ページはファイルと、それを実行したときの出力を示します。どちらもこのサイトのリポジトリにあり、そこではページを公開する前にすべての例を実行しています。読んでいる内容は、Fix 1が実際に行うことそのものです。<a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a>のページだけは、別のリポジトリ<a href="https://github.com/fixrb/microblog">fixrb/microblog</a>のファイルを示します。それらは、このサイトにはないアプリケーションの中で、そちらで実行されています。出力はRuby 4.0のものです。エラーに含まれるRuby自身のメッセージは、別のバージョンでは違う文面になることがあります。</p>
+      <p>Fix 1にはRuby 3.3以降と<code>fork(2)</code>が必要です。LinuxとmacOSでテストされており、WindowsやJRubyでは動きません。</p>
+
+      <h2 id="other-documents">ほかの資料</h2>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md">fixのREADME</a>がリファレンスです。言語のすべての規則、判定、結果、プロセスを余さず記しています。規則が重要になる箇所では、ガイドからそこへリンクしています。</li>
+        <li><a href="https://gemdocs.org/gems/fix/1.0.1/">APIリファレンス</a>は、各クラスとメソッドを説明しています。</li>
+        <li><a href="/ja/gems/fix/">Fixのページ</a>は、仕様が何の役に立つかを5つの場合で示しています。</li>
+      </ul>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/getting-started/" rel="next">次へ：はじめに</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/" aria-current="page">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

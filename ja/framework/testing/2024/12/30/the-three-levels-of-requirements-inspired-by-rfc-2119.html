@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>RFC 2119に着想を得た3つの要求レベル · Fixrb</title>
+  <meta name="description" content="FixがMUST、SHOULD、MAYの要求レベルをどう実装し、仕様をより正確にしているか。そしてRSpecがたどってきた変遷とどう違うか。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2024-12-30">
+  <meta property="article:author" content="https://cyril.email/">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="RFC 2119に着想を得た3つの要求レベル">
+  <meta property="og:description" content="FixがMUST、SHOULD、MAYの要求レベルをどう実装し、仕様をより正確にしているか。そしてRSpecがたどってきた変遷とどう違うか。">
+  <meta property="og:url" content="https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">
+  <meta property="og:image" content="https://fixrb.dev/img/card-ja-the-three-levels-of-requirements-inspired-by-rfc-2119.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="「FIX」と組んだピクセルアートの活字とその校正刷りの横に「Fixrbブログ」と「RFC 2119に着想を得た3つの要求レベル」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","@id":"https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html#post","headline":"RFC 2119に着想を得た3つの要求レベル","description":"FixがMUST、SHOULD、MAYの要求レベルをどう実装し、仕様をより正確にしているか。そしてRSpecがたどってきた変遷とどう違うか。","image":"https://fixrb.dev/img/card-ja-the-three-levels-of-requirements-inspired-by-rfc-2119.png","datePublished":"2024-12-30T00:00:00+00:00","dateModified":"2026-11-23T00:00:00+00:00","author":{"@type":"Person","name":"Cyril Kato","url":"https://cyril.email/"},"publisher":{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},"mainEntityOfPage":"https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"ブログ","item":"https://fixrb.dev/ja/blog/"},{"@type":"ListItem","position":3,"name":"RFC 2119に着想を得た3つの要求レベル","item":"https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>RFC 2119に着想を得た3つの要求レベル</h1>
+        <p><time datetime="2024-12-30">2024年12月30日</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Fix 1.0より前に公開した記事の翻訳です。記事は書かれたときのまま残しており、例は以前のバージョンのgemを指していることがあります。Fix 1.0については<a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a>をご覧ください。</p>
+      <p>ソフトウェア開発では、言葉の正確さが欠かせません。テストの仕様を定めるときは、なおさらです。FixはSpectusライブラリを通じて、RFC 2119に直接着想を得た3つの要求レベルを導入し、仕様に豊かでニュアンスのある意味をもたせます。</p>
+      <h2 id="the-three-requirement-levels">3つの要求レベル</h2>
+      <h3 id="mustmust_not-the-absolute">MUST/MUST_NOT：絶対</h3>
+      <p>MUSTレベルは、仕様の絶対的な要求を表します。MUSTを使うとき、その機能は必須で、譲れないものだと示しています。形式的には、MUSTを使ったテストが成功するには、期待が確実に満たされなければなりません。期待が満たされなければ、テストは無条件に失敗します。</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Password</span> <span class="keyword">do</span>
+  it <span class="constant">MUST_NOT</span> be_empty
+  it <span class="constant">MUST</span> have_length_of(<span class="number">8</span>..<span class="number">128</span>)
+
+  with <span class="string">content:</span> <span class="string">"password123"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> include_number
+    it <span class="constant">MUST_NOT</span> be_common_password
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>この例では、MUSTをつけたテストはどれも、破ることのできない規則を表しています。空のパスワードや短すぎるパスワードは、単に受け入れられません。これらの条件のどれかが満たされなければ、ほかの事情にかかわらずテストは失敗します。</p>
+      <h3 id="shouldshould_not-the-recommendation">SHOULD/SHOULD_NOT：推奨</h3>
+      <p>SHOULDは強い推奨を表します。特定の状況では無視してもかまいませんが、その影響を理解し、慎重に評価しなければなりません。技術的には、SHOULDをつけた期待が満たされなくても、例外が発生しなければテストは成功しえます。これにより、任意だが推奨される機能を、穏やかに劣化させることができます。</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:EmailService</span> <span class="keyword">do</span>
+  on <span class="string">:send</span>, <span class="string">to:</span> <span class="string">"user@example.com"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> deliver_email
+    it <span class="constant">SHOULD</span> be_rate_limited
+    it <span class="constant">SHOULD_NOT</span> take_longer_than(<span class="number">5</span>.seconds)
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>ここでは、メールの配信は必須（MUST）ですが、レート制限は強く推奨される（SHOULD）だけで、特定の状況では無効にできます。レート制限の確認が満たされなくても例外が発生しなければ、テストは成功します。推奨には従っていないものの、システムは期待どおりに動いていることを示しているのです。</p>
+      <h3 id="may-the-optional">MAY：任意</h3>
+      <p>MAYは、本当に任意の機能を表します。Fixの実装では、MAYの要求には独特の振る舞いがあります。テストは、期待が満たされた場合か、NoMethodErrorが発生した場合のどちらかで成功します。これで、任意の機能がまったく実装されていない場合をうまく扱えます。状況によって実装が異なるかもしれない機能や、まったく実装されないかもしれない機能を仕様に書くときに、特に役立ちます。</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:UserProfile</span> <span class="keyword">do</span>
+  on <span class="string">:avatar</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_valid_image
+    it <span class="constant">SHOULD</span> be_less_than(<span class="number">5</span>.megabytes)
+    it <span class="constant">MAY</span> be_square
+    it <span class="constant">MAY</span> support_animation
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>この例では：</p>
+      <ul>
+        <li>アバターは有効な画像でなければならない（MUST）。満たされなければ失敗する</li>
+        <li>軽量であるべきである（SHOULD）。例外なしに満たされない場合は成功する</li>
+        <li>正方形であってもよい（MAY）。次のどちらかなら成功する：
+        <ol>
+          <li>期待が満たされた（アバターが正方形である）</li>
+          <li>正方形かどうかを確かめるメソッドが実装されていない（NoMethodErrorが発生する）</li>
+        </ol></li>
+        <li>同じく、アニメーションへの対応は任意で、まったく実装されていなくてもかまわない</li>
+      </ul>
+      <p>この3つのレベルの仕組みによって、実装の柔軟さを保ちながら、要求を正確に仕様にできます。3つのレベルがすべて一緒に働く、もう少し複雑な例を示します。</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Document</span> <span class="keyword">do</span>
+  <span class="comment"># Absolute requirements - must pass their expectations</span>
+  it <span class="constant">MUST</span> have_content
+  it <span class="constant">MUST</span> have_created_at
+
+  <span class="comment"># Strong recommendations - can fail without exception</span>
+  it <span class="constant">SHOULD</span> have_author
+  it <span class="constant">SHOULD</span> be_versioned
+
+  <span class="comment"># Optional features - can be unimplemented</span>
+  it <span class="constant">MAY</span> be_encryptable
+  it <span class="constant">MAY</span> support_collaborative_editing
+
+  on <span class="string">:publish</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> change(document, <span class="string">:status</span>).to(<span class="string">:published</span>)  <span class="comment"># Must succeed</span>
+    it <span class="constant">SHOULD</span> notify_subscribers             <span class="comment"># Can fail gracefully</span>
+    it <span class="constant">MAY</span> trigger_indexing                  <span class="comment"># Can be unimplemented</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="historical-evolution-from-rspec-to-fix">歴史的な変遷：RSpecからFixへ</h2>
+      <p>この意味論的な方法は、RSpecの歴史とは対照的です。RSpecはもともと、<a href="https://github.com/rspec/rspec-expectations/blob/ba31727e856de42abb5a2e6566855f0831e1a619/Should.md">キーワード<code>should</code></a>を主なインターフェースとしていました。</p>
+      <pre><code><span class="comment"># Old RSpec style</span>
+describe <span class="constant">User</span> <span class="keyword">do</span>
+  it <span class="string">"should validate email"</span> <span class="keyword">do</span>
+    user.email = <span class="string">"invalid"</span>
+    user.should_not be_valid
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>しかし、この方法にはいくつかの問題がありました。</p>
+      <ul>
+        <li><code>should</code>を加えるために<code>Object</code>をモンキーパッチすると、衝突が起こりうる</li>
+        <li>絶対的な要求に<code>should</code>を使うのは、意味として誤っていた</li>
+        <li>グローバルな名前空間が汚れ、コードの保守が難しくなった</li>
+      </ul>
+      <p>RSpecは最終的に<code>expect</code>構文へ移行しました。</p>
+      <pre><code><span class="comment"># Modern RSpec</span>
+describe <span class="constant">User</span> <span class="keyword">do</span>
+  it <span class="string">"validates email"</span> <span class="keyword">do</span>
+    user.email = <span class="string">"invalid"</span>
+    expect(user).not_to be_valid
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="the-fix-approach-clarity-and-precision">Fixの方法：明快さと正確さ</h2>
+      <p>Fixは、RFC 2119の意味を全面的に取り入れることで、別の道を選びます。3つのレベルすべてを示す完全な例です。</p>
+      <pre><code><span class="constant">Fix</span> <span class="string">:Article</span> <span class="keyword">do</span>
+  <span class="comment"># Absolute requirements</span>
+  it <span class="constant">MUST</span> have_title
+  it <span class="constant">MUST</span> have_content
+
+  <span class="comment"># Strong recommendations</span>
+  it <span class="constant">SHOULD</span> have_meta_description
+  it <span class="constant">SHOULD</span> be_properly_formatted
+
+  <span class="comment"># Optional features</span>
+  it <span class="constant">MAY</span> have_cover_image
+  it <span class="constant">MAY</span> have_comments_enabled
+
+  on <span class="string">:publish</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> change(article, <span class="string">:status</span>).to(<span class="string">:published</span>)
+    it <span class="constant">SHOULD</span> trigger_notification
+    it <span class="constant">MAY</span> be_featured
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># Test against a specific implementation</span>
+<span class="constant">Fix</span>[<span class="string">:Article</span>].test { <span class="constant">Article</span>.new(<span class="string">title:</span> <span class="string">"Test"</span>, <span class="string">content:</span> <span class="string">"Content"</span>) }</code></pre>
+      <p>この方法にはいくつかの利点があります。</p>
+      <ul>
+        <li>要求レベルごとに明快で正確な意味がある</li>
+        <li>グローバルなモンキーパッチがない</li>
+        <li>開発者の意図を正確に映す、生きたドキュメントになる</li>
+        <li>標準化された語彙で、チームのコミュニケーションがよくなる</li>
+      </ul>
+      <h2 id="conclusion">まとめ</h2>
+      <p>Spectusから受け継いだFixの3つの要求レベルは、テストの期待を表す、強力でニュアンスのある方法です。仕様と実装の明確な分離と組み合わさって、Fixは保守しやすく、意図の伝わるテストを書くのに特に向いています。</p>
+      <p>RSpecの変遷は、正確な意味ときれいな設計の大切さを教えてくれます。Fixはその教訓を生かしながら、Rubyのテストに現代的で洗練された方法をもたらします。</p>
+      <footer>
+        <p>カテゴリー：frameworkとtesting。<a href="/ja/blog/">すべての記事</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>aw：Rubyのブロックをforkしたプロセスで実行する · Fixrb</title>
+  <meta name="description" content="Awは、Rubyのブロックをforkしたプロセスで実行し、戻り値を持ち帰るか、発生した例外を再び発生させます。プロセスへの副作用は子プロセスの中にとどまります。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/aw/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/aw/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/aw/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/aw/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="aw：Rubyのブロックをforkしたプロセスで実行する">
+  <meta property="og:description" content="Awは、Rubyのブロックをforkしたプロセスで実行し、戻り値を持ち帰るか、発生した例外を再び発生させます。プロセスへの副作用は子プロセスの中にとどまります。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/aw/">
+  <meta property="og:image" content="https://fixrb.dev/gems/aw/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="金の額縁に入ったピクセルアートの肖像、awの主人公の横に「aw」と「Rubyのブロックをforkしたプロセスで実行し、戻り値を持ち帰る」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"aw","item":"https://fixrb.dev/ja/gems/aw/"}]}]}</script>
+  <link rel="icon" href="/gems/aw/img/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/gems/aw/img/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/gems/aw/img/apple-touch-icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/aw/img/hero.svg" alt="" width="208" height="208">
+        <hgroup>
+          <h1>aw</h1>
+          <p>Rubyのブロックを、forkしたプロセスで実行する。</p>
+        </hgroup>
+      </header>
+      <p>ブロックが返したものは親プロセスに戻り、ブロックが発生させた例外は親プロセスで再び発生します。プロセスに対して行ったことは子プロセスの中にとどまります。変更、グローバル変数、定数、カレントディレクトリ、<code>ENV</code>、クラッシュなどです。外に対して、つまりファイルやほかのプロセスに対して行ったことは実際に起こります。<a href="/ja/gems/fix/">Fix</a>は仕様の各コンテキストをこうした子プロセスで実行し、<a href="/ja/gems/brutal/">brutal</a>はマニフェストのコードを実行して戻り値を記録します。</p>
+      <figure>
+        <img src="/gems/aw/img/scene.png" alt="「Aw, fork!」と叫ぶピクセルアートの主人公と、ゴーレムに一撃を加えるforkした分身。" width="603" height="363">
+        <figcaption>戦うのはforkした分身、PID 12345。KenのHPは24のままです。</figcaption>
+      </figure>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>1.0.2</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降、<code>fork(2)</code>が必要。CRubyで、LinuxとmacOSでテスト済み</dd>
+        <dt>依存gem</dt>
+        <dd>なし</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+        <dt>利用しているgem</dt>
+        <dd>Fix 1.0、brutal 2.0</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">使い方</a></li>
+          <li><a href="#errors">エラー</a></li>
+          <li><a href="#limits">制限</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "aw"</code>を加えるか、<code>gem install aw</code>を実行してください。WindowsやJRubyなど<code>fork(2)</code>のない環境では、<code>Aw.supported?</code>は<code>false</code>を答え、<code>fork!</code>と<code>fork?</code>は<code>NotImplementedError</code>を発生させます。</p>
+
+      <h2 id="usage">使い方</h2>
+      <p><code>fork!</code>はブロックが返したものを返し、<code>fork?</code>はブロックが例外を発生させずに値を返したかどうかを伝えます。リストが変わるのは子プロセスの中だけです。</p>
+      <pre data-example="examples/aw/usage.rb"><code>require <span class="string">"aw"</span>
+
+list = [<span class="string">"foo"</span>]
+
+<span class="constant">Aw</span>.fork! { list &lt;&lt; <span class="string">"bar"</span> } <span class="comment"># => ["foo", "bar"]</span>
+list                       <span class="comment"># => ["foo"]</span>
+
+<span class="constant">Aw</span>.fork? { list.fetch(<span class="number">0</span>) } <span class="comment"># => true</span>
+<span class="constant">Aw</span>.fork? { list.fetch(<span class="number">1</span>) } <span class="comment"># => false</span>
+</code></pre>
+
+      <h2 id="errors">エラー</h2>
+      <p><code>fork!</code>は、ブロックが発生させた例外を、そのメッセージ、バックトレース、原因とともに親プロセスで再び発生させます。<code>exit</code>や<code>abort</code>の<code>SystemExit</code>、そして<code>TERM</code>のように、Rubyが例外に変えるシグナルの<code>SignalException</code>も含みます。捕捉しなければ、それらは子プロセスを終わらせたのと同じように親プロセスを終わらせます。</p>
+      <p>子プロセスが結果を届けないとき、<code>fork!</code>と<code>fork?</code>は<code>Aw::ChildError</code>を発生させます。<code>KILL</code>のようなシグナルで終了した、子プロセスが<code>exit!</code>や<code>exec</code>を呼んだ、ブロックが<code>break</code>、<code>return</code>、<code>throw</code>で抜けた、あるいは親へのパイプを閉じた場合です。エラーの<code>status</code>は子プロセスの<code>Process::Status</code>です。</p>
+      <pre data-example="examples/aw/errors.rb"><code>require <span class="string">"aw"</span>
+
+raised = <span class="keyword">begin</span>
+  <span class="constant">Aw</span>.fork! { <span class="constant">Integer</span>(<span class="string">"forty-two"</span>) }
+<span class="keyword">rescue</span> <span class="constant">ArgumentError</span> => e
+  e
+<span class="keyword">end</span>
+raised.message <span class="comment"># => "invalid value for Integer(): \"forty-two\""</span>
+
+failed = <span class="keyword">begin</span>
+  <span class="constant">Aw</span>.fork! { <span class="constant">Process</span>.kill(<span class="string">:KILL</span>, <span class="constant">Process</span>.pid) }
+<span class="keyword">rescue</span> <span class="constant">Aw</span>::<span class="constant">ChildError</span> => e
+  e
+<span class="keyword">end</span>
+failed.status.signaled? <span class="comment"># => true</span>
+</code></pre>
+      <p>値や例外は<code>Marshal</code>でパイプを通り、コピーとして戻ってきます。<code>Marshal</code>がダンプできないとき（<code>Proc</code>、<code>IO</code>、特異メソッドをもつオブジェクト、無名クラスのインスタンス、それらを保持するもの）や、親プロセスがロードできないとき（親が知らないクラスのインスタンス）も、<code>fork!</code>は<code>Aw::ChildError</code>を発生させます。<code>fork?</code>はどちらも転送しないので、それらが戻ってこられない場合でも答えます。</p>
+
+      <h2 id="limits">制限</h2>
+      <ul role="list">
+        <li>Awはサンドボックスではありません。信頼するコードがプロセスに加える変更を子プロセスの中にとどめるだけです。悪意のあるブロックはあなたのユーザー権限で実行され、<code>fork!</code>に何でも返させたり発生させたりでき、<code>fork?</code>に<code>true</code>と答えさせ、親プロセスの<code>marshal_load</code>メソッドやautoloadを実行させ、書いた分だけ親プロセスにメモリを抱えさせ、親にシグナルを送り、プロセスを残していくことができます。システムから来るのは<code>Aw::ChildError</code>の<code>status</code>だけです。</li>
+        <li>Awにはタイムアウトがありません。<code>fork!</code>と<code>fork?</code>は子プロセスが終了するまで、そして結果が届かないときは、ブロックが<code>exec</code>せずにforkしたプロセスがすべて終了するまで待ちます。ブロックが終わらないおそれがあるなら、呼び出しを<code>Timeout</code>で包んでください。中断された親プロセスは子プロセスに終了を求め、0.5秒後にまだ残っていればkillし、刈り取ってから先へ進みます。</li>
+        <li>ブロックがプロセスの外で行ったことは、元に戻りません。親プロセスが開いたファイルや接続はオフセットも含めて子プロセスと共有されるので、接続はブロックの中で開いてください。</li>
+        <li>子プロセスに存在するのは、<code>fork!</code>や<code>fork?</code>を呼んだスレッドだけです。</li>
+        <li>呼び出しのコストは数ミリ秒で、大きなプロセスほど増えます。50 MBで約2 ms、700 MBで20 msです。</li>
+      </ul>
+      <p>READMEには、保証の詳細と、forkについて知っておくべきほかのこと、つまりバッファされた出力、ファイバースケジューラー、macOS、<code>SIGCHLD</code>、SimpleCovが書かれています。</p>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/aw/blob/v1.0.2/README.md">README</a>：戻ってくるものと戻ってこられないもの、保証、forkについて知っておくべきこと、そして1.0、1.0.1、1.0.2での変更点。</li>
+        <li><a href="https://gemdocs.org/gems/aw/1.0.2/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/aw/versions/1.0.2">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/aw/tree/v1.0.2">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/aw/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

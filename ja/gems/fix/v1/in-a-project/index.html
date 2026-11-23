@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>RubyのプロジェクトでFixを使う · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="プロジェクトの中でFixの仕様をどこに置き、どうコードを読み込み、ほかのテストとどう並べるか。プロセスが隔離しないもの、そしてデバッグの方法。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/in-a-project/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/in-a-project/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/in-a-project/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/in-a-project/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="RubyのプロジェクトでFixを使う · Fix 1ガイド">
+  <meta property="og:description" content="プロジェクトの中でFixの仕様をどこに置き、どうコードを読み込み、ほかのテストとどう並べるか。プロセスが隔離しないもの、そしてデバッグの方法。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/in-a-project/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"プロジェクトで使う","item":"https://fixrb.dev/ja/gems/fix/v1/in-a-project/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>プロジェクトで使う</h1>
+          <p>仕様をどこに置き、どうコードを読み込むか。そして実行するときに知っておくべきこと。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#layout">配置</a></li>
+          <li><a href="#loading-the-code">コードの読み込み</a></li>
+          <li><a href="#other-tests">ほかのテストと並べる</a></li>
+          <li><a href="#outside-the-process">プロセスが隔離しないもの</a></li>
+          <li><a href="#debugging">デバッグ</a></li>
+        </ol>
+      </nav>
+      <p>このページでは、<code>lib</code>に商品とカートを、<code>fix</code>にその仕様を置いた小さなプロジェクトを使います。</p>
+
+      <h2 id="layout">配置</h2>
+      <p>コードは、もともと置かれている<code>lib/product.rb</code>と<code>lib/cart.rb</code>に置きます。</p>
+      <pre data-example="examples/fix/v1/in-a-project/lib/product.rb"><code><span class="constant">Product</span> = <span class="constant">Data</span>.define(<span class="string">:name</span>, <span class="string">:price</span>)
+</code></pre>
+      <pre data-example="examples/fix/v1/in-a-project/lib/cart.rb"><code>require_relative <span class="string">"product"</span>
+
+<span class="keyword">class</span> <span class="constant">Cart</span>
+  <span class="keyword">def</span> initialize(*products)
+    @products = products.freeze
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> count = @products.size
+  <span class="keyword">def</span> total = @products.sum(&amp;<span class="string">:price</span>)
+  <span class="keyword">def</span> add(product) = <span class="constant">Cart</span>.new(*@products, product)
+<span class="keyword">end</span>
+</code></pre>
+      <p>仕様はそれぞれ<code>fix</code>の中に専用のファイルをもち、<code>fix/product_fix.rb</code>や<code>fix/cart_fix.rb</code>のように、対象にちなんだ名前をつけます。プロジェクトが大きくなればサブディレクトリを使います。ファイルはFixとテストするコードをrequireし、仕様を書き、サブジェクトをテストします。</p>
+      <pre data-example="examples/fix/v1/in-a-project/fix/product_fix.rb"><code>require <span class="string">"fix"</span>
+require_relative <span class="string">"../lib/product"</span>
+
+<span class="constant">Fix</span> <span class="string">:Product</span> <span class="keyword">do</span>
+  on <span class="string">:name</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:price</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_a_kind_of <span class="constant">Numeric</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Product</span>].test { <span class="constant">Product</span>.new(<span class="string">name:</span> <span class="string">"Tea"</span>, <span class="string">price:</span> <span class="number">4</span>) })
+</code></pre>
+      <pre data-example="examples/fix/v1/in-a-project/fix/cart_fix.rb"><code>require <span class="string">"fix"</span>
+require_relative <span class="string">"../lib/cart"</span>
+
+<span class="constant">TEA</span> = <span class="constant">Product</span>.new(<span class="string">name:</span> <span class="string">"Tea"</span>, <span class="string">price:</span> <span class="number">4</span>)
+<span class="constant">CAKE</span> = <span class="constant">Product</span>.new(<span class="string">name:</span> <span class="string">"Cake"</span>, <span class="string">price:</span> <span class="number">6</span>)
+
+<span class="constant">Fix</span> <span class="string">:Cart</span> <span class="keyword">do</span>
+  let(<span class="string">:products</span>) { [] }
+
+  on <span class="string">:count</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">products:</span> [<span class="constant">TEA</span>, <span class="constant">CAKE</span>] <span class="keyword">do</span>
+    on <span class="string">:total</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">10</span>
+    <span class="keyword">end</span>
+
+    on <span class="string">:add</span>, <span class="constant">TEA</span> <span class="keyword">do</span>
+      on <span class="string">:count</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">3</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Cart</span>].test { <span class="constant">Cart</span>.new(*products) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/in-a-project"><kbd>fix</kbd>
+<samp>fix/cart_fix.rb:11: Success: expected 0 to eq 0
+fix/cart_fix.rb:16: Success: expected 10 to eq 10
+fix/cart_fix.rb:21: Success: expected 3 to eq 3
+fix/product_fix.rb:6: Success: expected "Tea" to be an instance of String
+fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
+2 files met</samp></pre>
+      <p>商品はファイルの定数です。<code>with</code>はファイルの読み込み時に存在する値をとり、<code>let</code>はサブジェクトごとに値を作ります。</p>
+
+      <h2 id="loading-the-code">コードの読み込み</h2>
+      <p>上の例では、どのファイルも<code>require_relative</code>でコードを読み込んでいます。これはどのディレクトリからでも、素の<code>ruby</code>でも動きます。ほかにもよく使われる方法が2つあります。</p>
+      <ul>
+        <li><code>RUBYOPT=-Ilib fix</code>はすべてのファイルのロードパスに<code>lib</code>を加えるので、ファイルは<code>require "cart"</code>と書けます。</li>
+        <li>Gemfileに<code>gemspec</code>と書いたgemでは、<code>bundle exec fix</code>がそのgemをロードパスに加えるので、ファイルは利用者と同じように名前でそれを<code>require</code>します。</li>
+      </ul>
+      <p>複数の仕様ファイルが共有するファイル、つまりヘルパーや、ほかの仕様が求める仕様は、<code>fix</code>の中に<code>_fix.rb</code>で終わらない名前で置きます。そうすれば<code>fix</code>がそれを単独で実行することはありません。<a href="/ja/gems/fix/v1/patterns/#implementations">パターン</a>に例があります。</p>
+
+      <h2 id="other-tests">ほかのテストと並べる</h2>
+      <p>Fixはほかのテストフレームワークに何も求めず、何も変えません。<code>test</code>のminitest、<code>spec</code>のRSpec、<code>fix</code>のFixは、それぞれのコマンドで並んで動きます。Rakefileですべてを実行することもできます（<code>task default: %i[test spec fix]</code>と、<code>sh "fix"</code>を実行するタスク<code>fix</code>）。Fixの仕様は、<a href="/ja/gems/fix/v1/composing-specifications/#matchi-fix">matchi-fix</a>を使えば、ほかのフレームワークのテストからマッチャーとして確かめることもできます。</p>
+
+      <h2 id="outside-the-process">プロセスが隔離しないもの</h2>
+      <p>各コンテキストは子プロセスで実行されます。サブジェクトがプロセスの中で変えたもの、つまりグローバル変数、定数、カレントディレクトリ、<code>ENV</code>は子プロセスとともに消えます。プロセスの外で変えたものは残ります。書いたファイル、挿入した行、送ったメッセージです。</p>
+      <ul>
+        <li>各サブジェクトには、書き込む先を専用に与えてください。専用のディレクトリ、自分で作るデータベース、サービスの代わりになるオブジェクトなどです。サブジェクトブロックは期待ごとに実行されるので、そこが置き場所です。</li>
+        <li>子プロセスは、開いているファイルや接続も含めて親のコピーとして始まり、それらを親と共有します。接続はファイルの中ではなく、サブジェクトブロックの中で開いてください。</li>
+        <li>ときどき<code>fix --random</code>を実行してください。ある順では満たされ、別の順では満たされないファイルは、ほかのファイルが残していったものに依存しています。</li>
+      </ul>
+
+      <h2 id="debugging">デバッグ</h2>
+      <p>デバッガーでサブジェクトの中で止めるには、そのコンテキストをプロセス自身の中で実行します（<code>Fix[:Cart].test(fork: false) { … }</code>）。このとき各コンテキストは前のコンテキストが残したものを目にするので、デバッグのあいだだけ使ってください。</p>
+      <p>SimpleCovのようなカバレッジツールは、プロセスが正常に終了したときに計測結果を保存します。Fixの子プロセスは<code>exit!</code>で終了し、この処理を飛ばすので、ツールが先に結果を保存しない限り、子プロセスで実行された部分は数えられません。プロセスについては<a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md#processes">fixのREADME</a>に詳しく書かれています。</p>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/composing-specifications/" rel="prev">前へ：仕様を組み合わせる</a></li>
+          <li><a href="/ja/gems/fix/v1/in-a-rails-application/" rel="next">次へ：Railsアプリケーションで使う</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/" aria-current="page">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/in-a-project/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

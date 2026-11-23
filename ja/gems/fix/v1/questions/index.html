@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fixのよくある質問：短い答え · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="Fixについての疑問に短く答えます。eqとeql?、期待の中のlet、判定、終了ステータス、ランダムな順序、SimpleCov、Windows、RSpecやminitestとの併用。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/questions/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/questions/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/questions/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/questions/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="Fixのよくある質問：短い答え · Fix 1ガイド">
+  <meta property="og:description" content="Fixについての疑問に短く答えます。eqとeql?、期待の中のlet、判定、終了ステータス、ランダムな順序、SimpleCov、Windows、RSpecやminitestとの併用。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/questions/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"よくある質問","item":"https://fixrb.dev/ja/gems/fix/v1/questions/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>よくある質問</h1>
+          <p>最初の仕様で出てくる疑問に、短く答えます。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#writing">書く</a></li>
+          <li><a href="#outcomes">判定</a></li>
+          <li><a href="#running">実行</a></li>
+          <li><a href="#beside">RSpecやminitestと並べて</a></li>
+        </ol>
+      </nav>
+      <p>ガイドはこれらを順に教えています。このページは、キーワードからひとつを探し、短い答えと、長い答えのあるページを見つけるためのものです。どの答えも、READMEそのものがテストスイートで実行されているFix 1.0.1で確かめています。</p>
+
+      <h2 id="writing">書く</h2>
+
+      <h3 id="before-1">Fix 1.0で動かないFixのコードを見つけました。</h3>
+      <p>1.0より前のFixのために書かれたコードは、1.0で変わった語や省かれた語を使っていることがあり、その写しはいまも出回っています。1.0の最後のベータ版と、2024年から2025年にかけてのFix 0.19から0.21は、ほぼFix 1.0と同じように書けましたが、次の点は異なります。</p>
+      <table>
+        <thead>
+          <tr><th scope="col">1.0より前</th><th scope="col">Fix 1.0では</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gem install fix --pre</code>, <code>gem "fix", ">= 1.0.0.beta12"</code></td><td><code>gem install fix</code>, <code>gem "fix"</code></td></tr>
+          <tr><td>最後の行に<code>Fix[:Duck].test { Duck.new }</code>。<code>test</code>は失敗するとプロセスを終了させていた</td><td><code>exit(Fix[:Duck].test { Duck.new })</code>。<code>test</code>は<code>true</code>か<code>false</code>を返し、自分では終了しない。そのための<a href="#exit">括弧</a></td></tr>
+          <tr><td><code>eql</code>, <code>equal</code></td><td><code>eq</code>, <code>be</code></td></tr>
+          <tr><td><code>be_empty</code>、<code>be_valid</code>、<code>have_key(:id)</code>。どんな述語にも語があった</td><td><code>on(:empty?) { it MUST be_true }</code>という<a href="#predicates">イディオム</a></td></tr>
+          <tr><td>letである<code>name</code>を使う<code>it MUST eq name</code></td><td>値は期待の中に、letはサブジェクトブロックの中に。<a href="#let-in-expectation">期待の中のlet</a>を参照</td></tr>
+          <tr><td>Ruby 3.1以降、最後のベータ版は3.2以降</td><td>Ruby 3.3以降と<code>fork(2)</code></td></tr>
+        </tbody>
+      </table>
+      <p>2014年から2019年までのFix 0.18以前は、別の言語でした。たとえば0.18では、<code>Fix.describe</code>がサブジェクトそのものをとり、期待はブロックでした（<code>it { MUST eql "Swoosh..." }</code>）。Fix 1.0では、サブジェクトを与えるのはテストです（<code>Fix :Duck do … end</code>、続いて<code>exit(Fix[:Duck].test { Duck.new })</code>）。1.0より前に書かれたブログの記事は、冒頭でその旨を断っています。</p>
+
+      <h3 id="eq"><code>42.0</code>を返すサブジェクトで、なぜ<code>it MUST eq 42</code>が失敗するのですか？</h3>
+      <p><code>eq</code>は<code>eql?</code>です。数値に限らず、どの値についても、同じ値で同じクラスであることを求めます。<code>1.eql?(1.0)</code>はfalseで、<code>"a".eql?(:a)</code>もfalseです。クラスを問わず42に近い数値なら<code>be_within(delta).of(42)</code>で、クラスだけなら<code>be_a_kind_of Numeric</code>で比べてください。どちらも<a href="/ja/gems/fix/v1/matchers/#eq">マッチャー</a>にあります。</p>
+
+      <h3 id="let-in-expectation"><code>name</code>がletのとき、なぜ<code>it MUST eq name</code>と書けないのですか？</h3>
+      <p>letはサブジェクトのパラメーターで、<code>test</code>のブロックとほかのletからしか見えません。期待の中で名前を使うと、サブジェクトが存在する前、ファイルの読み込み中に読まれることになるので、Fixは読み込み時に<code>NameError</code>（<code>name is a let, visible in the subject block and in other lets only</code>）を発生させます。値は期待の中に書き、letはサブジェクトブロックに読ませてください。<code>test { "Hello, #{name}!" }</code>に対して<code>with name: "Alice" do it MUST eq "Hello, Alice!" end</code>と書きます。<a href="/ja/gems/fix/v1/writing-specifications/#let-and-with">letとwith</a>を参照してください。</p>
+
+      <h3 id="let-name"><code>let(:format)</code>が<code>ArgumentError</code>になります。なぜですか？</h3>
+      <p>letは、サブジェクトブロックが実行されるオブジェクトのメソッドになり、そのオブジェクトからは<code>Kernel</code>とトップレベルのメソッドが見えます。公開・非公開を問わずそれらと同じ名前のlet（<code>format</code>、<code>p</code>、<code>test</code>、<code>open</code>、<code>select</code>、<code>method</code>、<code>class</code>、<code>hash</code>…）や、言語の語（<code>let</code>、<code>with</code>、<code>on</code>、<code>it</code>、fix-itsを使うなら<code>its</code>）、マッチャーやレベル（<code>eq</code>、<code>match</code>、<code>change</code>、<code>fix</code>、<code>MUST</code>）と同じ名前のletは、それを黙って再定義してしまいます。メッセージは持ち主か語を示します（<code>format is already a method of Kernel</code>）。別の名前を選んでください。</p>
+
+      <h3 id="let-or-with"><code>let(:items) { [] }</code>と<code>with items: []</code>の違いは何ですか？</h3>
+      <p><code>let</code>はブロックで、期待ごとに新たに呼ばれます。どの期待も新しい配列を受け取ります。<code>with</code>は値、つまり与えたオブジェクトそのもので、そのコンテキストの期待が共有します。<code>with items: []</code>は、どの期待にも同じ配列を与えます。2つのコンテキストは2つの子プロセスなので、共有がコンテキストを越えることはありません。</p>
+
+      <h3 id="with-new-name"><code>with</code>で、宣言していないletの名前を使えますか？</h3>
+      <p>使えます。<code>with</code>は、使った名前のletを宣言します。どの<code>let</code>も宣言していないキーは、エラーではなく新しいパラメーターになります。つまり綴りを間違えたキーは、黙って新しいletになります。綴りはサブジェクトブロックと照らし合わせてください。</p>
+
+      <h3 id="block">ブロックをとるメソッドはどうテストしますか？</h3>
+      <p><code>on</code>の<code>do … end</code>はコンテキストなので、<code>on</code>はメソッドをブロックなしで送ります。メソッドをサブジェクトブロックの中で呼ぶか（<code>test { list.map { |x| x * 2 } }</code>）、サブジェクトを<code>satisfy { |value| value.map { … } == … }</code>で判定してください。</p>
+
+      <h3 id="predicates"><code>be_empty</code>や<code>have_key</code>、<code>be_valid</code>はありますか？</h3>
+      <p>Fixの語としてはありません。イディオムは<code>on(:empty?) { it MUST be_true }</code>です。メソッドは<code>on</code>が送り、行には<code>expected true to be true</code>と書かれます。<code>run</code>は、そのメソッドを結果の<code>chain</code>に<code>.empty?</code>として残します。とはいえ<code>match?</code>と<code>to_s</code>をもつオブジェクトはどれもマッチャーなので、matchiのマッチャーを省略せずに書いた<code>it MUST Matchi::Predicate.new(:be_empty)</code>も動きます。<a href="/ja/gems/fix/v1/matchers/#your-own-matcher">独自のマッチャー</a>を参照してください。</p>
+
+      <h3 id="change-let"><code>change</code>でletを監視できますか？</h3>
+      <p>できません。マッチャーはファイルの読み込み時に作られるので、<code>change(object, :method)</code>のオブジェクトはその時点で存在している必要があります。letはそれより後にサブジェクトとともに存在するものなので、そこで名前を使うと、期待の中で読んだletと同じ<code>NameError</code>になります。ファイルのオブジェクト、たとえば定数を監視してください。</p>
+
+      <h3 id="fix-key-error"><code>it MUST fix(:Other)</code>が<code>KeyError</code>になります。</h3>
+      <p><code>fix(:Name)</code>は文書が読まれるときに仕様を探すので、<code>Fix :Other</code>はファイルのそれより前か、それより前にrequireしたファイルになければなりません。メッセージは<code>no specification named :Other</code>です。登録済みの近い名前があれば、たとえば<code>fix(:Positiv)</code>に対する<code>:Positive</code>なら、Rubyがその下に<code>Did you mean?  :Positive</code>を加えます。<a href="/ja/gems/fix/v1/composing-specifications/#fix">仕様を組み合わせる</a>を参照してください。</p>
+
+      <h3 id="class-methods">クラスメソッドやコンストラクターはどうテストしますか？</h3>
+      <p>サブジェクトブロックからクラスを返し、<code>on</code>でメソッドを送ります。<code>Fix[:Calculator].test { Calculator }</code>に<code>on :new, 2 do … end</code>です。その中の<code>on</code>は、新しいインスタンスに送られます。</p>
+
+      <h3 id="bare-it">Ruby 3.4では、<code>its(:size) { MUST eq it }</code>が<code>eq nil</code>を作ってしまいます。</h3>
+      <p>Ruby 3.4以降、ブロックの中の裸の<code>it</code>はブロックの暗黙のパラメーターです。要求をともなう<code>it</code>は、いまもFixの語です。3.3では裸の<code>it</code>はFixの語で、要求がないために例外を発生させます。値を書いてください。どちらのRubyでも使う<code>satisfy</code>は、パラメーターに名前をつけます（<code>satisfy { |value| … }</code>）。詳しくは<a href="/ja/gems/fix/v1/its/">itsという語</a>にあります。</p>
+
+      <h2 id="outcomes">判定</h2>
+
+      <h3 id="other-exception"><code>raise_exception ArgumentError</code>がErrorではなくFailureになります。サブジェクトは<code>TypeError</code>を発生させました。</h3>
+      <p>例外こそが<code>raise_exception</code>の判定するものです。別のクラスは偽となる照合なので、MUSTとMAYのもとではFailure、SHOULDのもとではWarningです。Errorとは、例外を判定するためのものではないマッチャーに例外が届いた場合のことです。<code>eq</code>なら、同じ<code>TypeError</code>はErrorになります。</p>
+
+      <h3 id="info-or-error">メソッドがないと、MAYではInfoなのに、MUSTではなぜErrorなのですか？</h3>
+      <p>2つの問いがレベルを分けます。メソッドは存在するか。MUSTとSHOULDはそれを求め、MAYは求めません。仕様どおりに動くか。MUSTとMAYはそれを求め、SHOULDは推奨します。<code>speak</code>しないアヒルも<code>on :speak do it MAY … end</code>は満たします。5つの判定の表は<a href="/ja/gems/fix/v1/writing-specifications/#it">仕様を書く</a>にあります。</p>
+
+      <h3 id="warning">Warningがあると実行は失敗しますか？</h3>
+      <p>いいえ。Success、Warning、Infoは成功として扱われ、FailureとErrorはそうではありません。Warningのある実行でも<code>test</code>は<code>true</code>を返し、プロセスの終了ステータスは0です。</p>
+
+      <h3 id="quotes">Ruby 3.4では<code>undefined method 'speak'</code>、3.3では<code>undefined method `speak'</code>と表示されます。</h3>
+      <p>Rubyは3.4で引用符を変え、バックトレースのフレームはいまではメソッドのクラスも示します。これらの文はRubyのもので、Fixは書き換えません。</p>
+
+      <h2 id="running">実行</h2>
+
+      <h3 id="exit">なぜ<code>exit(Fix[:Duck].test { Duck.new })</code>と括弧をつけるのですか？</h3>
+      <p>括弧がないと、<code>exit Fix[:Duck].test do … end</code>は<code>do … end</code>ブロックを<code>test</code>ではなく<code>exit</code>に渡し、<code>test</code>は<code>ArgumentError</code>（<code>a block must be given</code>）を発生させます。括弧を残すか、波括弧を使ってください。</p>
+
+      <h3 id="two-specifications">仕様が2つあるファイルは、どう終了させますか？</h3>
+      <p>すべてをテストしてから、一度だけexitします（<code>exit([Fix[:A].test { … }, Fix[:B].test { … }].all?)</code>）。</p>
+
+      <h3 id="status">何も失敗していないのに、プロセスが1で終了します。失敗があるのに0で終了します。</h3>
+      <p>ファイルの最後の行を見てください。<code>test</code>の結果を<code>exit</code>に渡し、それ以外のことはしていないはずです。<code>test</code>は決して<code>exit</code>を呼ばないので、それを忘れたファイルは何が起きても0で終了します。そして<code>fix</code>コマンドはその終了ステータスしか読みません。<a href="/ja/gems/fix/v1/running-specifications/#a-file">仕様を実行する</a>を参照してください。</p>
+
+      <h3 id="one-file">ファイルをひとつだけ実行するには？　すべてを実行するには？</h3>
+      <p>ひとつなら、ほかのRubyファイルと同じく<code>ruby fix/duck_fix.rb</code>です。fix-command gemの<code>fix</code>は、<code>fix/</code>の<code>*_fix.rb</code>ファイルを、あるいは与えたファイルとディレクトリを、それぞれ新しいプロセスで実行します（<code>fix fix/duck_fix.rb fix/models</code>）。</p>
+
+      <h3 id="load-path">サブジェクトに<code>lib/</code>のロードパスが必要です。</h3>
+      <p>コマンドは自分の環境をすべてのファイルに渡します。<code>RUBYOPT=-Ilib fix</code>、Gemfileのgemなら<code>bundle exec fix</code>です。<code>bundle exec</code>はgemをロードパスに加えるだけで、requireはしません。requireするのはファイルです。<a href="/ja/gems/fix/v1/in-a-project/#loading-the-code">コードの読み込み</a>を参照してください。</p>
+
+      <h3 id="parallel"><code>fix</code>はファイルを並列に実行しますか？　タイムアウトはありますか？</h3>
+      <p>1.0では、どちらもありません。ファイルはそれぞれ専用のプロセスで、ひとつずつ順に実行されます。Ctrl-Cはコマンドを終了させ、端末を通じて実行中のファイルも終了させます。</p>
+
+      <h3 id="order">順序はランダムですか？</h3>
+      <p>ファイルの中ではランダムではありません。コンテキストは書かれた順に、外側のものが内側のものより先に、毎回同じ順で実行されます。ファイルの間では、求めればランダムになります。<code>fix --random</code>はファイルをシャッフルし、最初に、同じ順でもう一度実行するためのコマンド<code>fix --random=2</code>を書きます。<a href="/ja/gems/fix/v1/running-specifications/#random-order">ランダムな順序</a>を参照してください。</p>
+
+      <h3 id="subject-output">サブジェクト自身の出力はどこへ行きますか？</h3>
+      <p>サブジェクトが書いたものは、同じ標準出力に、そのコンテキストの行より前にそのまま出ます。改行のないまま残った文字列は、最初の行につながります。そのため、ランナーが読むのは行ではなく終了ステータスです。</p>
+
+      <h3 id="simplecov">SimpleCovが、サブジェクトが実行したコードについて何も報告しません。</h3>
+      <p>各コンテキストは子プロセスで実行され、子プロセスは<code>at_exit</code>ハンドラーを実行しない<code>exit!</code>で終了するので、SimpleCovが子プロセスの結果を書くことはありません。Fix自身のテストのように子プロセスが終わる前に結果を保存するか、計測のときは<code>test(fork: false)</code>で実行してください。<a href="/ja/gems/fix/v1/in-a-project/#debugging">デバッグ</a>を参照してください。</p>
+
+      <h3 id="platforms">FixはWindowsで動きますか？　JRubyでは？</h3>
+      <p>動きません。Fixはコンテキストごとに子プロセスをforkするので<code>fork(2)</code>が必要です。それがないRubyでは、期待をもつコンテキストが<code>NotImplementedError</code>を発生させます。CIでは、LinuxとmacOSで、Ruby 3.3、3.4、4.0、headをテストしています。</p>
+
+      <h2 id="beside">RSpecやminitestと並べて</h2>
+
+      <h3 id="replace">テストスイートを置き換えなければなりませんか？</h3>
+      <p>いいえ。Fixはほかのフレームワークに何も求めず、何も変えません。<code>spec</code>や<code>test</code>の隣に<code>fix</code>ディレクトリを置いて専用のコマンドで実行し、Rakefileですべてを実行すればよいのです。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリとの契約です。テストスイートは、そのフィクスチャー、テストダブル、フレームワークをそのまま保ちます。その方法は<a href="/ja/gems/fix/v1/in-a-project/#other-tests">ほかのテストと並べる</a>に、各イディオムが何になるかは<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>にあります。</p>
+
+      <h3 id="matcher">RSpecやminitestからFixの仕様を確かめられますか？</h3>
+      <p>matchiのマッチャーとして確かめられます。<a href="/ja/gems/matchi-fix/">matchi-fix</a> gemの<code>Matchi::Fix.new(:Duck).match? { Duck.new }</code>は、Fixと同じようにコンテキストをforkして、<code>true</code>か<code>false</code>を答えます。RSpecでは<code>expect(Matchi::Fix.new(:Duck).match? { duck }).to be true</code>、minitestでは<code>assert Matchi::Fix.new(:Duck).match? { duck }</code>です。このとき失敗のメッセージは<code>false</code>と言うだけなので、行を見るには<code>Fix[:Duck].test { duck }</code>を使います。マッチャーのための仕様は<code>with</code>なしで書きます。値は一度だけ与えられ、コンテキストがそれを作り直すことはできないからです。</p>
+
+      <h3 id="which-failed">失敗した<code>fix(:Other)</code>は、どの期待が失敗したかを教えてくれません。</h3>
+      <p>そういう設計です。マッチャーは<code>true</code>か<code>false</code>を答えるものです。行を見るには、内側の仕様を単独でテストしてください（<code>Fix[:Other].test { … }</code>）。</p>
+
+      <h3 id="data">結果を行ではなくデータとして得られますか？</h3>
+      <p><code>Fix[:Name].run { … }</code>は<code>Fix::Result</code>の<code>Array</code>を返します。<code>location</code>、<code>chain</code>、<code>outcome</code>、<code>passed?</code>、<code>summary</code>と、その下の<code>Spectus::Result</code>をもつ、凍結されたデータです。<code>test</code>は、<code>run</code>に表示を加えたものです。<a href="/ja/gems/fix/v1/running-specifications/#results-as-data">データとしての結果</a>を参照してください。</p>
+
+      <h3 id="new-word">fix-itsのように、言語に語を加えるには？</h3>
+      <p><code>on</code>と<code>it</code>を組み合わせるメソッドを<code>Fix::Dsl</code>に加え、<code>it</code>には自分の呼び出し元の<code>location:</code>（<code>caller_locations(1, 1).first</code>）を渡します。そうすれば結果は仕様の行を指します。コード19行のfix-itsが手本です。</p>
+
+      <h3 id="compared">FixはRSpecやminitestとどう違いますか？</h3>
+      <p>Fix、RSpec、minitestはそれぞれ別の仕事をするもので、ひとつのプロジェクトがそのうち2つを使うこともあります。違いは次のとおりです。</p>
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">Fix</th><th scope="col"><a href="https://rspec.info/">RSpec</a></th><th scope="col"><a href="https://github.com/minitest/minitest">minitest</a></th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">サブジェクト</th><td>テストが選ぶ。クラスを名指ししない仕様からは切り離されている</td><td>specの<code>subject</code>。複数のクラスには共有example</td><td>テストクラスが作る。複数のクラスにはincludeするモジュール</td></tr>
+          <tr><th scope="row">レベル</th><td>MUST、SHOULD、MAY。WarningとInfoは成功として扱われる</td><td>ひとつ。<code>pending</code>と<code>skip</code>がある</td><td>ひとつ。<code>skip</code>がある</td></tr>
+          <tr><th scope="row">隔離</th><td>コンテキストごとに子プロセス</td><td>ひとつのプロセス。フックが後片付けをする</td><td>ひとつのプロセス。<code>setup</code>と<code>teardown</code>が後片付けをする</td></tr>
+          <tr><th scope="row">フック</th><td>なし。サブジェクトブロックが期待ごとに実行される</td><td><code>before</code>, <code>after</code>, <code>around</code></td><td><code>setup</code>, <code>teardown</code></td></tr>
+          <tr><th scope="row">テストダブル</th><td>なし。意図した設計</td><td><a href="https://rspec.info/features/3-13/rspec-mocks/">rspec-mocks</a></td><td><a href="https://github.com/minitest/minitest-mock">minitest/mock</a></td></tr>
+          <tr><th scope="row">順序</th><td>書かれた順。求めればファイルをシャッフル</td><td>定義された順。求めればランダム</td><td>既定でランダム</td></tr>
+          <tr><th scope="row">出力</th><td>期待ごとに1行と、プロセスの終了ステータス</td><td>フォーマッター</td><td>レポーター</td></tr>
+          <tr><th scope="row">動作環境</th><td><code>fork</code>のあるCRuby。LinuxとmacOSでテスト</td><td>すべてのRuby</td><td>すべてのRuby</td></tr>
+        </tbody>
+      </table>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/coming-from-rspec/" rel="prev">前へ：RSpecからの移行</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/" aria-current="page">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/questions/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

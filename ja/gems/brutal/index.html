@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>brutal：コードの振る舞いから書く、素のRubyのテスト · Fixrb</title>
+  <meta name="description" content="BrutalはYAMLのマニフェストから素のRubyのテストファイルを書き出します。コンテキストのあらゆる組み合わせをひとつの子プロセスで実行し、観測した各値をeql?で確かめます。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/brutal/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/brutal/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/brutal/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/brutal/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="brutal：コードの振る舞いから書く、素のRubyのテスト">
+  <meta property="og:description" content="BrutalはYAMLのマニフェストから素のRubyのテストファイルを書き出します。コンテキストのあらゆる組み合わせをひとつの子プロセスで実行し、観測した各値をeql?で確かめます。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/brutal/">
+  <meta property="og:image" content="https://fixrb.dev/gems/brutal/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="笑うピクセルアートの顔、brutalのきこりの横に「brutal」と「コードの振る舞いから書き出す、素のRubyのテストファイル」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"brutal","item":"https://fixrb.dev/ja/gems/brutal/"}]}]}</script>
+  <link rel="icon" href="/gems/brutal/img/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/gems/brutal/img/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/gems/brutal/img/apple-touch-icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <h1>brutal</h1>
+          <p>コードの振る舞いから、素のRubyのテストファイルを書き出す。</p>
+        </hgroup>
+      </header>
+      <p>YAMLで書くマニフェストは、サブジェクト、組み合わせるコンテキスト、観測する実際の値を与えます。Brutalはあらゆる組み合わせをひとつの子プロセスで実行し、コードが返すものを記録して、それぞれの値を<code>eql?</code>で確かめるテストファイルを、フレームワークなしで書き出します。実行するのは<code>ruby test_greeter.rb</code>です。テストファイルは、コードがすべきことではなく、コードが実際にすることの写しです。レビュー中のコードを読むのと同じように、信頼する前に読んでください。</p>
+      <figure>
+        <img src="/gems/brutal/img/scene.png" alt="切り株の上のルビーを斧で割るピクセルアートのきこり。赤い破片が飛び散っている。" width="640" height="480">
+        <figcaption>Brutal駆動開発：brutalのREADMEのきこりが仕事中。</figcaption>
+      </figure>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>2.0.1</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降、<code>fork(2)</code>が必要。LinuxとmacOSのCRuby</dd>
+        <dt>依存gem</dt>
+        <dd><a href="/ja/gems/aw/">aw</a> 1.0</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">使い方</a></li>
+          <li><a href="#manifest">マニフェスト</a></li>
+          <li><a href="#running">コードの実行のされ方</a></li>
+          <li><a href="#command">コマンド</a></li>
+          <li><a href="#limits">制限</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "brutal", require: false</code>を加えるか、コマンドだけなら<code>gem install brutal</code>を実行してください。Brutalはawを通じてforkした子プロセスでコードを実行するので、WindowsとJRubyには対応していません。</p>
+
+      <h2 id="usage">使い方</h2>
+      <p>次のクラスがあるとします。</p>
+      <pre data-example="examples/brutal/greeter.rb"><code><span class="keyword">class</span> <span class="constant">Greeter</span>
+  <span class="keyword">def</span> initialize(name)
+    @name = name.capitalize
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> salute
+    <span class="string">"Hello #{</span>@name<span class="string">}!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>マニフェストは<code>NAME_brutal.yaml</code>という名前のファイルで、ここではクラスの隣の<code>greeter_brutal.yaml</code>です。</p>
+      <pre data-example="examples/brutal/greeter_brutal.yaml"><code>header: |
+  require_relative "greeter"
+
+subject: |
+  Greeter.new(%{name})
+
+contexts:
+  name:
+    - '"Alice"'
+    - '"world"'
+
+actuals:
+  - "%{subject}.salute"
+  - "%{subject}.salute.length"
+</code></pre>
+      <pre><kbd>bundle exec brutal test/greeter_brutal.yaml</kbd></pre>
+      <p>Brutalはマニフェストの隣に<code>test_greeter.rb</code>を書き出します。</p>
+      <pre data-example="examples/brutal/test_greeter.rb"><code><span class="comment"># Generated by brutal from greeter_brutal.yaml: edit the manifest, then run brutal again.</span>
+
+require_relative <span class="string">"greeter"</span>
+
+<span class="comment"># ------------------------------------------------------------------------------</span>
+
+actual = <span class="keyword">begin</span>
+  <span class="constant">Greeter</span>.new(<span class="string">"Alice"</span>)
+<span class="keyword">end</span>
+
+::<span class="constant">Kernel</span>.raise <span class="string">"name = \"Alice\": actual.salute"</span> <span class="keyword">unless</span> (<span class="string">"Hello Alice!"</span>).eql?((
+  actual.salute
+))
+::<span class="constant">Kernel</span>.raise <span class="string">"name = \"Alice\": actual.salute.length"</span> <span class="keyword">unless</span> (<span class="number">12</span>).eql?((
+  actual.salute.length
+))
+
+<span class="comment"># ------------------------------------------------------------------------------</span>
+
+actual = <span class="keyword">begin</span>
+  <span class="constant">Greeter</span>.new(<span class="string">"world"</span>)
+<span class="keyword">end</span>
+
+::<span class="constant">Kernel</span>.raise <span class="string">"name = \"world\": actual.salute"</span> <span class="keyword">unless</span> (<span class="string">"Hello World!"</span>).eql?((
+  actual.salute
+))
+::<span class="constant">Kernel</span>.raise <span class="string">"name = \"world\": actual.salute.length"</span> <span class="keyword">unless</span> (<span class="number">12</span>).eql?((
+  actual.salute.length
+))
+</code></pre>
+      <pre><kbd>ruby test/test_greeter.rb</kbd></pre>
+      <p>失敗した確認は、exampleと実際の値を示す<code>RuntimeError</code>を発生させ、ファイルの残りは実行されません。ファイルを読み込むテストランナーなら、どれでもこれを実行できます。</p>
+
+      <h2 id="manifest">マニフェスト</h2>
+      <p>7つのセクションがあり、<code>contexts</code>以外はRubyのコードをもちます。<code>header</code>は最初のexampleの前に一度だけ、<code>before</code>は各exampleの前に実行されます。<code>subject</code>は各exampleのコードで、コンテキストごとに<code>%{name}</code>をもちます。<code>contexts</code>は名前ごとのコード片のリスト、<code>actuals</code>は観測する式で、サブジェクトの値には<code>%{subject}</code>を使います。<code>after</code>は各exampleのあとに、<code>footer</code>は最後のあとに一度だけ実行されます。必須なのは<code>subject</code>、<code>contexts</code>、<code>actuals</code>だけです。exampleはコンテキストの組み合わせごとにひとつずつ、ファイルの順に作られます。</p>
+      <p>値はテキストとして読まれ、YAMLの型に変換されることはありません。<code>1,2</code>、<code>yes</code>、<code>~</code>は、Rubyのコード<code>1,2</code>、<code>yes</code>、<code>~</code>のままです。コード片はコードなので、文字列には上の<code>'"Alice"'</code>のように引用符が必要です。複数行の値はリテラルブロック（<code>|</code>）で書きます。各セクション、コード片を埋め込んだ各サブジェクト、各actualは、それだけで完結したコードでなければなりません。ある部分が開いたブロック、文字列、コメントを別の部分が閉じ、確認を飛ばしたり飲み込んだりできないようにするためです。アンカー、エイリアス、タグ、未知の・重複した・空のセクション、使われないコンテキスト、サブジェクトとactuals以外のプレースホルダーは拒否されます。</p>
+
+      <h2 id="running">コードの実行のされ方</h2>
+      <p>コードは、<code>ruby</code>がテストファイルを実行するのと同じように子プロセスで実行されます。トップレベルで、<code>self</code>は<code>main</code>、各セクションのローカル変数は後続のセクションから見え、<code>__dir__</code>はテストファイルのディレクトリです。カレントディレクトリから、あなたの権限で実行されるので、brutalは自分のマニフェストにだけ使ってください。コードがプロセスに対して行ったことは子プロセスの中にとどまり、外に対して、つまりファイルやほかのプロセスに対して行ったことは実際に起こります。</p>
+      <p>続いてbrutalは、テストファイルを書き出す前に、brutalを実行しているRubyで、新しいプロセスでそれを実行し、成功したときだけ書き出します。これで、brutalの子プロセスと実際の実行とで異なるもの、たとえば子プロセスがbrutalから受け継いだ定数、オブジェクトID、乱数を見つけられます。そのためコードは2回実行されます。変わっていないテストファイルも再び実行されます。<code>--check</code>はコードを一度だけ実行し、何も書きません。</p>
+      <p>観測した値は、Rubyのバージョンやロケールにかかわらず同じになるRubyのリテラルとして書かれます。<code>nil</code>、<code>true</code>、<code>false</code>、<code>Integer</code>、有限の<code>Float</code>、UTF-8・バイナリ・ASCII文字だけの<code>String</code>、<code>Symbol</code>、そしてそれらの<code>Array</code>や<code>Hash</code>で、クラスは厳密に一致するものに限ります。それ以外はexampleとactualを示して拒否され、<code>inspect</code>の文字列として書かれることは決してありません。代わりに、<code>.to_s</code>、<code>.to_a</code>、<code>.to_h</code>、<code>.size</code>のような射影を観測してください。確認は<code>(expected).eql?((actual))</code>で、<a href="/ja/gems/matchi/">matchi</a>と同じく呼び出しを受けるのは期待値です。<code>1</code>と<code>1.0</code>は異なり、何とでも等しいと主張するオブジェクトは通りません。理由は<a href="/ja/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">テストにおける期待値と実際の値の根本的な違い</a>にあります。</p>
+
+      <h2 id="command">コマンド</h2>
+      <p><code>brutal PATH...</code>は、与えた<code>NAME_brutal.yaml</code>ごとに、あるいは与えたディレクトリとそのサブディレクトリで見つけたものごとに、その隣に<code>test_NAME.rb</code>を書き出します。隠しエントリーとディレクトリへのシンボリックリンクは除かれます。失敗したマニフェストはパスと理由とともに標準エラーに報告され、ほかのマニフェストはそのまま実行されます。終了ステータスは、すべてのマニフェストが成功すれば0、失敗したものがあるか、パスがマニフェストを指していなければ1、使い方の誤りなら2です。</p>
+      <p>テストファイルは、一時ファイルを書いて置き換える形で、全体が書かれるか、まったく書かれないかのどちらかです。置き換えるのはbrutalが書いたファイルだけで、その1行目にそう記されています。手で書いたテストファイルやbrutal 1が書いたテストファイルはエラーになります。<code>brutal --check PATH...</code>はすべてのテストファイルをメモリ上で生成し、置かれているものと比べます。CIで実行すれば、テストファイルがマニフェストからずれることはありません。</p>
+
+      <h2 id="limits">制限</h2>
+      <ul role="list">
+        <li>brutalが書いたテストファイルは、コードをあるがままに記述します。コードが誤っていても、すべての確認は通ります。レビュー中のコードと同じように、読むためのファイルです。</li>
+        <li>brutalの2回の実行ではたまたま同じでも、あなたの実行では異なる値（現在の分、小さな乱数）は見つけられません。そうした値や、<code>__FILE__</code>と<code>$0</code>は観測しないでください。</li>
+        <li>確認は<code>::Kernel.raise … unless (expected).eql?((actual))</code>です。<code>Kernel.raise</code>やコアクラスの<code>eql?</code>を再定義するコード、<code>at_exit</code>ハンドラーからプロセスを終了させるコード、brutalを見つけると振る舞いを変えるコードは、確認を変えてしまいます。Brutalは、それを打ち負かそうとするコードからは身を守りません。</li>
+        <li>タイムアウトはありません。終わらないコードは、brutalを待たせ続けます。中断されたbrutalは実行中のコードをkillし、それ以上何も書かずに、そのシグナルで終了します。</li>
+        <li>macOSでは、Objective-Cのクラスを使うコードが子プロセスでクラッシュすることがあります。その場合は<code>OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES</code>をつけてbrutalを実行してください。</li>
+      </ul>
+      <p>READMEには、YAMLの規則、子プロセスでコードから見えるもの、リテラル、コマンド、そして2.0での変更点が詳しく書かれています。brutal 1が書いたテストファイルは一度削除する必要があり、<code>%%</code>は<code>%</code>になり、コンテキストはファイルの順に組み合わされます。</p>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/brutal/blob/v2.0.1/README.md">README</a>：マニフェスト、コードの実行のされ方、期待値、コマンド、知っておくべきこと、そして2.0と2.0.1での変更点。</li>
+        <li><a href="https://gemdocs.org/gems/brutal/2.0.1/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/brutal/versions/2.0.1">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/brutal/tree/v2.0.1">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/brutal/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

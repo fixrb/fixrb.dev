@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>仕様を明確に分離してテストの設計を考え直す · Fixrb</title>
+  <meta name="description" content="RubyのテストでFixが仕様を実装から切り離し、保守も再利用もしやすいテストスイートにする方法。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2024-12-29">
+  <meta property="article:author" content="https://cyril.email/">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="仕様を明確に分離してテストの設計を考え直す">
+  <meta property="og:description" content="RubyのテストでFixが仕様を実装から切り離し、保守も再利用もしやすいテストスイートにする方法。">
+  <meta property="og:url" content="https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">
+  <meta property="og:image" content="https://fixrb.dev/img/card-ja-rethinking-test-architecture-with-fix.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="「FIX」と組んだピクセルアートの活字とその校正刷りの横に「Fixrbブログ」と「仕様を明確に分離してテストの設計を考え直す」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","@id":"https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html#post","headline":"仕様を明確に分離してテストの設計を考え直す","description":"RubyのテストでFixが仕様を実装から切り離し、保守も再利用もしやすいテストスイートにする方法。","image":"https://fixrb.dev/img/card-ja-rethinking-test-architecture-with-fix.png","datePublished":"2024-12-29T00:00:00+00:00","dateModified":"2026-11-23T00:00:00+00:00","author":{"@type":"Person","name":"Cyril Kato","url":"https://cyril.email/"},"publisher":{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},"mainEntityOfPage":"https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"ブログ","item":"https://fixrb.dev/ja/blog/"},{"@type":"ListItem","position":3,"name":"仕様を明確に分離してテストの設計を考え直す","item":"https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>仕様を明確に分離してテストの設計を考え直す</h1>
+        <p><time datetime="2024-12-29">2024年12月29日</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Fix 1.0より前に公開した記事の翻訳です。記事は書かれたときのまま残しており、例は以前のバージョンのgemを指していることがあります。Fix 1.0については<a href="/ja/gems/fix/v1/">ガイド</a>をご覧ください。</p>
+      <p>Rubyの開発の世界では、RSpecやMinitestのようなテストフレームワークが業界の標準になっています。しかしFixは、注目に値するまったく異なる方法を提案します。仕様とその実装を、きれいに分離することです。</p>
+      <h2 id="traditional-architecture-a-mix-of-concerns">従来の設計：関心事の混在</h2>
+      <p>従来、Rubyのテストフレームワークは、期待する振る舞いの定義と、それを確かめる具体的なexampleを、同じファイルに混ぜてきました。RSpecの典型的な例を見てみましょう。</p>
+      <pre><code><span class="constant">RSpec</span>.describe <span class="constant">Calculator</span> <span class="keyword">do</span>
+  subject(<span class="string">:calculator</span>) <span class="keyword">do</span>
+    described_class.new(first_number)
+  <span class="keyword">end</span>
+  describe <span class="string">"when first number is 2"</span> <span class="keyword">do</span>
+    let(<span class="string">:first_number</span>) <span class="keyword">do</span>
+      <span class="number">2</span>
+    <span class="keyword">end</span>
+    context <span class="string">"#add"</span> <span class="keyword">do</span>
+      let(<span class="string">:second_number</span>) <span class="keyword">do</span>
+        <span class="number">3</span>
+      <span class="keyword">end</span>
+      it <span class="string">"adds two numbers"</span> <span class="keyword">do</span>
+        expect(calculator.add(second_number)).to be(<span class="number">5</span>)
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <p>この例では、仕様（2つの数を足すこと）がセットアップとコンテキストの何層もの中に包まれ、「何を」（数を足すと5になるべき）と「どうやって」（インスタンスを作り、変数を準備する）が混ざっています。</p>
+      <h2 id="the-fix-approach-a-clear-separation-of-responsibilities">Fixの方法：責任の明確な分離</h2>
+      <p>Fixは、2つの側面をはっきり分けることで、まったく異なる考え方をとります。</p>
+      <ol>
+        <li>仕様：期待する振る舞いを定める、純粋な文書</li>
+        <li>テスト：その仕様を試す、具体的な実装</li>
+      </ol>
+      <p>同じ電卓のテストは、Fixでは次のようになります。</p>
+      <pre><code><span class="comment"># 1. The specification - a pure and reusable document</span>
+<span class="constant">Fix</span> <span class="string">:Calculator</span> <span class="keyword">do</span>
+  on(<span class="string">:new</span>, <span class="number">2</span>) <span class="keyword">do</span>
+    on(<span class="string">:add</span>, <span class="number">3</span>) <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be <span class="number">5</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># 2. The test - a specific implementation</span>
+<span class="constant">Fix</span>[<span class="string">:Calculator</span>].test { <span class="constant">Calculator</span> }</code></pre>
+      <p>違いは歴然としています。Fixの仕様は：</p>
+      <ul>
+        <li>簡潔：期待する振る舞いがわずか数行で表されている</li>
+        <li>明快：コンストラクターからメソッド呼び出しへの流れがひと目でわかる</li>
+        <li>純粋：何が起こるべきかだけを述べ、どう準備するかは述べない</li>
+      </ul>
+      <p>この分離には、いくつかの大きな利点があります。</p>
+      <h3 id="1-specification-reusability">1. 仕様の再利用</h3>
+      <p>仕様は、異なる実装をまたいで再利用できる自律した文書になります。同じ電卓の仕様で、同じインターフェースに従う限り、異なる電卓クラスをテストできます。</p>
+      <h3 id="2-isolated-testing">2. 隔離されたテスト</h3>
+      <p>各テストは完全に隔離して実行できるので、デバッグがしやすくなり、テストコードの保守性も高まります。仕様と実装が分かれているので、何をテストするかを変えずに、どうテストするかを変えられます。</p>
+      <h2 id="a-more-complex-example">もう少し複雑な例</h2>
+      <p>この分離が、もう少し込み入った場合にどう当てはまるかを見てみましょう。</p>
+      <pre><code><span class="comment"># A generic specification for a payment system</span>
+<span class="constant">Fix</span> <span class="string">:PaymentSystem</span> <span class="keyword">do</span>
+  with <span class="string">amount:</span> <span class="number">100</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_positive
+
+    on <span class="string">:process</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_successful
+      it <span class="constant">MUST</span> change(account, <span class="string">:balance</span>).by(-<span class="number">100</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">amount:</span> -<span class="number">50</span> <span class="keyword">do</span>
+    on <span class="string">:process</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> raise_exception(<span class="constant">InvalidAmountError</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment"># Specific tests for different implementations</span>
+<span class="constant">Fix</span>[<span class="string">:PaymentSystem</span>].test { <span class="constant">StripePayment</span>.new(<span class="string">amount:</span> <span class="number">100</span>) }
+<span class="constant">Fix</span>[<span class="string">:PaymentSystem</span>].test { <span class="constant">PaypalPayment</span>.new(<span class="string">amount:</span> <span class="number">100</span>) }</code></pre>
+      <p>この例では、決済システムの仕様は汎用的で、異なる決済の実装に当てはめられます。実装の詳細ではなくインターフェースに焦点を当てることで、どの決済処理系でも果たせる、再利用可能な契約ができます。</p>
+      <h2 id="benefits-in-practice">実践での利点</h2>
+      <p>この設計上の分離は、実践でいくつかの利点をもたらします。</p>
+      <ol>
+        <li><p><strong>ドキュメント</strong>：仕様は、システムの期待する振る舞いを示す、明快な生きたドキュメントになる</p></li>
+        <li><p><strong>保守性</strong>：テストの実装を変えても、仕様を変える必要はない</p></li>
+        <li><p><strong>柔軟性</strong>：同じ仕様で複数の実装を確かめられるので、次のような用途に向いている：</p>
+        <ul>
+          <li>クラスの異なるバージョンのテスト</li>
+          <li>サードパーティとの連携の確認</li>
+          <li>マイクロサービス間の一貫性の確保</li>
+        </ul></li>
+        <li><p><strong>明快さ</strong>：「何を」と「どうやって」を分けることで、仕様もテストも焦点が絞られ、理解しやすくなる</p></li>
+      </ol>
+      <h2 id="conclusion">まとめ</h2>
+      <p>Fixは、Rubyでのテストの書き方を考え直すよう促しています。仕様を具体的なテストからはっきり分けることで、次のことができます。</p>
+      <ul>
+        <li>より明快で再利用できる仕様を作る</li>
+        <li>期待を表す生きたドキュメントを保つ</li>
+        <li>異なる実装を同じ仕様でテストする</li>
+        <li>問題をより簡単に切り分ける</li>
+      </ul>
+      <p>この独特な設計上の方法によって、Fixは、実装に大きな柔軟性を保ちながら、正確で再利用できる仕様を必要とするプロジェクトにとって、特に興味深い道具となっています。</p>
+      <footer>
+        <p>カテゴリー：frameworkとtesting。<a href="/ja/blog/">すべての記事</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

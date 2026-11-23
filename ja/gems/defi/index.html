@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>defi：どのオブジェクトにも送れるRubyのメソッド呼び出し · Fixrb</title>
+  <meta name="description" content="Defiは、Rubyのメソッド呼び出し（名前と引数）を用意してどのオブジェクトにも送り、返ってきたもの、つまり戻り値か発生した例外を保持します。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/defi/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/defi/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/defi/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/defi/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="defi：どのオブジェクトにも送れるRubyのメソッド呼び出し">
+  <meta property="og:description" content="Defiは、Rubyのメソッド呼び出し（名前と引数）を用意してどのオブジェクトにも送り、返ってきたもの、つまり戻り値か発生した例外を保持します。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/defi/">
+  <meta property="og:image" content="https://fixrb.dev/gems/defi/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ルビー色の封蝋で閉じたピクセルアートの手紙と羽ペンの横に「defi」と「Rubyのメソッド呼び出しを用意して、どのオブジェクトにも送る」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"defi","item":"https://fixrb.dev/ja/gems/defi/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/defi/img/letter.svg" alt="" width="288" height="192">
+        <hgroup>
+          <h1>defi</h1>
+          <p>メソッド呼び出しを用意し、どのオブジェクトにも送る。</p>
+        </hgroup>
+      </header>
+      <p>チャレンジとは、ドットのあとに書くとおりのメソッド名と引数のことです。オブジェクトに送ると、呼び出しから出てきたもの、つまりメソッドが返した値か、発生させた例外を持ち帰ります。同じチャレンジをいくつのオブジェクトにも送って、それぞれがそれをどう扱うかを比べられます。</p>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>4.0.1</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降</dd>
+        <dt>依存gem</dt>
+        <dd>なし</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">使い方</a></li>
+          <li><a href="#exceptions">返ってくるもの</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "defi"</code>を加えるか、<code>gem install defi</code>を実行してください。</p>
+
+      <h2 id="usage">使い方</h2>
+      <p>チャレンジは位置引数、キーワード引数、ブロックをとり、それらをそのまま渡します。<code>to</code>はそれをオブジェクトに送って値を返します。<code>object</code>は返ってきたもの、<code>raised?</code>はそれが例外として発生したかどうかを示し、<code>call</code>はオブジェクトを返すか、例外を再び発生させます。</p>
+      <pre data-example="examples/defi/usage.rb"><code>require <span class="string">"defi"</span>
+
+challenge = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:fetch</span>, <span class="string">:b</span>, <span class="number">0</span>)
+challenge.to_s <span class="comment"># => ".fetch(:b, 0)"</span>
+
+value = challenge.to({ <span class="string">b:</span> <span class="number">2</span> })
+value.raised? <span class="comment"># => false</span>
+value.object  <span class="comment"># => 2</span>
+value.call    <span class="comment"># => 2</span>
+
+value = <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:fetch</span>, <span class="string">:b</span>).to({})
+value.raised?     <span class="comment"># => true</span>
+value.object      <span class="comment"># => #&lt;KeyError: key not found: :b></span>
+value.call <span class="keyword">rescue</span> $!.class <span class="comment"># => KeyError</span>
+
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:encode</span>, <span class="string">"US-ASCII"</span>, <span class="string">undef:</span> <span class="string">:replace</span>).to(<span class="string">"café"</span>).object <span class="comment"># => "caf?"</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:map</span>) { |n| n * <span class="number">2</span> }.to([<span class="number">1</span>, <span class="number">2</span>]).object <span class="comment"># => [2, 4]</span>
+</code></pre>
+      <p>チャレンジと値は凍結されています。引数は与えたオブジェクトそのもので、コピーではありません。</p>
+
+      <h2 id="exceptions">返ってくるもの</h2>
+      <p>メッセージは<code>public_send</code>で送られます。privateメソッドを呼ぶ場合や、<code>public_send</code>をもたない<code>BasicObject</code>に送る場合は、<code>NoMethodError</code>になります。チャレンジは、メソッドがそれ自身で発生させた例外を値として保持します。<code>StandardError</code>、<code>NotImplementedError</code>のような<code>ScriptError</code>、<code>SystemStackError</code>、そして<code>exit</code>の<code>SystemExit</code>です。メソッドのせいではないものは素通りします。<code>Interrupt</code>、シグナル、<code>NoMemoryError</code>、<code>Timeout</code>がブロックを終わらせるために使う例外、そして<code>Exception</code>のそのほかのサブクラスです。</p>
+      <pre data-example="examples/defi/exceptions.rb"><code>require <span class="string">"defi"</span>
+
+<span class="comment"># What a method raises on its own comes back as the value.</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:+</span>, <span class="number">1</span>).to(<span class="string">"a"</span>).object.class     <span class="comment"># => TypeError</span>
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:secret</span>).to(<span class="constant">Object</span>.new).object.class <span class="comment"># => NoMethodError</span>
+
+exiting = <span class="constant">Object</span>.new
+<span class="keyword">def</span> exiting.call = exit(<span class="number">3</span>)
+<span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:call</span>).to(exiting).object.status <span class="comment"># => 3</span>
+
+<span class="comment"># What is not the method's doing goes through.</span>
+interrupting = <span class="constant">Object</span>.new
+<span class="keyword">def</span> interrupting.call = raise(<span class="constant">Interrupt</span>)
+outcome = <span class="keyword">begin</span>
+  <span class="constant">Defi</span>::<span class="constant">Challenge</span>.new(<span class="string">:call</span>).to(interrupting)
+<span class="keyword">rescue</span> <span class="constant">Interrupt</span>
+  <span class="string">:went_through</span>
+<span class="keyword">end</span>
+outcome <span class="comment"># => :went_through</span>
+</code></pre>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/defi/blob/v4.0.1/README.md">README</a>：使い方、返ってくるもの、そして4.0での変更点。</li>
+        <li><a href="https://gemdocs.org/gems/defi/4.0.1/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/defi/versions/4.0.1">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/defi/tree/v4.0.1">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/defi/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

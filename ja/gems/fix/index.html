@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>fix：RFC 2119の仕様で書くRubyのテストフレームワーク · Fixrb</title>
+  <meta name="description" content="Fix 1.0を1ページで。4つの語「on」「let」「with」「it」、MUST、SHOULD、MAYの5つの判定、データとしての結果、コンテキストごとの子プロセス。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="fix：RFC 2119の仕様で書くRubyのテストフレームワーク">
+  <meta property="og:description" content="Fix 1.0を1ページで。4つの語「on」「let」「with」「it」、MUST、SHOULD、MAYの5つの判定、データとしての結果、コンテキストごとの子プロセス。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/logo.svg" alt="" width="128" height="128">
+        <hgroup>
+          <h1>fix</h1>
+          <p>Rubyのテストフレームワーク。RFC 2119の言葉で書いた仕様で、サブジェクトをテストする。</p>
+        </hgroup>
+        <ul role="list">
+          <li><a href="/ja/gems/fix/v1/getting-started/">ガイドを始める</a></li>
+          <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        </ul>
+      </header>
+      <p>仕様は、サブジェクトが何を<strong>MUST</strong>（しなければならない）、<strong>SHOULD</strong>（すべきである）、<strong>MAY</strong>（してもよい）かを、<a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>の言葉で述べます。何を必須とし、何を推奨し、何を任意とするかです。仕様はクラスを名指ししないので、ひとつの仕様で複数の実装も、依存しているライブラリも、リリースごとの同じオブジェクトもテストできます。各コンテキストは子プロセスで実行され、すべての期待に結果が出ます。</p>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>1.0.1</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降、<code>fork</code>が必要</dd>
+        <dt>依存gem</dt>
+        <dd><a href="/ja/gems/aw/">aw</a>、<a href="/ja/gems/defi/">defi</a>、<a href="/ja/gems/matchi/">matchi</a>、<a href="/ja/gems/spectus/">spectus</a></dd>
+        <dt>コード</dt>
+        <dd>約300行、カバレッジ100%でテスト済み</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">ひとつのファイルで</a></li>
+          <li><a href="#fits">Fixの役割</a></li>
+          <li><a href="#scope">Fixが省いたもの</a></li>
+          <li><a href="#cases">仕様の使いみち</a></li>
+          <li><a href="#language">言語</a></li>
+          <li><a href="#outcomes">判定</a></li>
+          <li><a href="#results">結果とランナー</a></li>
+          <li><a href="#processes">プロセス</a></li>
+          <li><a href="#extensions">拡張</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "fix"</code>を加えるか、<code>gem install fix</code>を実行してください。</p>
+
+      <h2 id="usage">ひとつのファイルで</h2>
+      <p>ファイルは仕様を書き、それに対してサブジェクトをテストします。ここではアヒルと、アヒルとして作られたわけではないロボットです。<code>Fix :Duck do … end</code>は仕様を組み立て、その名前で登録します。<code>Fix[:Duck]</code>がそれを再び見つけます。<code>test</code>は期待ごとにブロックで新しいサブジェクトを作り、期待を囲む<code>on</code>のメソッドをサブジェクトに送り、出てきたものを判定して、期待ごとに1行を書き、すべてが成功したかどうかを返します。<code>exit</code>はそれをプロセスの終了ステータスにします。</p>
+      <pre data-example="examples/fix/duck.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># What a duck does, whatever it is made of.</span>
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Swoosh..."</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaaaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Quaaaaaack!"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Robot</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Glug glug..."</span>
+<span class="keyword">end</span>
+
+duck = <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new }
+robot = <span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Robot</span>.new }
+exit(duck &amp;&amp; robot)
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby duck.rb</kbd>
+<samp>duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Success: expected "Swoosh..." to eq "Swoosh..."
+duck.rb:14: Success: expected "Quaaaaaack!" to eq "Quaaaaaack!"
+duck.rb:6: Success: expected "Klop klop!" to eq "Klop klop!"
+duck.rb:10: Warning: expected "Glug glug..." to eq "Swoosh..."
+duck.rb:14: Info: NoMethodError: undefined method 'speak' for an instance of Robot</samp></pre>
+      <p>最初の3行がアヒルの、最後の3行がロボットの行です。ロボットは自分なりのやり方で泳ぎます。満たされないSHOULDはWarningです。ロボットには<code>speak</code>がありません。MAYのもとでは、サブジェクトにないメソッドはInfoです。どちらも成功として扱われるのでファイルは0で終了し、どちらも書かれるので足りない点もわかります。もしロボットがアヒルのように歩かなかったら、それはMUSTなので行はFailureとなり、終了ステータスは1になったでしょう。仕様はどちらのクラスも名指ししません。専用のファイルに置いて、<code>walk</code>をもつどんなものに対してもテストできます。サブジェクトがひとつなら、最後の数行は1行になります（<code>exit(Fix[:Duck].test { Duck.new })</code>）。括弧は残してください。<code>exit Fix[:Duck].test do … end</code>では、ブロックが<code>exit</code>に渡ってしまいます。</p>
+
+      <h2 id="fits">Fixの役割</h2>
+      <p>Rubyは以前から、いくつかの仕様を、それを実装するものから切り離してきました。<a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a>はどんなアプリケーションもどんなサーバーも<a href="https://github.com/rack/rack/blob/main/SPEC.rdoc">Rackの仕様</a>に照らして確かめ、<a href="https://github.com/ruby/spec">ruby/spec</a>は言語を実装するすべてのRubyのために言語を記述し、複数のアダプターをもつライブラリは各アダプターが通るべきexampleを書きます。Fixは、そうした仕様を独立した文書にします。一度だけ書き、どのテストよりも前に読まれ、3つのレベルをもち、どんなオブジェクトに対してもテストでき、<a href="/ja/gems/fix/v1/patterns/#shipped">パターン</a>が示すように、実装する人のためにgemに同梱できる文書です。</p>
+      <figure>
+        <img src="/gems/fix/img/subjects.svg" alt="ひとつの仕様、3行の紙を、カットの異なる3つのルビーに対してテストする図。" width="408" height="208">
+        <figcaption>ひとつの仕様と3つのサブジェクト。行はサブジェクトごと、列は期待ごと（MUST、SHOULD、MAY）です。1つ目のサブジェクトは3つすべてを満たし、2つ目はWarningとInfoを受け、3つ目はMUSTを満たしません。</figcaption>
+      </figure>
+      <p>Fixはプロジェクトのフレームワークを置き換えるものではありません。フィクスチャーやテストダブル、アプリケーションフレームワークが必要なテストスイートは、そのためにRSpecやminitestを使い続けます。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリの契約で、それを<code>spec</code>や<code>test</code>の隣の<code>fix</code>ディレクトリに置き、専用のコマンドで実行します。そして<a href="/ja/gems/matchi-fix/">matchi-fix</a>が、そうした仕様をマッチャーとしてそのフレームワークに持ち込みます。<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>はRSpecの各イディオムが何になるかを示し、<a href="/ja/gems/fix/v1/questions/">よくある質問</a>は両者を併用するときの疑問に答えます。<a href="/ja/gems/fix/v1/questions/#compared">表</a>では、FixをRSpecやminitestと項目ごとに比べています。</p>
+
+      <h2 id="scope">Fixが省いたもの</h2>
+      <p>モックも、<code>before</code>と<code>after</code>も、共有exampleも、ランダムな順序もありません。仕様がもつのは期待だけで、テストに必要な準備は、letのあるサブジェクトブロックで行います。同じ仕様で、クラスも、モジュールも、インスタンスも、ライブラリもテストでき、毎回同じ結果が出ます。Fixには<code>fork</code>が必要です。LinuxとmacOSでテストされており、WindowsやJRubyでは動きません。</p>
+
+      <h2 id="cases">仕様の使いみち</h2>
+
+      <h3 id="implementations">ひとつの仕様、いくつものサブジェクト</h3>
+      <p>仕様は一度だけ書き、何に対してもテストできます。サブジェクトを選ぶのは仕様ではなく<code>test</code>のブロックです。ここでは、スタックをその振る舞いで記述し、<code>Array</code>と連結リストに対してテストします。入れ子の<code>on</code>はメソッドの連鎖になり、それぞれがひとつ上の戻り値に送られます。そのため、<code>pop</code>が続くには<code>push</code>がスタックを返す必要があります。</p>
+      <pre data-example="examples/fix/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:push</span>, <span class="number">2</span> <span class="keyword">do</span>
+      on <span class="string">:pop</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+
+      on <span class="string">:size</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">LinkedStack</span>
+  <span class="constant">Node</span> = <span class="constant">Data</span>.define(<span class="string">:value</span>, <span class="string">:below</span>)
+
+  <span class="keyword">def</span> initialize = @top = <span class="keyword">nil</span>
+  <span class="keyword">def</span> empty? = @top.nil?
+  <span class="keyword">def</span> size = each_node.count
+  <span class="keyword">def</span> push(value) = tap { @top = <span class="constant">Node</span>.new(value, @top) }
+
+  <span class="keyword">def</span> pop
+    value = @top&amp;.value
+    @top = @top&amp;.below
+    value
+  <span class="keyword">end</span>
+
+  private
+
+  <span class="keyword">def</span> each_node
+    <span class="keyword">return</span> to_enum(<span class="string">:each_node</span>) <span class="keyword">unless</span> block_given?
+
+    node = @top
+    <span class="keyword">while</span> node
+      <span class="keyword">yield</span> node
+      node = node.below
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] }               <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { <span class="constant">LinkedStack</span>.new } <span class="comment"># => true</span>
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby stack.rb</kbd>
+<samp>stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil
+stack.rb:5: Success: expected true to be true
+stack.rb:11: Success: expected 2 to eq 2
+stack.rb:15: Success: expected 2 to eq 2
+stack.rb:21: Success: expected nil to be nil</samp></pre>
+
+      <h3 id="contract">3つのレベルの契約</h3>
+      <p>RFC 2119のレベルは、アダプターがしなければならないこと、したほうがよいこと、しなくてもよいことを述べます。満たされないMUSTはビルドを失敗させます。満たされないSHOULDはWarning、サブジェクトにないメソッドへのMAYはInfoで、どちらも成功として扱われ、どちらも書かれるので、誰も止めずに足りない点がわかります。<code>let</code>はサブジェクトのパラメーターを宣言し、<code>with</code>はそれが別の値をとるコンテキストを開きます。<code>test</code>のブロックはそれを読んでサブジェクトを作ります。</p>
+      <pre data-example="examples/fix/cache.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># What the application needs from a cache: a contract, in three levels.</span>
+<span class="constant">Fix</span> <span class="string">:Cache</span> <span class="keyword">do</span>
+  let(<span class="string">:entries</span>) { {} }
+
+  on <span class="string">:read</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+
+  with <span class="string">entries:</span> { <span class="string">answer:</span> <span class="number">42</span> } <span class="keyword">do</span>
+    on <span class="string">:read</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">42</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:write</span>, <span class="string">:answer</span>, <span class="number">42</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:clear</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">MemoryCache</span>
+  <span class="keyword">def</span> initialize = @store = {}
+  <span class="keyword">def</span> read(key) = @store[key]
+  <span class="keyword">def</span> write(key, value) = @store[key] = value
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Cache</span>].test { entries.each_with_object(<span class="constant">MemoryCache</span>.new) { |(key, value), cache| cache.write(key, value) } })
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby cache.rb</kbd>
+<samp>cache.rb:8: Success: expected nil to be nil
+cache.rb:13: Success: expected 42 to eq 42
+cache.rb:18: Warning: expected 42 to be true
+cache.rb:22: Info: NoMethodError: undefined method 'clear' for an instance of MemoryCache</samp></pre>
+
+      <h3 id="dependencies">依存ライブラリに期待すること</h3>
+      <p>サブジェクトは自分のものである必要はありません。仕様には、アプリケーションがライブラリに頼っていることを書いておき、そのライブラリをアップグレードするたびに実行できます。ここでは標準の<code>JSON</code>モジュールです。メソッドが発生させた例外は、例外として判定されます。<code>raise_exception</code>はそれを期待し、ほかのマッチャーはErrorを報告します。</p>
+      <pre data-example="examples/fix/json.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"json"</span>
+
+<span class="comment"># What the application expects of a library it depends on, tested at each</span>
+<span class="comment"># upgrade of that library.</span>
+<span class="constant">Fix</span> <span class="string">:JSON</span> <span class="keyword">do</span>
+  on <span class="string">:generate</span>, [<span class="number">1</span>, <span class="number">2</span>] <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"[1,2]"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">"[1,2]"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq [<span class="number">1</span>, <span class="number">2</span>]
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">"nope"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> raise_exception <span class="constant">JSON</span>::<span class="constant">ParserError</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pretty_generate</span>, [<span class="number">1</span>] <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"[\n  1\n]"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:JSON</span>].test { <span class="constant">JSON</span> })
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby json.rb</kbd>
+<samp>json.rb:8: Success: expected "[1,2]" to eq "[1,2]"
+json.rb:12: Success: expected [1, 2] to eq [1, 2]
+json.rb:16: Success: expected #&lt;JSON::ParserError: unexpected token 'nope' at line 1 column 1> to raise exception JSON::ParserError
+json.rb:20: Success: expected "[\n  1\n]" to eq "[\n  1\n]"</samp></pre>
+
+      <h3 id="composition">組み合わせられる仕様</h3>
+      <p>仕様はマッチャーです。<code>fix(:Name)</code>は登録済みの仕様を、<code>fix { … }</code>はその場で書いた仕様を求め、ほかのマッチャーと同じようにレベルがかかります。満たされなかった<code>fix</code>は、仕様が満たされないことを伝えるだけで、どの期待が失敗したかは伝えません。詳しく見るには、その仕様を単独でテストしてください。</p>
+      <pre data-example="examples/fix/compose.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Positive</span> <span class="keyword">do</span>
+  on <span class="string">:positive?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Score</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_a_kind_of <span class="constant">Numeric</span>
+  it <span class="constant">MUST</span> fix(<span class="string">:Positive</span>)
+  it <span class="constant">MUST_NOT</span> fix { on(<span class="string">:nan?</span>) { it <span class="constant">MUST</span> be_true } }
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Score</span>].test { <span class="number">7.5</span> })
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby compose.rb</kbd>
+<samp>compose.rb:10: Success: expected 7.5 to be a kind of Numeric
+compose.rb:11: Success: expected 7.5 to fix Positive
+compose.rb:12: Success: expected 7.5 not to fix an anonymous specification</samp></pre>
+
+      <h3 id="isolation">漏れない状態</h3>
+      <p>期待をもつコンテキストはそれぞれ、<a href="/ja/gems/aw/">aw</a>を使って、テストするプロセスからforkした子プロセスで実行されます。グローバル変数、定数、<code>ENV</code>、カレントディレクトリに書き込むサブジェクトも、それを行うのは自分の子プロセスの中だけです。どのコンテキストもファイルを読み込んだときの状態から始まり、コンテキストの順序が結果を変えることはありません。</p>
+      <pre data-example="examples/fix/registry.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># A subject with a global state: every context starts from the state the</span>
+<span class="comment"># file was loaded with, since each one runs in a child process.</span>
+<span class="keyword">module</span> <span class="constant">Registry</span>
+  <span class="constant">NAMES</span> = []
+
+  <span class="keyword">def</span> <span class="keyword">self</span>.add(name) = tap { <span class="constant">NAMES</span> &lt;&lt; name }
+  <span class="keyword">def</span> <span class="keyword">self</span>.names = <span class="constant">NAMES</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Registry</span> <span class="keyword">do</span>
+  on <span class="string">:add</span>, <span class="string">"Alice"</span> <span class="keyword">do</span>
+    on <span class="string">:names</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq [<span class="string">"Alice"</span>]
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:add</span>, <span class="string">"Bob"</span> <span class="keyword">do</span>
+    on <span class="string">:names</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq [<span class="string">"Bob"</span>]
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:names</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq []
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Registry</span>].test { <span class="constant">Registry</span> })
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby registry.rb</kbd>
+<samp>registry.rb:15: Success: expected ["Alice"] to eq ["Alice"]
+registry.rb:21: Success: expected ["Bob"] to eq ["Bob"]
+registry.rb:26: Success: expected [] to eq []</samp></pre>
+
+      <h2 id="language">言語</h2>
+      <p><code>Fix</code>のブロックは文書で、ファイルの読み込み時に一度だけ読まれ、4つの語をもちます。<code>on :name, *arguments</code>はサブジェクトにメソッドを送り、その中の期待が戻り値を判定します。<code>let(:name) { … }</code>はサブジェクトのパラメーターで、サブジェクトブロックが最初に呼んだときに、期待ごとに一度だけ計算されます。<code>with name: value</code>は、それがその値をとるコンテキストを開きます。<code>it</code>は要求をとります。レベル（<code>MUST</code>、<code>MUST_NOT</code>、<code>SHOULD</code>、<code>SHOULD_NOT</code>、<code>MAY</code>）のあとにマッチャーを書きます。</p>
+      <pre data-example="examples/fix/greeting.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Greeting</span> <span class="keyword">do</span>
+  let(<span class="string">:name</span>) { <span class="string">"Bob"</span> }
+
+  it <span class="constant">MUST</span> eq <span class="string">"Hello, Bob!"</span>
+  it <span class="constant">MUST_NOT</span> be_nil
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">11</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">name:</span> <span class="string">"Alice"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Hello, Alice!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Greeting</span>].test { <span class="string">"Hello, #{</span>name<span class="string">}!"</span> })
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby greeting.rb</kbd>
+<samp>greeting.rb:6: Success: expected "Hello, Bob!" to eq "Hello, Bob!"
+greeting.rb:7: Success: expected "Hello, Bob!" not to be nil
+greeting.rb:10: Success: expected 11 to eq 11
+greeting.rb:14: Success: expected "Hello, Alice!" to eq "Hello, Alice!"</samp></pre>
+      <p>マッチャーは<a href="/ja/gems/matchi/">matchi</a>のものを語として使います。<code>eq</code>、<code>be</code>、<code>be_true</code>、<code>be_false</code>、<code>be_nil</code>、<code>be_within(delta).of</code>、<code>match</code>、<code>be_an_instance_of</code>、<code>be_a_kind_of</code>、<code>raise_exception</code>、<code>change</code>、<code>satisfy</code>、そして<code>fix</code>です。<code>match?</code>と<code>to_s</code>をもつオブジェクトも、どれもマッチャーになります。述語のためのヘルパーはありません。問いを立てるのは<code>on(:empty?) { it MUST be_true }</code>です。</p>
+      <p>letはサブジェクトブロックとほかのletからだけ見えます。期待の中で名前を使うと、読み込み時に<code>NameError</code>が対処法とともに発生します。letの名前には、サブジェクトを作るオブジェクトのメソッドの名前も、言語の語もつけられないので、何かが黙って再定義されることはありません。文書の誤りはすべて、ファイルの読み込み時に、どのテストよりも前に例外になります。ブロックをもつ、あるいは要求のない<code>it</code>、2回名づけたletや仕様、<code>match?</code>のないマッチャーなどです。例外を発生させたブロックは何も登録しません。</p>
+
+      <h2 id="outcomes">判定</h2>
+      <p>2つの問いがレベルを分けます。メソッドは存在するか。MUSTとSHOULDはそれを求め、MAYは求めません。仕様どおりに動くか。MUSTとMAYはそれを求め、SHOULDは推奨します。そこから5つの判定が生まれ、そのうちSuccess、Warning、Infoは成功として扱われます。</p>
+      <table>
+        <thead>
+          <tr><th scope="col">レベル</th><th scope="col">照合が真</th><th scope="col">照合が偽</th><th scope="col">メソッドがない</th><th scope="col">ほかの例外</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">MUST</th><td>success</td><td>failure</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">SHOULD</th><td>success</td><td>warning</td><td>error</td><td>error</td></tr>
+          <tr><th scope="row">MAY</th><td>success</td><td>failure</td><td>info</td><td>error</td></tr>
+        </tbody>
+      </table>
+      <p>否定は最初の2列を入れ替えます。メソッドがないとは、そのコンテキストの<code>on</code>が名指ししたメソッドについて、送られたオブジェクトが<code>NoMethodError</code>を発生させた場合です。Errorの下に、<code>test</code>はバックトレースのうちFixとそのgemに属さないフレームを書くので、サブジェクトの行がそこに示されます。</p>
+      <pre data-example="examples/fix/account.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Account</span>
+  <span class="keyword">def</span> initialize(balance)
+    @balance = balance
+  <span class="keyword">end</span>
+
+  attr_reader <span class="string">:balance</span>
+
+  <span class="keyword">def</span> withdraw(amount)
+    raise <span class="constant">ArgumentError</span>, <span class="string">"insufficient funds"</span> <span class="keyword">if</span> amount > balance
+
+    @balance -= amount
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Account</span> <span class="keyword">do</span>
+  on <span class="string">:balance</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">100</span>
+    it <span class="constant">MUST</span> eq <span class="number">200</span>
+    it <span class="constant">SHOULD</span> eq <span class="number">200</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:currency</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"EUR"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:withdraw</span>, <span class="number">500</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq(-<span class="number">400</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Account</span>].test { <span class="constant">Account</span>.new(<span class="number">100</span>) } <span class="comment"># => false</span>
+</code></pre>
+      <pre data-directory="examples/fix"><kbd>ruby account.rb</kbd>
+<samp>account.rb:19: Success: expected 100 to eq 100
+account.rb:20: Failure: expected 100 to eq 200
+account.rb:21: Warning: expected 100 to eq 200
+account.rb:25: Info: NoMethodError: undefined method 'currency' for an instance of Account
+account.rb:29: Error: ArgumentError: insufficient funds
+  account.rb:11:in 'Account#withdraw'
+  account.rb:33:in '&lt;main>'</samp></pre>
+
+      <h2 id="results">結果とランナー</h2>
+      <p><code>test</code>は期待ごとに1行、<code>LOCATION: OUTCOME: SUMMARY</code>を書きます。サマリーは<a href="/ja/gems/spectus/">spectus</a>のもので、ほかには何も書きません。記号も、色も、件数もありません。ファイルは<code>ruby</code>で実行し、仕様が満たされれば終了ステータスは0です。継続的インテグレーションにもRakefileにもランナーにも、必要なのはそれだけです。そして行の文法は、ランナーが読んで集計したり色をつけたりするためのものです。<a href="/ja/gems/fix-command/">fix-command</a>はそうしたランナーで、<code>fix</code>コマンドは各ファイルを専用のプロセスで実行し、満たされたファイルの数を伝えます。<code>run</code>は同じ結果をデータとしてコンテキストの順に返し、<code>match?</code>はマッチャーと同じように値をテストします。</p>
+      <pre data-example="examples/fix/results.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Size</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">3</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+results = <span class="constant">Fix</span>[<span class="string">:Size</span>].run { <span class="string">"abcd"</span> }
+results.map(&amp;<span class="string">:outcome</span>) <span class="comment"># => [:success, :failure]</span>
+results.map(&amp;<span class="string">:passed?</span>) <span class="comment"># => [true, false]</span>
+
+result = results.last
+result.location <span class="comment"># => "examples/fix/results.rb:7"</span>
+result.chain    <span class="comment"># => ".size"</span>
+result.summary  <span class="comment"># => "expected 4 to eq 3"</span>
+result.to_s     <span class="comment"># => "examples/fix/results.rb:7: Failure: expected 4 to eq 3"</span>
+result.result.class <span class="comment"># => Spectus::Result</span>
+
+<span class="constant">Fix</span>[<span class="string">:Size</span>].match? { <span class="string">"abc"</span> } <span class="comment"># => true</span>
+</code></pre>
+
+      <h2 id="processes">プロセス</h2>
+      <p>コンテキストは順に、それぞれの子プロセスで実行され、親プロセスは子プロセスが返したコンテキストの結果を書きます。サブジェクトが発生させた例外は、<code>exit</code>も含めて、その期待だけのErrorになります。子プロセスの周りで何かをrescueすることはありません。<code>Interrupt</code>は実行を止め、異常終了した子プロセスも<code>Aw::ChildError</code>で実行を止めます。Fixは、期待から得たものでない結果を書くことは決してありません。<code>test(fork: false)</code>は、デバッガーのために、コンテキストをプロセス自身の中で実行します。コンテキストのコストはforkひとつ、数ミリ秒です。</p>
+
+      <h2 id="extensions">拡張</h2>
+      <p><a href="/ja/gems/fix-its/">fix-its</a>は<code>its</code>という語を加え、メソッドとその期待を1行にします。<a href="/ja/gems/matchi-fix/">matchi-fix</a>は、matchiのマッチャーを受け付けるどのフレームワークにも、Fixの仕様を持ち込みます。<code>Fix</code>のブロックは<code>Fix::Dsl</code>のインスタンスの上で実行され、gemはそこに独自の語を加えられます。</p>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="/ja/gems/fix/v1/">ガイド</a>：最初の仕様からプロジェクトのテストまで、Fix 1を一歩ずつ。</li>
+        <li><a href="https://github.com/fixrb/fix/blob/v1.0.1/README.md">README</a>：言語、判定、結果、プロセスのすべてと、1.0.1での変更点。</li>
+        <li><a href="https://gemdocs.org/gems/fix/1.0.1/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/fix/versions/1.0.1">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/fix/tree/v1.0.1">ソースコード</a></li>
+        <li>ブログの<a href="/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html">仕様を明確に分離してテストの設計を考え直す</a>と<a href="/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html">RFC 2119に着想を得た3つの要求レベル</a>。</li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

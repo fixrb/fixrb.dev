@@ -3,11 +3,11 @@
 
 # Checks fixrb.dev with the Ruby standard library and git: the files of the
 # repository, the markup rules, the head and layout shared by every page,
-# internal links and anchors, code examples kept identical to their files
-# under examples/ and highlighted as Ripper reads them (a YAML manifest of
-# brutal is shown as it is), the files the stylesheet loads, the feed, the
-# sitemap, robots.txt, llms.txt and llms-full.txt, the key of IndexNow, the
-# SVG drawings and the PNG images.
+# each page and its translation, internal links and anchors, code examples
+# kept identical to their files under examples/ and highlighted as Ripper
+# reads them (a YAML manifest of brutal is shown as it is), the files the
+# stylesheet loads, the feeds, the sitemap, robots.txt, llms.txt and
+# llms-full.txt, the key of IndexNow, the SVG drawings and the PNG images.
 #
 #   bin/check         checks, and changes nothing
 #   bin/check --fix   first rewrites every <pre><code> from its example file
@@ -45,12 +45,27 @@ FILES = [
   %r{\Aimg/[a-z0-9_-]+\.(?:svg|png)\z},
   %r{\A\.github/(?:dependabot|workflows/[a-z0-9-]+)\.yml\z},
   %r{\A(?:\.gitattributes|\.nojekyll|\.ruby-version|CNAME|LICENSE\.md|README\.md|bin/check|bin/examples|bin/indexnow|
-         card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|llms\.txt|llms-full\.txt|logo\.svg|robots\.txt|sitemap\.xml|
-         style\.css)\z}x
+         card\.png|favicon\.ico|feed\.xml|fonts/OFL\.txt|icon\.png|ja/feed\.xml|llms\.txt|llms-full\.txt|logo\.svg|robots\.txt|
+         sitemap\.xml|style\.css)\z}x
 ].freeze
 
 # Files the site cannot do without.
-REQUIRED = %w[404.html blog/index.html feed.xml icon.png index.html robots.txt sitemap.xml style.css].freeze
+REQUIRED = %w[404.html blog/index.html feed.xml icon.png index.html ja/blog/index.html ja/feed.xml ja/index.html robots.txt
+              sitemap.xml style.css].freeze
+
+# The languages of the site: English at the root, and Japanese under ja/, at
+# the same paths, so that every page has its counterpart in the other
+# language. Each has its blog, its feed, and the labels of its navs, which the
+# stylesheet knows in both; a Japanese page also gives its locale.
+JAPANESE = "ja/"
+LANGUAGES = %w[en ja].freeze
+LABELS = {
+  "en" => { main: "Main", contents: "On this page", guide: "Guide", pages: "Pages" },
+  "ja" => { main: "メイン", contents: "目次", guide: "ガイド", pages: "前後のページ" }
+}.freeze
+BLOGS = { "en" => "blog/index.html", "ja" => "ja/blog/index.html" }.freeze
+FEEDS = { "en" => "feed.xml", "ja" => "ja/feed.xml" }.freeze
+LOCALES = { "ja" => "ja_JP" }.freeze
 
 # Files kept exactly as their source publishes them: the logo of fixrb/logo.
 # To change one on purpose, update its digest here.
@@ -79,8 +94,8 @@ SITEMAP = "http://www.sitemaps.org/schemas/sitemap/0.9"
 FEED_ELEMENTS = %w[feed id title subtitle link icon author name updated entry published summary].freeze
 FEED_ATTRIBUTES = %w[xmlns xml:lang href rel type].freeze
 
-# Every page starts with these lines: the policy must come before anything
-# the browser fetches.
+# Every page starts with these lines, in its language: the policy must come
+# before anything the browser fetches.
 HEAD = <<~HTML
   <!doctype html>
   <html lang="en">
@@ -91,28 +106,28 @@ HEAD = <<~HTML
     <meta name="referrer" content="no-referrer">
 HTML
 
-# The site header and footer, the same on every page as on index.html, but
-# for the aria-current of the page's own link.
+# The site header and footer, the same on every page as on the home page of
+# its language, but for the aria-current of the page's own link and the
+# address of the link to the other language, which is the page's own.
 SHARED = {
   "header" => %r{<body>\n  <header>\n.*?\n  </header>\n}m,
   "footer" => %r{\n  <footer>\n.*?\n  </footer>\n</body>\n</html>\n\z}m
 }.freeze
+LANGUAGE_LINK = /<a href="[^"]*" hreflang="/
 
 # A guide, gems/NAME/vN/, is read in the order of its nav, which every page of
 # it carries as its first page has it, but for the aria-current of its own
 # link: the guide, then its pages, a page not yet written being named without
 # a link. Each page ends with the links to the pages before and after it.
-GUIDE = %r{\A(gems/[a-z0-9_-]+/v\d+/)}
-GUIDE_NAV = %r{<nav aria-label="Guide">.*?</nav>}m
-PAGES_NAV = %r{<nav aria-label="Pages">(.*?)</nav>}m
+GUIDE = %r{\A((?:#{JAPANESE})?gems/[a-z0-9_-]+/v\d+/)}
 
 # A long page lists its sections in a nav, "On this page": a link to each
 # <h2>, which all carry an id, in the order of the page and with its words.
-CONTENTS_NAV = %r{<nav aria-label="On this page">(.*?)</nav>}m
 CONTENTS_LINK = %r{<li><a href="#([^"]+)">(.*?)</a></li>}m
 SECTION = %r{<h2 id="([^"]+)">(.*?)</h2>}m
 
-# Posts published before Fix 1.0, kept as written: their code is not run.
+# Posts published before Fix 1.0, kept as written, and their translations:
+# their code is not run.
 ARCHIVED = %w[
   framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html
   framework/comparison/2015/09/06/from-rspec-to-fix.html
@@ -158,7 +173,7 @@ ATTRIBUTES = %r{\A(?:\s+[a-z][a-z0-9-]*(?:="[^"]*")?)*\s*/?\z}i
 FORBIDDEN_ELEMENTS = %w[div span script style iframe frame object embed form base].freeze
 ATTRIBUTE_NAMES = %w[
   lang charset name content http-equiv property rel href src alt width height type sizes as crossorigin
-  title id role datetime aria-label aria-labelledby aria-current data-example data-directory scope
+  title id role datetime aria-label aria-labelledby aria-current data-example data-directory scope hreflang
 ].freeze
 REL_VALUES = %w[stylesheet icon apple-touch-icon preload canonical alternate home prev next].freeze
 # The roles a page may give, and the elements that may take each: a note at
@@ -208,6 +223,40 @@ end
 
 def read(path)
   File.read(path, encoding: "UTF-8")
+end
+
+def language_of(path)
+  path.start_with?(JAPANESE) ? "ja" : "en"
+end
+
+# A path without its language: the English page of a Japanese one.
+def unlocalized(path)
+  path.delete_prefix(JAPANESE)
+end
+
+# The same page in the other language; for the 404, which GitHub Pages
+# serves at any address, the Japanese home page.
+def counterpart(path)
+  return "#{JAPANESE}index.html" if path == "404.html"
+
+  path.start_with?(JAPANESE) ? unlocalized(path) : JAPANESE + path
+end
+
+def home?(path)
+  %W[index.html #{JAPANESE}index.html].include?(path)
+end
+
+def archived?(path)
+  ARCHIVED.include?(unlocalized(path))
+end
+
+# The files that exist in each language: the pages and the feeds.
+def localized?(file)
+  file.end_with?(".html") || FEEDS.value?(file)
+end
+
+def nav_pattern(path, kind)
+  %r{<nav aria-label="#{Regexp.escape(LABELS[language_of(path)][kind])}">(.*?)</nav>}m
 end
 
 # The files that will be published: those git tracks or would add, so that
@@ -286,13 +335,14 @@ def date_of(html)
 end
 
 def trail_of(path, html)
-  urls = if POST.match?(path)
-           ["/blog/"]
+  prefix = path.start_with?(JAPANESE) ? JAPANESE : ""
+  urls = if POST.match?(unlocalized(path))
+           ["/#{prefix}blog/"]
          else
-           parts = url_for(path).split("/").reject(&:empty?)
-           (1...parts.size).map { |size| "/#{parts.first(size).join('/')}/" }
+           parts = url_for(unlocalized(path)).split("/").reject(&:empty?)
+           (1...parts.size).map { |size| "/#{prefix}#{parts.first(size).join('/')}/" }
          end
-  crumbs = [["Fixrb", "/"]] + urls.filter_map do |url|
+  crumbs = [["Fixrb", "/#{prefix}"]] + urls.filter_map do |url|
     [title_of(read(file_for(url))), url] if @files.include?(file_for(url))
   end
   crumbs + [[title_of(html), url_for(path)]]
@@ -330,7 +380,7 @@ end
 
 # The structured data of an indexed page, as bin/check --fix writes it.
 def structured_data(path, html, times)
-  graph = if path == "index.html"
+  graph = if home?(path)
             [organization(html), site_of(html)]
           elsif POST.match?(path)
             [post_of(path, html, times), breadcrumbs(path, html)]
@@ -352,14 +402,16 @@ def with_structured_data(path, html, times)
   without.sub(TWITTER_CARD) { TWITTER_CARD + structured_data(path, html, times) }
 end
 
-# When each post was published and last updated, from the feed; nil if the
-# feed cannot be read, which check_feed reports.
+# When each post was published and last updated, from the feed of its
+# language; nil if a feed cannot be read, which check_feed reports.
 def feed_times
-  feed = REXML::Document.new(read("feed.xml"))
-  REXML::XPath.match(feed, "/feed/entry").each_with_object({}) do |entry, times|
-    href = entry.elements["link"]&.attributes&.[]("href")
-    published, updated = %w[published updated].map { |key| entry.elements[key]&.text }
-    times[href.delete_prefix("#{ORIGIN}/")] = [published, updated] if href && published && updated
+  FEEDS.values.each_with_object({}) do |path, times|
+    feed = REXML::Document.new(read(path))
+    REXML::XPath.match(feed, "/feed/entry").each do |entry|
+      href = entry.elements["link"]&.attributes&.[]("href")
+      published, updated = %w[published updated].map { |key| entry.elements[key]&.text }
+      times[href.delete_prefix("#{ORIGIN}/")] = [published, updated] if href && published && updated
+    end
   end
 rescue REXML::ParseException
   nil
@@ -444,12 +496,35 @@ end
 
 def check_tag(path, name, attributes)
   error(path, "<#{name}> is not allowed") if FORBIDDEN_ELEMENTS.include?(name)
+  if attributes.key?("aria-label") && !LABELS[language_of(path)].value?(attributes["aria-label"])
+    error(path, "aria-label=\"#{attributes["aria-label"]}\" is not a label of the navs of its language")
+  end
   (attributes.keys - ATTRIBUTE_NAMES).each { |key| error(path, "<#{name}> has the attribute #{key}, which is not allowed") }
   (attributes["rel"].to_s.split - REL_VALUES).each { |rel| error(path, "<#{name}> has rel=\"#{rel}\", which is not allowed") }
   if attributes.key?("role") && !ROLES.fetch(attributes["role"], []).include?(name)
     error(path, "<#{name}> has role=\"#{attributes["role"]}\", which is not allowed")
   end
   error(path, "<img> needs alt, width and height") if name == "img" && !(%w[alt width height] - attributes.keys).empty?
+end
+
+# A link to a page or a feed stays in the language of the page. The one way
+# to the other language is a link that says so, with hreflang and lang, to
+# the same page in it; the alternates of the head are checked by check_head.
+def check_language(path, name, attributes)
+  href = attributes["href"]
+  if name == "a" && attributes.key?("hreflang")
+    other = (LANGUAGES - [language_of(path)]).first
+    return if attributes["hreflang"] == other && attributes["lang"] == other && href == url_for(counterpart(path))
+
+    return error(path, "a link with hreflang must lead to the same page in the other language, #{url_for(counterpart(path))}, with its lang")
+  end
+  return error(path, "<#{name}> takes no hreflang") if attributes.key?("hreflang") && !(name == "link" && attributes["rel"] == "alternate")
+  return unless href&.match?(%r{\A/(?!/)})
+
+  target = file_for(href.split("#", 2).first)
+  return unless @files.include?(target) && localized?(target)
+
+  error(path, "#{href} leads to a page in another language") unless language_of(target) == language_of(path)
 end
 
 def check_tags(path, html)
@@ -481,20 +556,35 @@ def check_tags(path, html)
       error(path, "#{value} must be served by the site") if (key == "src" || local) && !value.start_with?("/")
       check_reference(path, html, value)
     end
+    check_language(path, name, attributes)
   end
   # The two policies of the shared head, and no other.
   error(path, "declares a policy (http-equiv or referrer) outside the shared head") unless policies == 2
 end
 
 def check_head(path, html)
-  error(path, "must start with the head shared by every page, up to the referrer policy") unless html.start_with?(HEAD)
+  head = HEAD.sub('<html lang="en">', %(<html lang="#{language_of(path)}">))
+  error(path, "must start with the head shared by every page, in its language, up to the referrer policy") unless html.start_with?(head)
   error(path, "needs a <title>") unless html.match?(%r{<title>[^<]+</title>})
   error(path, "needs exactly one <h1>") unless html.scan(/<h1[\s>]/).size == 1
   ids(html).tally.each { |id, count| error(path, "id #{id} is used #{count} times") if count > 1 }
   return error(path, "must not be indexed") if path == "404.html" && !html.include?('<meta name="robots" content="noindex">')
+  return error(path, "has alternates, which only an indexed page takes") if path == "404.html" && html.include?("<link rel=\"alternate\" hreflang=")
   return if path == "404.html"
 
   canonical = ORIGIN + url_for(path)
+  english = unlocalized(path)
+  alternates = [["en", english], ["ja", JAPANESE + english], ["x-default", english]].map do |language, page|
+    %(\n  <link rel="alternate" hreflang="#{language}" href="#{ORIGIN}#{url_for(page)}">)
+  end.join
+  unless html.include?(%(<link rel="canonical" href="#{canonical}">#{alternates})) && html.scan("<link rel=\"alternate\" hreflang=").size == 3
+    error(path, "its canonical URL must be followed by its alternates, in English, in Japanese and by default, and by no other")
+  end
+  # Once, right after og:site_name, on a Japanese page only.
+  locale = LOCALES[language_of(path)]
+  locales = html.scan(/<meta property="og:locale" content="([^"]*)">/).flatten
+  placed = locale.nil? || html.include?(%(<meta property="og:site_name" content="Fixrb">\n  <meta property="og:locale" content="#{locale}">))
+  error(path, "og:locale must be #{locale ? "#{locale}, once, right after og:site_name" : 'absent'}") unless locales == [locale].compact && placed
   description = html[/<meta name="description" content="([^"]+)">/, 1]
   error(path, "needs a description") unless description
   error(path, "canonical must be #{canonical}") unless html.include?(%(<link rel="canonical" href="#{canonical}">))
@@ -505,7 +595,7 @@ def check_head(path, html)
   error(path, "needs #{ROBOTS}") unless html.include?(ROBOTS)
   error(path, "its <h1> must hold text") if title_of(html).empty?
   og_title = meta_of(html, "og:title")
-  title = path == "index.html" ? og_title : "#{og_title} · Fixrb"
+  title = home?(path) ? og_title : "#{og_title} · Fixrb"
   error(path, "<title> must be #{title}") unless CGI.unescapeHTML(html[%r{<title>([^<]*)</title>}, 1].to_s) == title
   if POST.match?(path)
     error(path, "og:title must be its <h1>") unless og_title == title_of(html)
@@ -539,10 +629,12 @@ def check_stylesheet
   end
 end
 
-def check_shared(path, html, home)
+def check_shared(path, html, homes)
+  home = homes[language_of(path)]
   SHARED.each do |part, pattern|
-    mine = html[pattern]&.gsub(' aria-current="page"', "")
-    error(path, "its site #{part} differs from the one of index.html") unless mine && mine == home[pattern]
+    mine = html[pattern]&.gsub(' aria-current="page"', "")&.gsub(LANGUAGE_LINK, '<a href="" hreflang="')
+    theirs = home[pattern].to_s.gsub(LANGUAGE_LINK, '<a href="" hreflang="')
+    error(path, "its site #{part} differs from the one of its home page") unless mine && mine == theirs
   end
 end
 
@@ -560,7 +652,7 @@ def check_code_blocks(path, html, used)
 
       used << example
       source = read(example)
-    elsif attributes.empty? && ARCHIVED.include?(path)
+    elsif attributes.empty? && archived?(path)
       source = text_of(content)
     else
       next error(path, "a <pre><code> needs a data-example attribute naming a file of examples/")
@@ -579,20 +671,20 @@ def check_guide(path, html)
   return error(path, "#{root}index.html is missing: the guide starts there") unless @files.include?("#{root}index.html")
 
   own = url_for(path)
-  nav = html[GUIDE_NAV].to_s
-  first = read("#{root}index.html")[GUIDE_NAV].to_s
+  nav = html[nav_pattern(path, :guide)].to_s
+  first = read("#{root}index.html")[nav_pattern(path, :guide)].to_s
   return error(path, "its nav of the guide differs from the one of #{root}index.html") unless nav.gsub(' aria-current="page"', "") == first.gsub(' aria-current="page"', "")
   return error(path, "the nav of the guide must mark its own link with aria-current") unless nav.include?(%(href="#{own}" aria-current="page"))
 
   order = nav.scan(/href="([^"]+)"/).flatten
   index = order.index(own)
   around = [(%(href="#{order[index - 1]}" rel="prev") if index.positive?), (%(href="#{order[index + 1]}" rel="next") if order[index + 1])].compact
-  links = html[PAGES_NAV, 1].to_s.scan(/href="[^"]+" rel="[a-z]+"/)
+  links = html[nav_pattern(path, :pages), 1].to_s.scan(/href="[^"]+" rel="[a-z]+"/)
   error(path, "its nav of pages must link to the pages before and after it in the guide") unless links == around
 end
 
 def check_contents(path, html)
-  nav = html[CONTENTS_NAV, 1]
+  nav = html[nav_pattern(path, :contents), 1]
   return unless nav
 
   sections = html.scan(SECTION)
@@ -601,6 +693,41 @@ def check_contents(path, html)
   # the nth <h2>, and provides for fourteen.
   error(path, "has a nav of its sections: every <h2> must have an id") unless html.scan(/<h2[ >]/).size == sections.size
   error(path, "its nav of the page lists more sections than the stylesheet can mark: fourteen") if sections.size > 14
+end
+
+# A page and its translation show the same thing but for the words: the
+# same blocks, in the same order and with the same attributes, the same code
+# and terminal sessions, as many strong words, the same inline code, images,
+# dates and links (a link to a page or a feed leading to it in its language),
+# and the same type, date and author in the head. Each pair is compared once, from its Japanese
+# page.
+PARITY = {
+  "blocks" => lambda do |main|
+    main.scan(%r{</?(?:h[1-4]|p|ul|ol|li|dl|dt|dd|table|thead|tbody|tr|th|td|figure|figcaption|pre|section|article|header|footer|hgroup|nav|main)\b[^>]*>})
+        .map { |tag| tag.sub(/ aria-label="[^"]*"/, "") }
+  end,
+  "code" => ->(main) { main.scan(PRE) },
+  "strong elements" => ->(main) { main.scan("<strong>").size },
+  "inline code" => ->(main) { main.gsub(PRE, "").scan(%r{<code>.*?</code>}m).sort },
+  "images" => ->(main) { main.scan(/<img\b[^>]*>/).map { |tag| tag.sub(/ alt="[^"]*"/, "") } },
+  "dates" => ->(main) { main.scan(/<time datetime="[^"]*">/) },
+  "links" => ->(main) { main.scan(/\shref="([^"]*)"/).flatten.map { |href| href.sub(%r{\A/#{JAPANESE}}, "/") }.sort }
+}.freeze
+HEAD_PARITY = %w[og:type article:published_time article:author].freeze
+
+def check_translation(path, html)
+  return if path == "404.html"
+  return error(path, "has no translation: #{counterpart(path)} is missing") unless @files.include?(counterpart(path))
+  return unless language_of(path) == "ja"
+
+  english = read(counterpart(path))
+  mine, theirs = [html, english].map { |page| page[%r{<main>.*</main>}m].to_s }
+  PARITY.each do |what, extract|
+    error(path, "its #{what} differ from those of #{counterpart(path)}") unless extract.call(mine) == extract.call(theirs)
+  end
+  HEAD_PARITY.each do |key|
+    error(path, "its #{key} differs from the one of #{counterpart(path)}") unless meta_of(html, key) == meta_of(english, key)
+  end
 end
 
 # The examples a session runs, as bin/examples finds them: the file of `ruby
@@ -624,7 +751,7 @@ def check_session(path, attributes, content, used)
   directory = attributes[DIRECTORY, 1]
   unless directory
     return error(path, "a terminal session takes no attribute but data-directory") unless attributes.empty?
-    return if !content.include?("<samp>") || ARCHIVED.include?(path)
+    return if !content.include?("<samp>") || archived?(path)
 
     return error(path, "a terminal session that shows output needs a data-directory, where bin/examples runs it")
   end
@@ -659,7 +786,7 @@ def fix_code_blocks(path)
     example = attributes[EXAMPLE, 1]
     if code?(content) && example && @files.include?(example)
       "<pre#{attributes}>#{code_markup(read(example), example)}</pre>"
-    elsif code?(content) && attributes.empty? && ARCHIVED.include?(path)
+    elsif code?(content) && attributes.empty? && archived?(path)
       "<pre#{attributes}>#{code_markup(text_of(content), path)}</pre>"
     else
       match[0]
@@ -671,58 +798,68 @@ def fix_code_blocks(path)
   fixed != html
 end
 
-def check_entry(entry, updated)
+def check_entry(feed, entry, updated)
   id = entry.elements["id"].text
   href = entry.elements["link"].attributes["href"]
   published, changed = %w[published updated].map { |key| Time.iso8601(entry.elements[key].text) }
-  error("feed.xml", "#{id} must be its link without .html") unless "#{id}.html" == href
-  error("feed.xml", "#{id} is updated before it is published") if changed < published
-  error("feed.xml", "#{id} is updated after the feed") if changed > updated
+  error(feed, "#{id} must be its link without .html") unless "#{id}.html" == href
+  error(feed, "#{id} is updated before it is published") if changed < published
+  error(feed, "#{id} is updated after the feed") if changed > updated
 
   path = href.delete_prefix("#{ORIGIN}/")
   unless href.start_with?("#{ORIGIN}/") && @files.include?(path)
-    error("feed.xml", "#{href} leads nowhere")
+    error(feed, "#{href} leads nowhere")
     return
   end
+  error(feed, "#{href} is a page in another language") unless FEEDS[language_of(path)] == feed
 
   html = read(path)
-  error("feed.xml", "the title of #{id} differs from the page") unless entry.elements["title"].text == title_of(html)
-  error("feed.xml", "#{id} is published on another day than the page says") unless entry.elements["published"].text[0, 10] == date_of(html)
-  error("feed.xml", "the summary of #{id} must be the description of the page") unless entry.elements["summary"]&.text == meta_of(html, "description")
+  error(feed, "the title of #{id} differs from the page") unless entry.elements["title"].text == title_of(html)
+  error(feed, "#{id} is published on another day than the page says") unless entry.elements["published"].text[0, 10] == date_of(html)
+  error(feed, "the summary of #{id} must be the description of the page") unless entry.elements["summary"]&.text == meta_of(html, "description")
   [path, published]
 end
 
 # The feed is served as XML, which a browser can run: only Atom elements and
 # attributes from a short list, no document type, no processing instruction,
 # and links to the site only.
-def check_feed_markup(feed)
-  error("feed.xml", "has a document type") if feed.doctype
-  error("feed.xml", "has a processing instruction") unless REXML::XPath.match(feed, "//processing-instruction()").empty?
+def check_feed_markup(path, feed)
+  error(path, "has a document type") if feed.doctype
+  error(path, "has a processing instruction") unless REXML::XPath.match(feed, "//processing-instruction()").empty?
   REXML::XPath.each(feed, "//*") do |element|
     unless element.namespace == ATOM && FEED_ELEMENTS.include?(element.name)
-      error("feed.xml", "<#{element.expanded_name}> is not allowed")
+      error(path, "<#{element.expanded_name}> is not allowed")
     end
     element.attributes.each_attribute do |attribute|
-      error("feed.xml", "the attribute #{attribute.expanded_name} is not allowed") unless FEED_ATTRIBUTES.include?(attribute.expanded_name)
+      error(path, "the attribute #{attribute.expanded_name} is not allowed") unless FEED_ATTRIBUTES.include?(attribute.expanded_name)
     end
   end
   links = REXML::XPath.match(feed, "//*[local-name()='link']/@href").map(&:value) +
           REXML::XPath.match(feed, "//*[local-name()='icon']").map(&:text)
-  links.reject { |link| link.start_with?("#{ORIGIN}/") }.each { |link| error("feed.xml", "#{link} is not on #{ORIGIN}") }
+  links.reject { |link| link.start_with?("#{ORIGIN}/") }.each { |link| error(path, "#{link} is not on #{ORIGIN}") }
 end
 
-def check_feed(posts)
-  feed = REXML::Document.new(read("feed.xml"))
-  check_feed_markup(feed)
+# The feed of a language, in that language, is itself and leads to the blog
+# of its language; it holds the posts of that language, and only them.
+def check_feed(language, posts)
+  path = FEEDS[language]
+  feed = REXML::Document.new(read(path))
+  check_feed_markup(path, feed)
+  error(path, "its xml:lang must be #{language}") unless feed.root.attributes["xml:lang"] == language
+  error(path, "its id must be #{ORIGIN}/#{path}") unless REXML::XPath.first(feed, "/feed/id")&.text == "#{ORIGIN}/#{path}"
+  links = REXML::XPath.match(feed, "/feed/link").map { |link| [link.attributes["rel"], link.attributes["href"]] }
+  unless links.sort == [["alternate", ORIGIN + url_for(BLOGS[language])], ["self", "#{ORIGIN}/#{path}"]]
+    error(path, "its links must be itself, rel=\"self\", and #{ORIGIN}#{url_for(BLOGS[language])}, rel=\"alternate\"")
+  end
   updated = Time.iso8601(REXML::XPath.first(feed, "/feed/updated").text)
-  entries = REXML::XPath.match(feed, "/feed/entry").filter_map { |entry| check_entry(entry, updated) }
+  entries = REXML::XPath.match(feed, "/feed/entry").filter_map { |entry| check_entry(path, entry, updated) }
   paths = entries.map(&:first)
   dates = entries.map(&:last)
-  error("feed.xml", "an entry appears twice") unless paths.uniq.size == paths.size
-  error("feed.xml", "entries must go from newest to oldest") unless dates == dates.sort.reverse
-  (posts - paths).each { |post| error("feed.xml", "#{post} is missing") }
+  error(path, "an entry appears twice") unless paths.uniq.size == paths.size
+  error(path, "entries must go from newest to oldest") unless dates == dates.sort.reverse
+  (posts - paths).each { |post| error(path, "#{post} is missing") }
 rescue REXML::ParseException, ArgumentError, NoMethodError => e
-  error("feed.xml", "malformed: #{e.message.lines.first.strip}")
+  error(path, "malformed: #{e.message.lines.first.strip}")
 end
 
 # The sitemap lists every page but 404.html, by its canonical URL, once, and
@@ -892,7 +1029,7 @@ end
 # The pages of a guide, in the order of its nav: its first page, then the
 # others.
 def guide_pages(root)
-  read("#{root}index.html")[GUIDE_NAV].to_s.scan(/href="([^"]+)"/).flatten.map { |url| file_for(url) }
+  read("#{root}index.html")[nav_pattern(root, :guide)].to_s.scan(/href="([^"]+)"/).flatten.map { |url| file_for(url) }
 end
 
 def llms_full
@@ -904,18 +1041,20 @@ end
 
 # Every indexed page, once, in a section: Fix, its guide, the other gems in
 # the order of the home page, the blog, and the posts before Fix 1.0, the
-# newest first, as the feed has them.
+# newest first, as the feed has them; then the Japanese pages, in the same
+# order.
 def llms_sections(pages, times)
   home = read("index.html")
   gems = home.scan(%r{href="/gems/([a-z0-9_-]+)/"}).flatten.uniq.map { |name| "gems/#{name}/index.html" }
-  posts = times.keys.select { |path| pages.include?(path) }
-  {
+  posts = times.keys.select { |path| pages.include?(path) && language_of(path) == "en" }
+  english = {
     "Fix" => ["index.html", "gems/fix/index.html"],
     "Guide of Fix 1" => guide_pages(LLMS_GUIDE),
     "Gems" => gems.select { |path| pages.include?(path) } - ["gems/fix/index.html"],
     "Blog" => ["blog/index.html"] + (posts - ARCHIVED),
     "Before Fix 1.0" => posts & ARCHIVED
   }
+  english.merge("In Japanese" => english.values.flatten.map { |path| JAPANESE + path }.select { |path| pages.include?(path) })
 end
 
 def llms_index(pages, times)
@@ -1051,12 +1190,12 @@ times = feed_times
 pages.select { |path| fix_structured_data(path, times) }.each { |path| puts "fixed #{path}" } if fix && times
 fix_llms(pages, times).each { |path| puts "fixed #{path}" } if fix && times
 
-home = read("index.html")
+homes = { "en" => read("index.html"), "ja" => read("#{JAPANESE}index.html") }
 used = []
 pages.each do |path|
   html = read(path)
   check_head(path, html)
-  check_shared(path, html, home)
+  check_shared(path, html, homes)
   # The <span> elements of highlighted code are checked by check_code_blocks.
   # The structured data, by check_structured_data.
   without_code = html.gsub(PRE) do
@@ -1068,16 +1207,21 @@ pages.each do |path|
   check_code_blocks(path, html, used)
   check_guide(path, html)
   check_contents(path, html)
+  check_translation(path, html)
 end
 
 posts = pages.grep(POST)
-blog = read("blog/index.html")
-posts.each { |post| error("blog/index.html", "#{post} is missing") unless blog.include?(%(href="/#{post}")) }
+LANGUAGES.each do |language|
+  blog = read(BLOGS[language])
+  posts.select { |post| language_of(post) == language }.each do |post|
+    error(BLOGS[language], "#{post} is missing") unless blog.include?(%(href="/#{post}"))
+  end
+end
 (ARCHIVED - posts).each { |post| error("bin/check", "archived post #{post} does not exist") }
 (@files.grep(%r{\Aexamples/}) - used).each { |example| error(example, "no page shows it") }
 check_stylesheet
 (@files.grep(%r{\A(?:gems/[^/]+/)?img/}) - @linked).each { |image| error(image, "neither a page nor style.css uses it") }
-check_feed(posts)
+LANGUAGES.each { |language| check_feed(language, posts.select { |post| language_of(post) == language }) }
 check_sitemap(pages)
 check_robots(pages)
 check_llms(pages, times)

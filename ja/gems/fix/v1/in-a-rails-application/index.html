@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>FixでRailsアプリケーションをテストする · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="RailsアプリケーションのモデルとコントローラーをFixでテストするために必要なもの。読み込み用のヘルパー、サブジェクトごとに空にするデータベース、Rack::Test、ファイルの置き場所。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/in-a-rails-application/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/in-a-rails-application/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/in-a-rails-application/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="FixでRailsアプリケーションをテストする · Fix 1ガイド">
+  <meta property="og:description" content="RailsアプリケーションのモデルとコントローラーをFixでテストするために必要なもの。読み込み用のヘルパー、サブジェクトごとに空にするデータベース、Rack::Test、ファイルの置き場所。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/in-a-rails-application/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"Railsアプリケーションで使う","item":"https://fixrb.dev/ja/gems/fix/v1/in-a-rails-application/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>Railsアプリケーションで使う</h1>
+          <p>RailsアプリケーションのモデルとコントローラーをFixでテストするために必要なもの、そしてファイルの置き場所。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#gemfile">Gemfile</a></li>
+          <li><a href="#layout">配置</a></li>
+          <li><a href="#loading">アプリケーションの読み込み</a></li>
+          <li><a href="#models">モデル</a></li>
+          <li><a href="#controllers">コントローラー</a></li>
+          <li><a href="#running">実行</a></li>
+          <li><a href="#processes">プロセスが隔離しないもの</a></li>
+        </ol>
+      </nav>
+      <p>このページでは、Fixだけをテストフレームワークとして使う小さなマイクロブログ、<a href="https://github.com/fixrb/microblog">fixrb/microblog</a>というRailsアプリケーションを使います。ユーザーはハンドルを選び、短い文章を投稿し、互いにフォローし、タイムラインを読みます。ドメイン、つまりハンドルと投稿の本文は<code>lib</code>にある素のRubyで、<a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a>で示したとおりにテストされています。このページで扱うのは残りの部分、データベースを必要とするモデルと、アプリケーションを必要とするコントローラーです。</p>
+      <p>ここに示すファイルは、そのアプリケーションのリポジトリにあるとおりのもので、そちらでアプリケーションとともに実行されています。このサイトのリポジトリはページを公開する前に例を実行しますが、Railsをもたないため、これらは実行せずに示している例です。</p>
+
+      <h2 id="gemfile">Gemfile</h2>
+      <p>Fixとそのコマンドは、<code>require: false</code>をつけてtestグループに入れます（<code>gem "fix", require: false</code>と<code>gem "fix-command", require: false</code>）。Railsはアプリケーションの起動時に、その環境のグループのgemをrequireします。<code>fix</code>のファイルは自分でFixをrequireするので、アプリケーションがFixを読み込むことはありません。</p>
+
+      <h2 id="layout">配置</h2>
+      <p>モデルやコントローラーの仕様は、Railsのものを何も名指ししません（<code>eq 302</code>、<code>eq ["Body can't be blank"]</code>）。そこでこのアプリケーションは、<a href="/ja/gems/fix/v1/patterns/#implementations">パターン</a>が共有する仕様でそうしているように、仕様をテストから切り離しています。<code>spec</code>には仕様を置きます。1ファイルにひとつの<code>Fix :Name do … end</code>という文書で、それぞれFixだけをrequireし、Railsもデータベースも、対象のクラスさえも読み込みません。<code>fix</code>にはテスト、つまり<code>fix</code>コマンドが実行するファイルを置きます。それぞれがサブジェクトに必要なものを読み込み、仕様をrequireし、<code>exit(Fix[:Name].test { … })</code>で終わります。そのブロックがサブジェクトを作ります。こうすると、結果は仕様の行を指します。</p>
+      <p>仕様の<code>let</code>は、2つのファイルの間のインターフェースです。仕様はサブジェクトのパラメーターを、その既定値と、それを変える<code>with</code>とともに宣言し、テストのブロックはそれを名前で読みます。これまでのページのように両方をひとつのファイルに書いても、同じように動きます。RSpecも使うアプリケーションでは、<code>spec</code>をRSpecのために残し、文書はたとえば<code>fix/specs</code>に置きます。</p>
+
+      <h2 id="loading">アプリケーションの読み込み</h2>
+      <p>モデルとコントローラーのテストはヘルパー<code>fix/support/rails.rb</code>を共有します。名前が<code>_fix.rb</code>で終わらないので、<code>fix</code>がそれを単独で実行することはありません。</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/support/rails.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+<span class="comment"># Loads the application in its test environment, for the tests of the</span>
+<span class="comment"># models and of the controllers. Those of the domain, in fix/microblog,</span>
+<span class="comment"># need none of this: they run on plain Ruby. The specifications, in</span>
+<span class="comment"># spec, need nothing but Fix.</span>
+<span class="comment">#</span>
+<span class="comment"># The tests empty the database, so they run in the test environment and</span>
+<span class="comment"># nowhere else, whatever the shell says.</span>
+<span class="constant">ENV</span>[<span class="string">"RAILS_ENV"</span>] = <span class="string">"test"</span>
+
+require_relative <span class="string">"../../config/environment"</span>
+require <span class="string">"rack/test"</span>
+
+<span class="comment"># Keeps the test database in step with db/schema.rb, as rails/test_help</span>
+<span class="comment"># does.</span>
+<span class="constant">ActiveRecord</span>::<span class="constant">Migration</span>.maintain_test_schema!
+
+<span class="comment"># Fix builds the subject anew for every expectation, in the child</span>
+<span class="comment"># process of its context, which gets a connection of its own: Active</span>
+<span class="comment"># Record forgets the pool of the parent after a fork. The database</span>
+<span class="comment"># itself is outside the processes, so a subject starts by emptying it.</span>
+<span class="comment"># Nothing is rolled back; nothing needs to be.</span>
+<span class="keyword">def</span> empty_database
+  <span class="constant">Follow</span>.delete_all
+  <span class="constant">Post</span>.delete_all
+  <span class="constant">User</span>.delete_all
+<span class="keyword">end</span>
+
+<span class="comment"># A browser for the application, with its cookies, signed in as the user</span>
+<span class="comment"># of that handle when one is given. Its requests return a</span>
+<span class="comment"># Rack::MockResponse, with a status, a body and a location.</span>
+<span class="keyword">def</span> browser(<span class="string">as:</span> <span class="keyword">nil</span>)
+  visitor = <span class="constant">Rack</span>::<span class="constant">Test</span>::<span class="constant">Session</span>.new(<span class="constant">Rails</span>.application)
+  visitor.post(<span class="string">"/session"</span>, <span class="string">handle:</span> as) <span class="keyword">if</span> as
+  visitor
+<span class="keyword">end</span>
+</code></pre>
+      <p>ここでは4つのことが起こります。</p>
+      <ul>
+        <li>環境は、Railsの<code>test_helper.rb</code>のように既定値として与えるのではなく、強制的に<code>test</code>にします。テストはデータベースを空にするので、<code>RAILS_ENV=development</code>をexportしたシェルから開発用のデータベースに向かってはならないからです。</li>
+        <li>アプリケーションが起動し、<code>maintain_test_schema!</code>が、minitestのための<code>rails/test_help</code>と同じように、テスト用データベースを<code>db/schema.rb</code>に合わせます。</li>
+        <li>Fixは期待ごとに、そのコンテキストの子プロセスの中でサブジェクトを作り直します。その子プロセスは、同じコンテキストのほかの期待と共有されます。子プロセスは開いている接続も含めて親のコピーとして始まりますが、Active Recordはforkした子プロセスでは親のコネクションプールを破棄し、子プロセスは最初にデータベースが必要になったときに自分で接続します。ただしデータベースはプロセスの外にあり、サブジェクトが書いたものを保持するので、サブジェクトはまずそれを空にします。トランザクションで包むことも、ロールバックすることもありません。期待がプロセスに残したもの、たとえばキャッシュした値や<code>ActionMailer::Base.deliveries</code>にあるメールは、同じコンテキストの次の期待が目にします。</li>
+        <li>コントローラーのためのブラウザー。アプリケーションに対する<code>Rack::Test::Session</code>で、クッキーをもち、ハンドルを与えればサインインします。Rack::TestはAction Packの依存gemです。そのリクエストは、<code>status</code>、<code>body</code>、<code>location</code>をもつ<code>Rack::MockResponse</code>を返します。</li>
+      </ul>
+      <p>2つのメソッドはトップレベルで定義されているので、サブジェクトブロックからは<code>Kernel</code>と同じように見えます。このように定義した名前は、もう<code>let</code>の名前には使えません。</p>
+
+      <h2 id="models">モデル</h2>
+      <p>投稿には本文があり、本文は空であってはならず、280文字を超えてもなりません。仕様<code>spec/models/post_spec.rb</code>は、本文をパラメーターとし、レコードのメソッド<code>valid?</code>、<code>errors</code>、<code>mentions</code>でそれを述べます。</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/spec/models/post_spec.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+require <span class="string">"fix"</span>
+
+<span class="comment"># A post, built from a body: it mentions the handles of the body, and</span>
+<span class="comment"># says why an empty or an overlong body is refused.</span>
+<span class="constant">Fix</span> <span class="string">:Post</span> <span class="keyword">do</span>
+  let(<span class="string">:body</span>) { <span class="string">"Good morning, @bob and @carol."</span> }
+
+  on <span class="string">:valid?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:mentions</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">%w[bob carol]</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">""</span> <span class="keyword">do</span>
+    on <span class="string">:valid?</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_false
+    <span class="keyword">end</span>
+
+    on <span class="string">:errors</span> <span class="keyword">do</span>
+      on <span class="string">:full_messages</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq [<span class="string">"Body can't be blank"</span>]
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">"a"</span> * <span class="number">281</span> <span class="keyword">do</span>
+    on <span class="string">:valid?</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> be_false
+    <span class="keyword">end</span>
+
+    on <span class="string">:errors</span> <span class="keyword">do</span>
+      on <span class="string">:full_messages</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq [<span class="string">"Body is too long (maximum is 280 characters)"</span>]
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>テスト<code>fix/models/post_fix.rb</code>は、その本文をもつユーザーの投稿を作り、<code>errors</code>が埋まるように検証します。</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/models/post_fix.rb"><code><span class="comment">#!/usr/bin/env ruby</span>
+<span class="comment"># frozen_string_literal: true</span>
+
+require_relative <span class="string">"../support/rails"</span>
+require_relative <span class="string">"../../spec/models/post_spec"</span>
+
+<span class="comment"># The subject is a new post of Alice with the body, a parameter of the</span>
+<span class="comment"># specification, validated.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:Post</span>].test <span class="keyword">do</span>
+  empty_database
+  <span class="constant">User</span>.create!(<span class="string">handle:</span> <span class="string">"alice"</span>).posts.new(<span class="string">body:</span>).tap(&amp;<span class="string">:validate</span>)
+<span class="keyword">end</span>)
+</code></pre>
+      <p>ユーザーは期待ごとに、空にしたばかりのデータベースの中で、ブロックの中で作られます。テストに必要なレコードはサブジェクトのあるところで作り、親プロセスで一度だけ実行されるファイルの中では決して作りません。すでに存在する行、たとえば使用済みのハンドルやフォロー済みのユーザーが必要なテストも、そこで作ります。</p>
+
+      <h2 id="controllers">コントローラー</h2>
+      <p>コントローラーのテストのサブジェクトはレスポンスです。仕様<code>spec/controllers/posts_spec.rb</code>は、サインインした訪問者とそうでない訪問者について、そのステータス、ロケーション、本文を判定します。</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/spec/controllers/posts_spec.rb"><code><span class="comment"># frozen_string_literal: true</span>
+
+require <span class="string">"fix"</span>
+
+<span class="comment"># The response to posting the body, for the visitor signed in with the</span>
+<span class="comment"># handle: home when the post is saved, the form again with the reason</span>
+<span class="comment"># when it is not, the sign-in page for a visitor who is not signed in.</span>
+<span class="constant">Fix</span> <span class="string">:CreatePost</span> <span class="keyword">do</span>
+  let(<span class="string">:handle</span>) { <span class="string">"alice"</span> }
+  let(<span class="string">:body</span>) { <span class="string">"Hello, world!"</span> }
+
+  on <span class="string">:status</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">302</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:location</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"http://example.org/"</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">body:</span> <span class="string">"a"</span> * <span class="number">281</span> <span class="keyword">do</span>
+    on <span class="string">:status</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">422</span>
+    <span class="keyword">end</span>
+
+    on <span class="string">:body</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> match(<span class="string">/Body is too long/</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">handle:</span> <span class="keyword">nil</span> <span class="keyword">do</span>
+    on <span class="string">:status</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">302</span>
+    <span class="keyword">end</span>
+
+    on <span class="string">:location</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="string">"http://example.org/session/new"</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>テスト<code>fix/controllers/posts_fix.rb</code>はユーザーを作り、ハンドルでブラウザーをサインインさせ、本文を投稿してレスポンスを与えます。</p>
+      <pre data-example="examples/fix/v1/in-a-rails-application/fix/controllers/posts_fix.rb"><code><span class="comment">#!/usr/bin/env ruby</span>
+<span class="comment"># frozen_string_literal: true</span>
+
+require_relative <span class="string">"../support/rails"</span>
+require_relative <span class="string">"../../spec/controllers/posts_spec"</span>
+
+<span class="comment"># The subject is the response to posting the body, for the visitor</span>
+<span class="comment"># signed in with the handle; both are parameters of the specification.</span>
+exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].test <span class="keyword">do</span>
+  empty_database
+  <span class="constant">User</span>.create!(<span class="string">handle:</span> <span class="string">"alice"</span>)
+  browser(<span class="string">as:</span> handle).post(<span class="string">"/posts"</span>, <span class="string">post:</span> { <span class="string">body:</span> })
+<span class="keyword">end</span>)
+</code></pre>
+      <p>Rack::Testのリクエストのホストは<code>example.org</code>で、ロケーションはそのためです。サインインは訪問者が行うのと同じリクエストです。このアプリケーションではパスワードなしでハンドルだけで足りますが、パスワードのあるアプリケーションも、サインインフォームが送るリクエストで同じようにブラウザーをサインインさせます。Railsが生成する<code>config/environments/test.rb</code>のとおり、テスト環境ではCSRF対策は無効で、<code>show_exceptions</code>は<code>:rescuable</code>です。そのため、見つからないレコードは例外ではなく、判定できる404になります。</p>
+
+      <h2 id="running">実行</h2>
+      <pre><kbd>bin/rails db:prepare</kbd>
+<kbd>bundle exec fix</kbd></pre>
+      <p><code>db:prepare</code>が開発用とテスト用のデータベースを作ります。続いて<code>fix</code>が<code>fix</code>のファイルを、それぞれ専用のプロセスで実行します。プロセスごとにアプリケーションが一度起動し、実行時間の大半はそこにかかります。各行は<code>spec</code>の期待を指し、すべてのファイルが満たされれば終了ステータスは0です。Rakefileのタスク<code>task(:fix) { sh "fix" }</code>を使えば<code>rake</code>で実行できます。アプリケーションの継続的インテグレーションは<code>bin/rails db:prepare</code>、続いて<code>bundle exec fix</code>を実行します。その環境では<code>CI</code>が設定されているので、Railsの推奨どおり、アプリケーションはeager loadされます。</p>
+      <p><code>fix</code>のファイルは実行可能で、1行目に<code>#!/usr/bin/env ruby</code>があります。たとえば<code>fix/models/post_fix.rb</code>は単独でも動き、<code>config/boot.rb</code>を通してgemを見つけます。</p>
+
+      <h2 id="processes">プロセスが隔離しないもの</h2>
+      <p><a href="/ja/gems/fix/v1/in-a-project/#outside-the-process">プロジェクトで使う</a>では、子プロセスが残していくものを挙げました。Railsアプリケーションでは、それはデータベース（そのための<code>empty_database</code>）と、子プロセスが親と同じように書き込むログ<code>log/test.log</code>です。プロセスの中にとどまるものはプロセスとともに消えます。たとえばRailsのテスト環境が送信する代わりに<code>ActionMailer::Base.deliveries</code>に保持するメールは、それを送ったプロセスの中、つまりサブジェクトブロックの中で読み、仕様に与えます。</p>
+      <p>デバッガーでサブジェクトの中で止めるには、<a href="/ja/gems/fix/v1/in-a-project/#debugging">プロジェクトで使う</a>にあるとおり、そのコンテキストをプロセス自身の中で実行します（<code>test(fork: false)</code>）。それでも各サブジェクトは、まずデータベースを空にします。</p>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/in-a-project/" rel="prev">前へ：プロジェクトで使う</a></li>
+          <li><a href="/ja/gems/fix/v1/patterns/" rel="next">次へ：パターン</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/" aria-current="page">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/in-a-rails-application/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

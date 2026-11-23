@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
+  <id>https://fixrb.dev/ja/feed.xml</id>
+  <title>Fixrbブログ</title>
+  <subtitle>Fix、Matchi、そしてRubyのテストライブラリの設計についての記事。</subtitle>
+  <link href="https://fixrb.dev/ja/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://fixrb.dev/ja/blog/" rel="alternate" type="text/html"/>
+  <icon>https://fixrb.dev/favicon.ico</icon>
+  <author>
+    <name>Cyril Kato</name>
+  </author>
+  <updated>2026-11-23T00:00:00+00:00</updated>
+
+  <entry>
+    <id>https://fixrb.dev/ja/framework/release/2026/10/31/fix-1</id>
+    <title>Fix 1.0をリリースしました</title>
+    <link href="https://fixrb.dev/ja/framework/release/2026/10/31/fix-1.html" rel="alternate" type="text/html"/>
+    <published>2026-10-31T00:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>Fix 1.0を公開しました。テストスイートがRFC 2119の仕様であり、どんなサブジェクトに対してもテストでき、各コンテキストが専用のプロセスで動く、Rubyのテストフレームワークです。</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119</id>
+    <title>RFC 2119に着想を得た3つの要求レベル</title>
+    <link href="https://fixrb.dev/ja/framework/testing/2024/12/30/the-three-levels-of-requirements-inspired-by-rfc-2119.html" rel="alternate" type="text/html"/>
+    <published>2024-12-30T00:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>FixがMUST、SHOULD、MAYの要求レベルをどう実装し、仕様をより正確にしているか。そしてRSpecがたどってきた変遷とどう違うか。</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix</id>
+    <title>仕様を明確に分離してテストの設計を考え直す</title>
+    <link href="https://fixrb.dev/ja/framework/testing/2024/12/29/rethinking-test-architecture-with-fix.html" rel="alternate" type="text/html"/>
+    <published>2024-12-29T00:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>RubyのテストでFixが仕様を実装から切り離し、保守も再利用もしやすいテストスイートにする方法。</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/ja/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing</id>
+    <title>テストにおける期待値と実際の値の根本的な違い</title>
+    <link href="https://fixrb.dev/ja/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html" rel="alternate" type="text/html"/>
+    <published>2024-11-04T11:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>テストの設計において期待値と実際の値の区別がなぜ重要なのか、そしてそれがテストスイートの堅牢さと信頼性にどう影響するのかを探ります。</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix</id>
+    <title>RSpecからFixへ：よりシンプルなテストへの旅</title>
+    <link href="https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html" rel="alternate" type="text/html"/>
+    <published>2015-09-06T11:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>RSpecのような従来のフレームワークと比べて、Fixがミニマルな方法と直感的な構文で、Rubyのテストにシンプルさと明快さをもたらす様子。</summary>
+  </entry>
+
+  <entry>
+    <id>https://fixrb.dev/ja/framework/release/2015/09/03/a-fresh-take-on-ruby-testing</id>
+    <title>Rubyのテストを新たな視点で</title>
+    <link href="https://fixrb.dev/ja/framework/release/2015/09/03/a-fresh-take-on-ruby-testing.html" rel="alternate" type="text/html"/>
+    <published>2015-09-03T11:00:00+00:00</published>
+    <updated>2026-11-23T00:00:00+00:00</updated>
+    <summary>明確な仕様と純粋なRubyオブジェクトに焦点を当て、わずか148行のコードで作られたミニマルなRubyのテストフレームワーク、Fix 0.7の紹介。</summary>
+  </entry>
+</feed>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>matchi：どのテストフレームワークでも使えるRubyのマッチャー · Fixrb</title>
+  <meta name="description" content="Matchi：Minitestを含むどのテストフレームワークでも使えるRubyのマッチャー。比較を行うのはテスト対象のオブジェクトではなく、期待値です。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/matchi/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/matchi/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/matchi/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/matchi/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="matchi：どのテストフレームワークでも使えるRubyのマッチャー">
+  <meta property="og:description" content="Matchi：Minitestを含むどのテストフレームワークでも使えるRubyのマッチャー。比較を行うのはテスト対象のオブジェクトではなく、期待値です。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/matchi/">
+  <meta property="og:image" content="https://fixrb.dev/gems/matchi/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="名前の文字でジャグリングするmatchiの道化師の横に「matchi」と「どのテストフレームワークでも使えるRubyのマッチャー：比較するのは期待値」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"matchi","item":"https://fixrb.dev/ja/gems/matchi/"}]}]}</script>
+  <link rel="icon" href="/gems/matchi/img/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/gems/matchi/img/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/gems/matchi/img/apple-touch-icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/matchi/img/jester.svg" alt="" width="224" height="200">
+        <hgroup>
+          <h1>matchi</h1>
+          <p>フレームワークに依存しない、Rubyのマッチャー。</p>
+        </hgroup>
+      </header>
+      <p>マッチャーは期待値をもって作られ、実際の値がマッチするかどうかを問われます。答えは<code>true</code>か<code>false</code>で、否定、メッセージ、レポートはテストフレームワークに任せます。</p>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>6.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降</dd>
+        <dt>依存gem</dt>
+        <dd>なし</dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+        <dt>利用しているgem</dt>
+        <dd>Fix 1.0</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">使い方</a></li>
+          <li><a href="#matchers">マッチャー</a></li>
+          <li><a href="#expected-value">決めるのは期待値</a></li>
+          <li><a href="#frameworks">テストフレームワークとともに</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "matchi"</code>を加えるか、<code>gem install matchi</code>を実行してください。</p>
+
+      <h2 id="usage">使い方</h2>
+      <p><code>match?</code>に与えたブロックは一度だけ呼ばれて実際の値を返し、<code>to_s</code>は「expected … to …」という文を完成させます。</p>
+      <pre data-example="examples/matchi/usage.rb"><code>require <span class="string">"matchi"</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="number">42</span>)
+matcher.match? { <span class="number">42</span> } <span class="comment"># => true</span>
+matcher.match? { <span class="number">41</span> } <span class="comment"># => false</span>
+matcher.to_s          <span class="comment"># => "eq 42"</span>
+</code></pre>
+
+      <h2 id="matchers">マッチャー</h2>
+      <dl>
+        <dt><code>Be</code></dt>
+        <dd><code>equal?</code>による同一性。</dd>
+        <dt><code>Eq</code></dt>
+        <dd>同じクラスの値どうしの、<code>eql?</code>による同値性。</dd>
+        <dt><code>BeAKindOf</code></dt>
+        <dd>直接または名前で与えたモジュールの一種であること。</dd>
+        <dt><code>BeAnInstanceOf</code></dt>
+        <dd>直接または名前で与えたクラスのインスタンスであること。</dd>
+        <dt><code>BeWithin</code></dt>
+        <dd>期待する数値との差がデルタ以内の<code>Integer</code>、<code>Float</code>、<code>Rational</code>、<code>BigDecimal</code>。</dd>
+        <dt><code>Match</code></dt>
+        <dd><code>Regexp</code>にマッチする文字列かシンボル。</dd>
+        <dt><code>Satisfy</code></dt>
+        <dd>ブロックが<code>true</code>と答える値。</dd>
+        <dt><code>Predicate</code></dt>
+        <dd>述語が<code>true</code>と答える値。<code>:be_empty</code>は<code>empty?</code>を呼びます。</dd>
+        <dt><code>RaiseException</code></dt>
+        <dd>指定したクラスの例外を、必要なら指定したメッセージとともに発生させるブロック。<code>Interrupt</code>、シグナル、<code>NoMemoryError</code>は、それが期待したクラスでない限り素通りします。</dd>
+        <dt><code>Change</code></dt>
+        <dd>公開メソッドの戻り値を変えるブロック。必要なら<code>by</code>、<code>by_at_least</code>、<code>by_at_most</code>、<code>to</code>、あるいは<code>from</code>と<code>to</code>で指定します。</dd>
+      </dl>
+
+      <h2 id="expected-value">決めるのは期待値</h2>
+      <p>マッチャーが期待値と実際の値を比べるとき、呼び出しを受けるのは期待値の側です。<code>Matchi::Eq.new(a)</code>は<code>a.eql?(b)</code>を評価し、決して<code>b.eql?(a)</code>は評価しません。自分の等価性について嘘をつく実際の値は、通ることができません。</p>
+      <pre data-example="examples/matchi/forged.rb"><code>require <span class="string">"matchi"</span>
+
+actual = <span class="string">"bar"</span>
+
+<span class="keyword">def</span> actual.eql?(*)
+  <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+actual.eql?(<span class="string">"foo"</span>) <span class="comment"># => true</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Eq</span>.new(<span class="string">"foo"</span>)
+matcher.match? { actual } <span class="comment"># => false</span>
+</code></pre>
+      <p>3つの場合は、テスト対象のオブジェクトが生み出す値に、つまりその誠実さに頼ります。<code>Predicate</code>はそのメソッドのひとつを呼び、<code>Change</code>の<code>by</code>系の指定はそれが返す値を比べたり引いたりし、<code>RaiseException</code>のメッセージの条件は発生した例外のメッセージを読みます。どのマッチャーがどの保証を与えるかは、READMEに書かれています。</p>
+      <p>この規則の理由は<a href="/ja/design/testing/2024/11/04/fundamental-distinction-between-expected-and-actual-values-in-testing.html">テストにおける期待値と実際の値の根本的な違い</a>にあります。</p>
+
+      <h2 id="frameworks">テストフレームワークとともに</h2>
+      <p>どのフレームワークでも、数行でマッチャーを使えます。Minitestなら次のとおりです。</p>
+      <pre data-example="examples/matchi/minitest.rb"><code>require <span class="string">"matchi"</span>
+require <span class="string">"minitest/autorun"</span>
+
+<span class="keyword">class</span> <span class="constant">TestAnswer</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  <span class="keyword">def</span> assert_matches(matcher, actual)
+    message = <span class="string">"expected #{</span>actual.inspect<span class="string">} to #{</span>matcher<span class="string">}"</span>
+    assert matcher.match? { actual }, message
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> test_answer
+    assert_matches <span class="constant">Matchi</span>::<span class="constant">BeAKindOf</span>.new(<span class="constant">Integer</span>), <span class="number">42</span>
+    assert_matches <span class="constant">Matchi</span>::<span class="constant">BeWithin</span>.new(<span class="number">0.01</span>).of(<span class="number">0.3</span>), <span class="number">0.1</span> + <span class="number">0.2</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/matchi/blob/v6.0.0/README.md">README</a>：すべてのマッチャーとその引数とエラー、そしてRSpecとの違い。</li>
+        <li><a href="https://gemdocs.org/gems/matchi/6.0.0/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/matchi/versions/6.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/matchi/tree/v6.0.0">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/matchi/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>パターン：Rubyで契約を書く · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="Fixの仕様の4つの使い方。ひとつのインターフェースと複数の実装、依存ライブラリの契約、3つのレベル、gemに同梱する仕様。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/patterns/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/patterns/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/patterns/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/patterns/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="パターン：Rubyで契約を書く · Fix 1ガイド">
+  <meta property="og:description" content="Fixの仕様の4つの使い方。ひとつのインターフェースと複数の実装、依存ライブラリの契約、3つのレベル、gemに同梱する仕様。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/patterns/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"パターン","item":"https://fixrb.dev/ja/gems/fix/v1/patterns/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>パターン</h1>
+          <p>どの実装からも切り離された仕様の、4つの使い方。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#implementations">ひとつの仕様、複数の実装</a></li>
+          <li><a href="#dependencies">依存ライブラリの契約</a></li>
+          <li><a href="#levels">3つのレベルの契約</a></li>
+          <li><a href="#shipped">gemに同梱する仕様</a></li>
+        </ol>
+      </nav>
+      <p>Fixの仕様はクラスを名指ししません。サブジェクトが何をするかを述べ、サブジェクトを選ぶのはテストです。この4つのパターンは、そこから生まれます。</p>
+
+      <h2 id="implementations">ひとつの仕様、複数の実装</h2>
+      <p>2つのクラスが同じ仕事をするなら、ひとつの仕様がその仕事を記述し、それぞれの実装をその仕様でテストします。仕様は専用のファイル<code>fix/specs/stack.rb</code>に置きます。名前が<code>_fix.rb</code>で終わらないので、<code>fix</code>がそれを実行することはありません。</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/specs/stack.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    on <span class="string">:push</span>, <span class="number">2</span> <span class="keyword">do</span>
+      on <span class="string">:pop</span> <span class="keyword">do</span>
+        it <span class="constant">MUST</span> eq <span class="number">2</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:pop</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>各実装には、それをrequireしてサブジェクトをテストする短いファイルがあります。<code>fix/array_fix.rb</code>ではArrayです。</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/array_fix.rb"><code>require_relative <span class="string">"specs/stack"</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+      <p>プロジェクトの連結リストは<code>lib/linked_stack.rb</code>にあります。</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/lib/linked_stack.rb"><code><span class="keyword">class</span> <span class="constant">LinkedStack</span>
+  <span class="constant">Node</span> = <span class="constant">Data</span>.define(<span class="string">:value</span>, <span class="string">:below</span>)
+
+  <span class="keyword">def</span> initialize = @top = <span class="keyword">nil</span>
+  <span class="keyword">def</span> empty? = @top.nil?
+  <span class="keyword">def</span> push(value) = tap { @top = <span class="constant">Node</span>.new(value, @top) }
+
+  <span class="keyword">def</span> pop
+    value = @top&amp;.value
+    @top = @top&amp;.below
+    value
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>そして、そのテストファイル<code>fix/linked_stack_fix.rb</code>です。</p>
+      <pre data-example="examples/fix/v1/patterns/stacks/fix/linked_stack_fix.rb"><code>require_relative <span class="string">"specs/stack"</span>
+require_relative <span class="string">"../lib/linked_stack"</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { <span class="constant">LinkedStack</span>.new })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns/stacks"><kbd>fix</kbd>
+<samp>fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+fix/specs/stack.rb:5: Success: expected true to be true
+fix/specs/stack.rb:11: Success: expected 2 to eq 2
+fix/specs/stack.rb:17: Success: expected nil to be nil
+2 files met</samp></pre>
+      <p>各行は仕様を指し、同じ3行が2回並びます。最後の数は、満たされない実装があればそのファイルを示します。実装が増えても、短いファイルがひとつ増えるだけです。</p>
+
+      <h2 id="dependencies">依存ライブラリの契約</h2>
+      <p>プロジェクトは依存ライブラリの振る舞いに頼っています。たとえば、<code>JSON.parse</code>は指定しない限り文字列のキーを返す、ということです。依存ライブラリの仕様はそれを書き留め、次のアップグレードのときに、それがまだ成り立つかどうかを教えてくれます。</p>
+      <pre data-example="examples/fix/v1/patterns/json_fix.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"json"</span>
+
+<span class="constant">Fix</span> <span class="string">:JSON</span> <span class="keyword">do</span>
+  on <span class="string">:generate</span>, { <span class="string">"id"</span> => <span class="number">1</span> } <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">'{"id":1}'</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">'{"id":1}'</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq({ <span class="string">"id"</span> => <span class="number">1</span> })
+  <span class="keyword">end</span>
+
+  on <span class="string">:parse</span>, <span class="string">'{"id":1}'</span>, <span class="string">symbolize_names:</span> <span class="keyword">true</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq({ <span class="string">id:</span> <span class="number">1</span> })
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:JSON</span>].test { <span class="constant">JSON</span> })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns"><kbd>ruby json_fix.rb</kbd>
+<samp>json_fix.rb:6: Success: expected "{\"id\":1}" to eq "{\"id\":1}"
+json_fix.rb:10: Success: expected {"id" => 1} to eq {"id" => 1}
+json_fix.rb:14: Success: expected {id: 1} to eq {id: 1}</samp></pre>
+      <p>サブジェクトはモジュールそのもので、各<code>on</code>はプロジェクトが行う呼び出しです。書くのはプロジェクトが使う部分だけで、ライブラリ全体ではありません。</p>
+
+      <h2 id="levels">3つのレベルの契約</h2>
+      <p>インターフェースには、必須のメソッド、推奨されるメソッド、任意のメソッドがあることがよくあります。3つのレベルはそれを表します。ここでは、プラグインはテキストを変換しなければならず（MUST）、小文字の名前をもつべきであり（SHOULD）、バージョンをもってもよい（MAY）とします。</p>
+      <pre data-example="examples/fix/v1/patterns/plugin_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Plugin</span> <span class="keyword">do</span>
+  on <span class="string">:call</span>, <span class="string">"text"</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_an_instance_of <span class="constant">String</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:name</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> match(<span class="string">/\A[a-z]+\z/</span>)
+  <span class="keyword">end</span>
+
+  on <span class="string">:version</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> match(<span class="string">/\A\d+\.\d+\z/</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Upcase</span>
+  <span class="keyword">def</span> call(text) = text.upcase
+  <span class="keyword">def</span> name = <span class="string">"Upcase"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Reverse</span>
+  <span class="keyword">def</span> call(text) = text.reverse
+  <span class="keyword">def</span> name = <span class="string">"reverse"</span>
+  <span class="keyword">def</span> version = <span class="string">"1.2"</span>
+<span class="keyword">end</span>
+
+results = [
+  <span class="constant">Fix</span>[<span class="string">:Plugin</span>].test { <span class="constant">Upcase</span>.new },
+  <span class="constant">Fix</span>[<span class="string">:Plugin</span>].test { <span class="constant">Reverse</span>.new }
+]
+
+exit(results.all?)
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns"><kbd>ruby plugin_fix.rb</kbd>
+<samp>plugin_fix.rb:5: Success: expected "TEXT" to be an instance of String
+plugin_fix.rb:9: Warning: expected "Upcase" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Info: NoMethodError: undefined method 'version' for an instance of Upcase
+plugin_fix.rb:5: Success: expected "txet" to be an instance of String
+plugin_fix.rb:9: Success: expected "reverse" to match /\A[a-z]+\z/
+plugin_fix.rb:13: Success: expected "1.2" to match /\A\d+\.\d+\z/</samp></pre>
+      <p>最初の3行は<code>Upcase</code>のものです。名前が小文字ではないのでWarning、バージョンがないのでInfoです。どちらも成功として扱われるので、2つのプラグインはどちらも契約を満たし、終了ステータスは0です。<code>call</code>のないプラグインならErrorになり、成功とはなりません。</p>
+
+      <h2 id="shipped">gemに同梱する仕様</h2>
+      <p>ストア、アダプター、プラグインといったインターフェースを定義するgemは、rackが<a href="https://github.com/rack/rack/blob/main/lib/rack/lint.rb"><code>Rack::Lint</code></a>を同梱しているように、そのインターフェースの仕様を同梱できます。インターフェースを実装する人は自分の実装をその仕様でテストし、gemをアップグレードすれば新しい仕様も手に入ります。gemはそれを<code>lib</code>のファイル<code>lib/kvstore/specification.rb</code>に置き、そのファイルがFixをrequireします。読み込むのは実装する人だけなので、fixはgemの依存ではなく、実装する人のプロジェクトの依存になります。</p>
+      <pre data-example="examples/fix/v1/patterns/shipped/kvstore/lib/kvstore/specification.rb"><code>require <span class="string">"fix"</span>
+
+<span class="comment"># What the kvstore gem asks of a store, shipped with the gem for those</span>
+<span class="comment"># who write one.</span>
+<span class="constant">Fix</span> <span class="string">:KVStore</span> <span class="keyword">do</span>
+  on <span class="string">:fetch</span>, <span class="string">:missing</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:store</span>, <span class="string">:answer</span>, <span class="number">42</span> <span class="keyword">do</span>
+    on <span class="string">:fetch</span>, <span class="string">:answer</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">42</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:delete</span>, <span class="string">:missing</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> be_nil
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>実装は、それ自身のプロジェクトでそのファイルをrequireして自分をテストします。Gemfileにgemがあれば<code>require "kvstore/specification"</code>です。ここでは例を短くするため、2つのプロジェクトを並べ、実装をテストファイルの中に置いています。</p>
+      <pre data-example="examples/fix/v1/patterns/shipped/hash_store/fix/hash_store_fix.rb"><code><span class="comment"># With the gem in a Gemfile, this is require "kvstore/specification";</span>
+<span class="comment"># here the two projects sit side by side.</span>
+require_relative <span class="string">"../../kvstore/lib/kvstore/specification"</span>
+
+<span class="keyword">class</span> <span class="constant">HashStore</span>
+  <span class="keyword">def</span> initialize = @entries = {}
+  <span class="keyword">def</span> fetch(key) = @entries[key]
+  <span class="keyword">def</span> store(key, value) = tap { @entries[key] = value }
+  <span class="keyword">def</span> delete(key) = @entries.delete(key)
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:KVStore</span>].test { <span class="constant">HashStore</span>.new })
+</code></pre>
+      <pre data-directory="examples/fix/v1/patterns/shipped"><kbd>ruby hash_store/fix/hash_store_fix.rb</kbd>
+<samp>kvstore/lib/kvstore/specification.rb:7: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:12: Success: expected 42 to eq 42
+kvstore/lib/kvstore/specification.rb:17: Success: expected nil to be nil
+kvstore/lib/kvstore/specification.rb:21: Info: NoMethodError: undefined method 'size' for an instance of HashStore</samp></pre>
+      <p>各行はgemの中の仕様を指します。実装する人は、求められていることを書かれた場所で読めます。ストアには<code>size</code>がありませんが、仕様はそれを任意としているのでInfoとなり、ストアは契約を満たします。</p>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/in-a-rails-application/" rel="prev">前へ：Railsアプリケーションで使う</a></li>
+          <li><a href="/ja/gems/fix/v1/coming-from-rspec/" rel="next">次へ：RSpecからの移行</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/" aria-current="page">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/patterns/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

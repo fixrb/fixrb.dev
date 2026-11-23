@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>RSpecからFixへ：よりシンプルなテストへの旅 · Fixrb</title>
+  <meta name="description" content="RSpecのような従来のフレームワークと比べて、Fixがミニマルな方法と直感的な構文で、Rubyのテストにシンプルさと明快さをもたらす様子。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2015-09-06">
+  <meta property="article:author" content="https://cyril.email/">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="RSpecからFixへ：よりシンプルなテストへの旅">
+  <meta property="og:description" content="RSpecのような従来のフレームワークと比べて、Fixがミニマルな方法と直感的な構文で、Rubyのテストにシンプルさと明快さをもたらす様子。">
+  <meta property="og:url" content="https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html">
+  <meta property="og:image" content="https://fixrb.dev/img/card-ja-from-rspec-to-fix.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="「FIX」と組んだピクセルアートの活字とその校正刷りの横に「Fixrbブログ」と「RSpecからFixへ：よりシンプルなテストへの旅」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","@id":"https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html#post","headline":"RSpecからFixへ：よりシンプルなテストへの旅","description":"RSpecのような従来のフレームワークと比べて、Fixがミニマルな方法と直感的な構文で、Rubyのテストにシンプルさと明快さをもたらす様子。","image":"https://fixrb.dev/img/card-ja-from-rspec-to-fix.png","datePublished":"2015-09-06T11:00:00+00:00","dateModified":"2026-11-23T00:00:00+00:00","author":{"@type":"Person","name":"Cyril Kato","url":"https://cyril.email/"},"publisher":{"@type":"Organization","@id":"https://fixrb.dev/#organization","name":"Fixrb","url":"https://fixrb.dev/","logo":"https://fixrb.dev/icon.png","sameAs":["https://bsky.app/profile/fixrb.dev","https://github.com/fixrb","https://www.youtube.com/@fix_rb","https://x.com/fix_rb"]},"mainEntityOfPage":"https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"ブログ","item":"https://fixrb.dev/ja/blog/"},{"@type":"ListItem","position":3,"name":"RSpecからFixへ：よりシンプルなテストへの旅","item":"https://fixrb.dev/ja/framework/comparison/2015/09/06/from-rspec-to-fix.html"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <h1>RSpecからFixへ：よりシンプルなテストへの旅</h1>
+        <p><time datetime="2015-09-06">2015年9月6日</time> · Cyril Kato</p>
+      </header>
+      <p role="note">Fix 1.0より前に公開した記事の翻訳です。記事は書かれたときのまま残しており、例は以前のバージョンのgemを指していることがあります。Fix 1.0については、ガイドの<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>をご覧ください。</p>
+      <h2 id="the-quest-for-simplicity">シンプルさを求めて</h2>
+      <p>FixとRSpecのような従来のテストフレームワークとの最も際立った違いのひとつは、その複雑さにあります。興味深いことを物語る数字を見てみましょう。</p>
+      <h3 id="rspecs-components-version-33">RSpecの構成要素（バージョン3.3）</h3>
+      <ul>
+        <li><a href="https://github.com/rspec/rspec-metagem/releases/tag/v3.3.0">rspec</a> gem（7行）と、実行時の依存gem：
+        <ul>
+          <li><a href="https://github.com/rspec/rspec-core/releases/tag/v3.3.2">rspec-core</a>：6,689行</li>
+          <li><a href="https://github.com/rspec/rspec-expectations/releases/tag/v3.3.1">rspec-expectations</a>：3,697行</li>
+          <li><a href="https://github.com/rspec/rspec-mocks/releases/tag/v3.3.2">rspec-mocks</a>：3,963行</li>
+          <li><a href="https://github.com/rspec/rspec-support/releases/tag/v3.3.0">rspec-support</a>：1,509行</li>
+          <li><a href="https://github.com/halostatue/diff-lcs/releases/tag/v1.2.5">diff-lcs</a>：1,264行</li>
+        </ul></li>
+      </ul>
+      <p><strong>合計：17,129行</strong></p>
+      <h3 id="fixs-components-version-07">Fixの構成要素（バージョン0.7）</h3>
+      <ul>
+        <li><a href="https://github.com/fixrb/fix/releases/tag/v0.7.0">fix</a> gem（148行）と、実行時の依存gem：
+        <ul>
+          <li><a href="https://github.com/fixrb/spectus/releases/tag/v2.3.1">spectus</a>：289行</li>
+          <li><a href="https://github.com/fixrb/matchi/releases/tag/v0.0.9">matchi</a>：73行</li>
+        </ul></li>
+      </ul>
+      <p><strong>合計：510行</strong></p>
+      <p>根本の考え方は単純です。テストフレームワークは、それがテストするコードより複雑であってはならない。コードの量のこの劇的な差（16,619行）は、ミニマリズムと明快さへのFixのこだわりを映しています。</p>
+      <h2 id="a-real-world-comparison">実例での比較</h2>
+      <p>方法の主な違いがわかる実例を見てみましょう。次のMonsterクラスを考えます。</p>
+      <pre><code><span class="keyword">class</span> <span class="constant">Monster</span>
+  <span class="keyword">def</span> <span class="keyword">self</span>.get
+    {
+      <span class="string">boo:</span> {
+        <span class="string">name:</span> <span class="string">"Boo"</span>,
+        <span class="string">life:</span> <span class="number">123</span>,
+        <span class="string">mana:</span> <span class="number">42</span>
+      },
+      <span class="string">hasu:</span> {
+        <span class="string">name:</span> <span class="string">"Hasu"</span>,
+        <span class="string">life:</span> <span class="number">88</span>,
+        <span class="string">mana:</span> <span class="number">40</span>
+      }
+    }
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> get(id)
+    <span class="keyword">self</span>.class.get.fetch(id)
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h3 id="rspecs-layered-approach">RSpecの層を重ねる方法</h3>
+      <pre><code>require_relative <span class="string">"monster"</span>
+require <span class="string">"rspec/autorun"</span>
+
+<span class="constant">RSpec</span>.describe <span class="constant">Monster</span> <span class="keyword">do</span>
+  describe <span class="string">".get"</span> <span class="keyword">do</span>
+    subject(<span class="string">:monsters</span>) { described_class.get }
+
+    describe <span class="string">"#keys"</span> <span class="keyword">do</span>
+      it { expect(monsters.keys).to eql <span class="string">%i(boo hasu)</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  describe <span class="string">".new"</span> <span class="keyword">do</span>
+    subject(<span class="string">:described_instance</span>) { described_class.new }
+
+    describe <span class="string">"#get"</span> <span class="keyword">do</span>
+      subject(<span class="string">:monster</span>) { described_instance.get(name) }
+
+      context <span class="string">"with Boo monster"</span> <span class="keyword">do</span>
+        let(<span class="string">:name</span>) { <span class="string">:boo</span> }
+        it { expect(monster).to eql({ <span class="string">name:</span> <span class="string">"Boo"</span>, <span class="string">life:</span> <span class="number">123</span>, <span class="string">mana:</span> <span class="number">42</span> }) }
+      <span class="keyword">end</span>
+
+      context <span class="string">"with Boom monster"</span> <span class="keyword">do</span>
+        let(<span class="string">:name</span>) { <span class="string">:boom</span> }
+        it { expect { monster }.to raise_exception <span class="constant">KeyError</span> }
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h3 id="fixs-direct-style">Fixの直接的なスタイル</h3>
+      <pre><code>require_relative <span class="string">"monster"</span>
+require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span>.describe <span class="constant">Monster</span> <span class="keyword">do</span>
+  on <span class="string">:get</span> <span class="keyword">do</span>
+    on <span class="string">:keys</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> eql <span class="string">%i(boo hasu)</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:new</span> <span class="keyword">do</span>
+    on <span class="string">:get</span>, <span class="string">:boo</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> eql({ <span class="string">name:</span> <span class="string">"Boo"</span>, <span class="string">life:</span> <span class="number">123</span>, <span class="string">mana:</span> <span class="number">42</span> }) }
+    <span class="keyword">end</span>
+
+    on <span class="string">:get</span>, <span class="string">:boom</span> <span class="keyword">do</span>
+      it { <span class="constant">MUST</span> raise_exception <span class="constant">KeyError</span> }
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></code></pre>
+      <h2 id="key-differentiators">主な違い</h2>
+      <ol>
+        <li><p><strong>メソッドの連鎖</strong>：Fixでは、クラスメソッドでもインスタンスメソッドでも、ひとつの式でメソッドを記述できます。そのためコードがより簡潔で読みやすくなります。</p></li>
+        <li><p><strong>唯一の情報源</strong>：すべての仕様は、ルートで与えた記述対象のオブジェクトから導かれます。明示的なサブジェクトも暗黙のサブジェクトも要りません。記述対象のオブジェクトと記述したメソッドから導かれる、読み取り専用の動的なサブジェクトがひとつあるだけです。</p></li>
+        <li><p><strong>一貫した構文</strong>：Fixは、何をテストするかにかかわらず同じ構文を保ちます。値を確かめるときも、エラーを期待するときも、状態の変化を確かめるときも、構文は統一されていて予測できます。</p></li>
+      </ol>
+      <h2 id="clarity-in-practice">実践での明快さ</h2>
+      <p>Fixは、より直接的で、儀式の少ないテストの書き方を促します。2つのフレームワークがエラーの確認をどう扱うかを比べてみましょう。</p>
+      <p>RSpec：</p>
+      <pre><code>expect { problematic_call }.to raise_exception(<span class="constant">ErrorType</span>)</code></pre>
+      <p>Fix：</p>
+      <pre><code>it { <span class="constant">MUST</span> raise_exception <span class="constant">ErrorType</span> }</code></pre>
+      <p>値の比較なら：</p>
+      <p>RSpec：</p>
+      <pre><code>expect(value).to eq(expected)</code></pre>
+      <p>Fix：</p>
+      <pre><code>it { <span class="constant">MUST</span> eql expected }</code></pre>
+      <p>この一貫性は認知的な負担を減らし、テストを書きやすく、理解しやすくします。</p>
+      <h2 id="conclusion">まとめ</h2>
+      <p>Fixは、シンプルさと明快さを優先する、Rubyのテストへの新しい取り組みです。複雑さを減らし、一貫した構文を保つことで、開発者が大切なこと、つまりコードの振る舞いを確実に確かめる、明快で保守しやすいテストを書くことに集中できるようにします。</p>
+      <p>Fixを試してみたいですか？　まずはこちらから：</p>
+      <pre><kbd>gem install fix</kbd></pre>
+      <p>Fixでテストの流れをどう改善できるかは、<a href="https://gemdocs.org/gems/fix/latest/">ドキュメント</a>をご覧ください。</p>
+      <footer>
+        <p>カテゴリー：frameworkとcomparison。<a href="/ja/blog/">すべての記事</a></p>
+      </footer>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/framework/comparison/2015/09/06/from-rspec-to-fix.html" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

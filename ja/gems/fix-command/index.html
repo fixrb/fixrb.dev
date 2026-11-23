@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>fix-command：ファイルごとにひとつのプロセスで動くfixコマンド · Fixrb</title>
+  <meta name="description" content="fixコマンドは、Fixの仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。すべてのファイルが満たされれば終了ステータスは0です。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix-command/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix-command/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix-command/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix-command/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="fix-command：ファイルごとにひとつのプロセスで動くfixコマンド">
+  <meta property="og:description" content="fixコマンドは、Fixの仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。すべてのファイルが満たされれば終了ステータスは0です。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix-command/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix-command/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="3つのプロセスを起動するピクセルアートの端末（2つは満たされ、1つは満たされない）の横に「fix-command」と「fixコマンド：仕様ファイルをそれぞれ専用のプロセスで」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix-command","item":"https://fixrb.dev/ja/gems/fix-command/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/fix-command/img/processes.svg" alt="" width="288" height="192">
+        <hgroup>
+          <h1>fix-command</h1>
+          <p><code>fix</code>コマンド。仕様ファイルごとにひとつのプロセスと、満たされたファイルの数。</p>
+        </hgroup>
+      </header>
+      <p><code>fix</code>コマンドは、<a href="/ja/gems/fix/">fix</a>の仕様ファイルをそれぞれ専用のプロセスで実行し、その結果をそのまま通して、満たされたファイルの数を伝えます。ファイルが満たされたとは、そのプロセスが0で終了したということで、ファイルの最後の<code>exit(Fix[:Name].test { … })</code>がそれを与えます。終了ステータスはサブジェクトが偽造できない唯一のものなので、コマンドはそれ以外のものを読みません。プロジェクト全体をこれで実行する方法は、ガイドの<a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a>にあります。</p>
+      <dl>
+        <dt>バージョン</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3以降、<code>fork</code>が必要</dd>
+        <dt>依存gem</dt>
+        <dd><a href="/ja/gems/fix/">fix</a></dd>
+        <dt>ライセンス</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#install">インストール</a></li>
+          <li><a href="#usage">使い方</a></li>
+          <li><a href="#random">ランダムな順序</a></li>
+          <li><a href="#status">終了ステータス</a></li>
+          <li><a href="#documentation">ドキュメント</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">インストール</h2>
+      <p>Gemfileに<code>gem "fix-command"</code>を加えるか、<code>gem install fix-command</code>を実行してください。fixも一緒にインストールされます。</p>
+
+      <h2 id="usage">使い方</h2>
+      <p>引数がなければ、<code>fix</code>は<code>fix</code>ディレクトリ以下の任意の深さにある<code>*_fix.rb</code>ファイルを実行します。Fixにとっての<code>fix/</code>は、minitestにとっての<code>test/</code>です。引数があれば、与えたファイルを名前にかかわらず、与えたディレクトリの<code>*_fix.rb</code>ファイルとともに、引数の順に実行します。ディレクトリの中のファイルは名前の順です。そうしたファイルを2つもつプロジェクトを例にとると、1つ目は<code>fix/account_fix.rb</code>です。</p>
+      <pre data-example="examples/fix-command/fix/account_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Account</span> <span class="keyword">do</span>
+  on <span class="string">:balance</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">100</span>
+    it <span class="constant">SHOULD</span> eq <span class="number">200</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Account</span> = <span class="constant">Struct</span>.new(<span class="string">:balance</span>)
+
+exit(<span class="constant">Fix</span>[<span class="string">:Account</span>].test { <span class="constant">Account</span>.new(<span class="number">100</span>) })
+</code></pre>
+      <p>2つ目は<code>fix/duck_fix.rb</code>です。</p>
+      <pre data-example="examples/fix-command/fix/duck_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:quack</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Quack!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Splash!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> quack = <span class="string">"Quack!"</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
+</code></pre>
+      <p>プロジェクトの中で、<code>fix</code>はそれぞれのファイルを、<code>fix</code>を実行しているRubyで新しいプロセスとして実行します。ファイルの出力は<code>fix</code>と同じところに書かれ、最後に件数が来ます。</p>
+      <pre data-directory="examples/fix-command"><kbd>fix</kbd>
+<samp>fix/account_fix.rb:5: Success: expected 100 to eq 100
+fix/account_fix.rb:6: Warning: expected 100 to eq 200
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
+2 files met</samp></pre>
+      <p>満たされないファイル、読み込み時に例外を発生させるファイル、異常終了したプロセスがあると、<code>2 files, 1 not met: fix/account_fix.rb</code>となり、終了ステータスは1になります。プロセスはコマンドの環境を受け継ぎます。<code>bundle exec fix</code>はすべてのファイルにGemfileのgemを与え、<code>RUBYOPT=-Ilib fix</code>はロードパスに<code>lib</code>を加えます。</p>
+
+      <h2 id="random">ランダムな順序</h2>
+      <p>プロセスに関する限り、ファイルの順序が結果を変えることはありません。各ファイルはひとつのプロセスで、各コンテキストはその子プロセスだからです。ただし、サブジェクトがプロセスの外で行うことは順序に左右されることがあります。ある仕様が変えたまま次の仕様に残していく、データベースやファイルです。<code>--random</code>はファイルをランダムな順で実行し、最初に、同じ順でもう一度実行するためのコマンド<code>--random=SEED</code>を書きます。</p>
+      <pre data-directory="examples/fix-command"><kbd>fix --random</kbd>
+<samp>fix --random=2
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/duck_fix.rb:9: Info: NoMethodError: undefined method 'swim' for an instance of Duck
+fix/account_fix.rb:5: Success: expected 100 to eq 100
+fix/account_fix.rb:6: Warning: expected 100 to eq 200
+2 files met</samp></pre>
+
+      <h2 id="status">終了ステータス</h2>
+      <p>すべてのファイルが満たされれば0、満たされないものがあれば1、使い方の誤り、つまり未知のオプション、存在しないパス、実行するファイルがない場合は2で、標準エラーに使い方とともに書かれます。<code>--help</code>は使い方を、<code>--version</code>はバージョンを書きます。コマンドは結果の中身を何も読まないので、期待の件数も、色も、期待ごとの記号もありません。タイムアウトはなく、ファイルはひとつずつ実行されます。</p>
+
+      <h2 id="documentation">ドキュメント</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/fix-command/blob/v1.0.0/README.md">README</a></li>
+        <li><a href="https://gemdocs.org/gems/fix-command/1.0.0/">APIリファレンス</a></li>
+        <li><a href="https://rubygems.org/gems/fix-command/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/fix-command/tree/v1.0.0">ソースコード</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix-command/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

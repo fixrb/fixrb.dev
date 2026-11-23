@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>仕様を組み合わせる · Fix 1ガイド · Fixrb</title>
+  <meta name="description" content="Fixの仕様はマッチャーです。fix(:Name)で仕様の中から別の仕様を求め、match?で値をテストし、matchi-fixでどのテストフレームワークにも持ち込めます。">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/ja/gems/fix/v1/composing-specifications/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/composing-specifications/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/composing-specifications/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/composing-specifications/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content="仕様を組み合わせる · Fix 1ガイド">
+  <meta property="og:description" content="Fixの仕様はマッチャーです。fix(:Name)で仕様の中から別の仕様を求め、match?で値をテストし、matchi-fixでどのテストフレームワークにも持ち込めます。">
+  <meta property="og:url" content="https://fixrb.dev/ja/gems/fix/v1/composing-specifications/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card-ja.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ピクセルアートのルビー、Fixrbのロゴの横に「fix」と「Rubyのテストフレームワーク：RFC 2119の言葉で書く仕様」の文字。">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/ja/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/ja/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fixガイド","item":"https://fixrb.dev/ja/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"仕様を組み合わせる","item":"https://fixrb.dev/ja/gems/fix/v1/composing-specifications/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrbブログ" href="/ja/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/ja/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="メイン">
+      <ul>
+        <li><a href="/ja/blog/">ブログ</a></li>
+        <li><a href="https://github.com/fixrb">コード</a></li>
+        <li><a href="/ja/gems/fix/v1/">ガイド</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+          <h1>仕様を組み合わせる</h1>
+          <p>仕様はマッチャーです。ここでも、ほかのテストフレームワークでも、仕様は別の仕様を求めることができます。</p>
+        </hgroup>
+      </header>
+      <nav aria-label="目次">
+        <ol>
+          <li><a href="#fix">仕様の中で：<code>fix</code></a></li>
+          <li><a href="#match">Rubyで：<code>match?</code></a></li>
+          <li><a href="#matchi-fix">ほかのフレームワークで：matchi-fix</a></li>
+        </ol>
+      </nav>
+      <p>仕様はサブジェクトが何をするかを述べます。そのなかには、一度述べれば多くのサブジェクトに当てはまるものがあります。空のコレクションがすること、名前の形、どのプラグインも答えることなどです。それを独立した仕様として書けば、ほかの仕様がそれを求めることができます。</p>
+
+      <h2 id="fix">仕様の中で：<code>fix</code></h2>
+      <p>マッチャー<code>fix(:Name)</code>は、実際の値がその名前の仕様を満たすときに満たされます。ここでは、スタックは新しいときには空でなければならず、何かをpushしたあとは空であってはなりません。</p>
+      <pre data-example="examples/fix/v1/composing-specifications/stack_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Stack</span> <span class="keyword">do</span>
+  it <span class="constant">MUST</span> fix(<span class="string">:Empty</span>)
+
+  on <span class="string">:push</span>, <span class="number">1</span> <span class="keyword">do</span>
+    it <span class="constant">MUST_NOT</span> fix(<span class="string">:Empty</span>)
+
+    on <span class="string">:last</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Stack</span>].test { [] })
+</code></pre>
+      <pre data-directory="examples/fix/v1/composing-specifications"><kbd>ruby stack_fix.rb</kbd>
+<samp>stack_fix.rb:14: Success: expected [] to fix Empty
+stack_fix.rb:17: Success: expected [1] not to fix Empty
+stack_fix.rb:20: Success: expected 1 to eq 1</samp></pre>
+      <ul>
+        <li>仕様はファイルの読み込み時に探されるので、その前に書くか、それを書いたファイルをrequireしてください。知らない名前はその時点で<code>KeyError</code>（<code>no specification named :Nope</code>）になります。</li>
+        <li>値はサブジェクトとしてテストされます。<code>Empty</code>の各コンテキストが、それぞれ専用の子プロセスでその値にメソッドを送り、その行は書かれません。<code>fix</code>は、WarningやInfoも含めてすべてが成功として扱われたときに満たされます。</li>
+        <li>満たされなかった<code>fix</code>は、仕様が満たされないことを伝えるだけで、どの期待が失敗したかは伝えません。それを見るには、同じ値でその仕様を単独でテストしてください。</li>
+        <li><code>fix { … }</code>は、一度だけ使う要求のために、名前をつけずにその場で仕様を書きます。</li>
+        <li><code>fix</code>のための仕様は<code>with</code>なしで書きます。受け取る値はすでにできあがっているので、letで変えることはできません。</li>
+      </ul>
+
+      <h2 id="match">Rubyで：<code>match?</code></h2>
+      <p>仕様は、どのマッチャーとも同じく<code>match?</code>に答えます。ブロックが値を与え、答えはその値が仕様を満たすかどうかを示します。ここでは<code>Empty</code>が、配列にもハッシュにも文字列にも同じように当てはまります。</p>
+      <pre data-example="examples/fix/v1/composing-specifications/match.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+
+  on <span class="string">:size</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { [] }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { {} }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { <span class="string">""</span> }    <span class="comment"># => true</span>
+<span class="constant">Fix</span>[<span class="string">:Empty</span>].match? { [<span class="keyword">nil</span>] } <span class="comment"># => false</span>
+</code></pre>
+      <p><code>match?</code>は何も書きません。行を書くには<code>test</code>を、結果を得るには<a href="/ja/gems/fix/v1/running-specifications/#results-as-data"><code>run</code></a>を使います。</p>
+
+      <h2 id="matchi-fix">ほかのフレームワークで：matchi-fix</h2>
+      <p><a href="/ja/gems/matchi/">Matchi</a>のマッチャーはどのテストフレームワークでも使え、<a href="/ja/gems/matchi-fix/">matchi-fix</a>はFixの仕様をそのひとつにします。<code>Matchi::Fix.new(:Name)</code>、その場で書く仕様なら<code>Matchi::Fix.new { … }</code>です。<code>gem install matchi-fix</code>でインストールし、<code>matchi/fix</code>をrequireします。</p>
+      <pre data-example="examples/fix/v1/composing-specifications/matchi.rb"><code>require <span class="string">"fix"</span>
+require <span class="string">"matchi/fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Empty</span> <span class="keyword">do</span>
+  on <span class="string">:empty?</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> be_true
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+matcher = <span class="constant">Matchi</span>::<span class="constant">Fix</span>.new(<span class="string">:Empty</span>)
+matcher.to_s          <span class="comment"># => "fix Empty"</span>
+matcher.match? { [] } <span class="comment"># => true</span>
+
+<span class="constant">Spectus</span>.must(matcher).call { [<span class="keyword">nil</span>] }.to_s <span class="comment"># => "Failure: expected [nil] to fix Empty"</span>
+</code></pre>
+      <p>最後の行は、Fixの土台である<a href="/ja/gems/spectus/">Spectus</a>を使っています。minitestでは、<code>assert</code>がその答えを受け取ります（<code>assert Matchi::Fix.new(:Empty).match? { [] }</code>）。ほかのフレームワークでテストを書いているプロジェクトも、テストを移さずに、同じ仕様をそのテストの中で使えます。</p>
+      <p>Fixの仕様の中では、<code>it MUST Matchi::Fix.new(:Empty)</code>と<code>it MUST fix(:Empty)</code>は同じです。<code>fix</code>にはほかのgemは要りません。</p>
+
+      <nav aria-label="前後のページ">
+        <ul>
+          <li><a href="/ja/gems/fix/v1/its/" rel="prev">前へ：itsという語</a></li>
+          <li><a href="/ja/gems/fix/v1/in-a-project/" rel="next">次へ：プロジェクトで使う</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="ガイド">
+      <p><a href="/ja/gems/fix/v1/">Fix 1ガイド</a></p>
+      <ol>
+        <li><a href="/ja/gems/fix/v1/getting-started/">はじめに</a></li>
+        <li><a href="/ja/gems/fix/v1/writing-specifications/">仕様を書く</a></li>
+        <li><a href="/ja/gems/fix/v1/matchers/">マッチャー</a></li>
+        <li><a href="/ja/gems/fix/v1/running-specifications/">仕様を実行する</a></li>
+        <li><a href="/ja/gems/fix/v1/its/">itsという語</a></li>
+        <li><a href="/ja/gems/fix/v1/composing-specifications/" aria-current="page">仕様を組み合わせる</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
+        <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrbは<a href="https://cyril.email/">Cyril Kato</a>が作り、<a href="https://sashite.com/">Sashité</a>がスポンサーを務めています。gemとこのサイトはMITライセンスで公開しています。</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/ja/feed.xml">フィード</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/gems/fix/v1/composing-specifications/" hreflang="en" lang="en">English</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
