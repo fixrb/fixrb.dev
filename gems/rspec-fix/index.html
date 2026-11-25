@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>rspec-fix: a Fix specification in an RSpec example · Fixrb</title>
+  <meta name="description" content="RSpec::Fix adds the matcher fix to RSpec: expect(value).to fix(:Name) is met when the value meets a specification of Fix, and tells which expectations it does not.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/gems/rspec-fix/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/rspec-fix/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/rspec-fix/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/rspec-fix/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="rspec-fix: a Fix specification in an RSpec example">
+  <meta property="og:description" content="RSpec::Fix adds the matcher fix to RSpec: expect(value).to fix(:Name) is met when the value meets a specification of Fix, and tells which expectations it does not.">
+  <meta property="og:url" content="https://fixrb.dev/gems/rspec-fix/">
+  <meta property="og:image" content="https://fixrb.dev/gems/rspec-fix/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Pixel-art green dots, as RSpec prints them, with a ruby among them, beside the words: rspec-fix, tests a value against a specification of Fix, in an RSpec example.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"rspec-fix","item":"https://fixrb.dev/gems/rspec-fix/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/rspec-fix/img/dots.svg" alt="" width="288" height="80">
+        <hgroup>
+          <h1>rspec-fix</h1>
+          <p>A matcher of RSpec that tests a value against a specification of Fix.</p>
+        </hgroup>
+      </header>
+      <p>RSpec::Fix adds the word <code>fix</code> to the examples of <a href="https://rspec.info/">RSpec</a>: <code>expect(value).to fix(:Name)</code> is met when the value meets every expectation of a specification of <a href="/gems/fix/">fix</a>, and its message gives the line of each one it does not. It is the way to add a specification to an RSpec suite, and to keep the suite. For minitest, there is <a href="/gems/minitest-fix/">minitest-fix</a>.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later</dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/fix/">fix</a>, and rspec-expectations 3.13 or later</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#usage">Usage</a></li>
+          <li><a href="#process">The process of the example</a></li>
+          <li><a href="#documentation">Documentation</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "rspec-fix"</code> to the Gemfile of the suite, then <code>require "rspec/fix"</code>, which requires fix, and give the word to the examples: <code>RSpec.configure { |config| config.include RSpec::Fix }</code>. A group may include the module for itself instead.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p><code>fix(:Name)</code> finds the specification registered by <code>Fix :Name do … end</code>, and raises <code>KeyError</code> when there is none. In a suite, an example reads <code>it { is_expected.to fix(:Duck) }</code>; the file below takes the words of an example for itself, so that it runs without a suite and writes the message of the matcher alone, without the seed and the times of a report.</p>
+      <pre data-example="examples/rspec-fix/usage.rb"><code>require <span class="string">"rspec/fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Swoosh..."</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Quaaack!"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Robot</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Glug glug..."</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">RubberDuck</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Squeak!"</span>
+<span class="keyword">end</span>
+
+<span class="comment"># An example of RSpec has these words; here, outside a suite, the file takes them.</span>
+include <span class="constant">RSpec</span>::<span class="constant">Matchers</span>
+include <span class="constant">RSpec</span>::<span class="constant">Fix</span>
+
+expect(<span class="constant">Duck</span>.new).to fix(<span class="string">:Duck</span>)  <span class="comment"># => true</span>
+expect(<span class="constant">Robot</span>.new).to fix(<span class="string">:Duck</span>) <span class="comment"># => true</span>
+
+<span class="keyword">begin</span>
+  expect(<span class="constant">RubberDuck</span>.new).to fix(<span class="string">:Duck</span>)
+<span class="keyword">rescue</span> <span class="constant">RSpec</span>::<span class="constant">Expectations</span>::<span class="constant">ExpectationNotMetError</span> => e
+  puts e.message
+<span class="keyword">end</span>
+</code></pre>
+      <pre data-directory="examples/rspec-fix"><kbd>ruby usage.rb</kbd>
+<samp>expected the value to fix Duck:
+  usage.rb:5: Error: NoMethodError: undefined method 'walk' for an instance of RubberDuck
+  usage.rb:13: Failure: expected "Squeak!" to eq "Quaaack!"</samp></pre>
+      <p>The matcher is met when every expectation passes, a warning or an info included: the robot passes, though it swims its own way and does not speak, and RSpec says nothing of it; <code>Fix[:Duck].test { Robot.new }</code> writes every line. Not met, it gives the lines of the failures and of the errors, each pointing at its expectation, and <code>expect(value).not_to fix(:Name)</code> is met when one expectation is not. It composes as the matchers of RSpec do: <code>fix(:Duck).and fix(:Bird)</code>, <code>all(fix(:Duck))</code> for the values of a collection, and as an argument of another matcher, <code>include(pet: fix(:Duck))</code>. It takes a value, not a block; since the value is given once, a specification meant for a matcher is written without <code>with</code>.</p>
+
+      <h2 id="process">The process of the example</h2>
+      <p>The methods of the specification are sent to the value itself, in the process of the example, where its transaction, its doubles and its coverage tool are: a method that changes the value changes it for the contexts that follow, and for the rest of the example. <code>fix(:Name, fork: true)</code> runs each context in a child process instead, as Fix does it: the methods are sent to a copy of the value, and the one the example holds is left as it was. It is for a value whose state is all in the process, since what lives outside is not copied: in a Rails application with transactional tests, a child does not see a row the example has created, and a row it writes is not rolled back; a double does not see what a child received.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/rspec-fix/blob/v1.0.0/README.md">README</a></li>
+        <li><a href="https://gemdocs.org/gems/rspec-fix/1.0.0/">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/rspec-fix/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/rspec-fix/tree/v1.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/ja/gems/rspec-fix/" hreflang="ja" lang="ja">日本語</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

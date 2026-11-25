@@ -26,6 +26,8 @@
 
 - [fix-its: one-line expectations with its, for Fix](https://fixrb.dev/gems/fix-its/): Fix::Its adds the word its to the language of Fix: a method of the subject and one expectation about what it returns, on one line, its result pointing there.
 - [matchi-fix: test a value against a Fix specification](https://fixrb.dev/gems/matchi-fix/): Matchi::Fix tests a value against a specification of Fix, named or written in a block, and brings Fix specifications wherever a matcher of matchi goes.
+- [rspec-fix: a Fix specification in an RSpec example](https://fixrb.dev/gems/rspec-fix/): RSpec::Fix adds the matcher fix to RSpec: expect(value).to fix(:Name) is met when the value meets a specification of Fix, and tells which expectations it does not.
+- [minitest-fix: a Fix specification in a minitest test](https://fixrb.dev/gems/minitest-fix/): Minitest::Fix adds assert\_fix and refute\_fix to minitest: assert\_fix :Name, value passes when the value meets a specification of Fix, and tells what it does not.
 - [fix-command: the fix command, one process per file](https://fixrb.dev/gems/fix-command/): The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.
 - [matchi: Ruby matchers for any test framework](https://fixrb.dev/gems/matchi/): Matchi: Ruby matchers for any test framework, Minitest included, in which the expected value makes the comparison, not the object under test.
 - [spectus: Ruby expectations with MUST, SHOULD and MAY](https://fixrb.dev/gems/spectus/): Spectus expresses Ruby expectations with the MUST, SHOULD and MAY of RFC 2119, and gives a result that says how each one went, without raising.
@@ -68,6 +70,8 @@
 - [Fixのよくある質問：短い答え · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/questions/): Fixについての疑問に短く答えます。eqとeql?、期待の中のlet、判定、終了ステータス、ランダムな順序、SimpleCov、Windows、RSpecやminitestとの併用。
 - [fix-its：itsでFixの期待を1行に書く](https://fixrb.dev/ja/gems/fix-its/): Fix::Itsは、Fixの言語にitsという語を加えます。サブジェクトのメソッドとその戻り値についての期待を1行で書け、結果はその行を指します。
 - [matchi-fix：Fixの仕様で値をテストする](https://fixrb.dev/ja/gems/matchi-fix/): Matchi::Fixは、名前で登録した、またはブロックで書いたFixの仕様で値をテストし、matchiのマッチャーが使えるところならどこへでもFixの仕様を持ち込みます。
+- [rspec-fix：RSpecのexampleでFixの仕様を使う](https://fixrb.dev/ja/gems/rspec-fix/): RSpec::FixはRSpecにfixマッチャーを加えます。expect(value).to fix(:Name)は値がFixの仕様を満たすときに成功し、満たさない期待を伝えます。
+- [minitest-fix：minitestのテストでFixの仕様を使う](https://fixrb.dev/ja/gems/minitest-fix/): Minitest::Fixはminitestにassert\_fixとrefute\_fixを加えます。assert\_fix :Name, valueは値がFixの仕様を満たすときに成功し、満たさない期待を伝えます。
 - [fix-command：ファイルごとにひとつのプロセスで動くfixコマンド](https://fixrb.dev/ja/gems/fix-command/): fixコマンドは、Fixの仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。すべてのファイルが満たされれば終了ステータスは0です。
 - [matchi：どのテストフレームワークでも使えるRubyのマッチャー](https://fixrb.dev/ja/gems/matchi/): Matchi：Minitestを含むどのテストフレームワークでも使えるRubyのマッチャー。比較を行うのはテスト対象のオブジェクトではなく、期待値です。
 - [spectus：MUST、SHOULD、MAYで書くRubyの期待](https://fixrb.dev/ja/gems/spectus/): Spectusは、RFC 2119のMUST、SHOULD、MAYでRubyの期待を表し、例外を発生させずに、それぞれがどうだったかを伝える結果を返します。

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>minitest-fix: a Fix specification in a minitest test · Fixrb</title>
+  <meta name="description" content="Minitest::Fix adds assert_fix and refute_fix to minitest: assert_fix :Name, value passes when the value meets a specification of Fix, and tells what it does not.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/gems/minitest-fix/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/minitest-fix/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/minitest-fix/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/minitest-fix/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="minitest-fix: a Fix specification in a minitest test">
+  <meta property="og:description" content="Minitest::Fix adds assert_fix and refute_fix to minitest: assert_fix :Name, value passes when the value meets a specification of Fix, and tells what it does not.">
+  <meta property="og:url" content="https://fixrb.dev/gems/minitest-fix/">
+  <meta property="og:image" content="https://fixrb.dev/gems/minitest-fix/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Pixel-art dots in the colours of a rainbow, as minitest prints them with pride, with a ruby among them, beside the words: minitest-fix, tests a value against a specification of Fix, in a minitest test.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"minitest-fix","item":"https://fixrb.dev/gems/minitest-fix/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <img src="/gems/minitest-fix/img/dots.svg" alt="" width="288" height="80">
+        <hgroup>
+          <h1>minitest-fix</h1>
+          <p>Assertions of minitest that test a value against a specification of Fix.</p>
+        </hgroup>
+      </header>
+      <p>Minitest::Fix adds two assertions to the tests of <a href="https://github.com/minitest/minitest">minitest</a>: <code>assert_fix :Name, value</code> passes when the value meets every expectation of a specification of <a href="/gems/fix/">fix</a>, and its message gives the line of each one it does not; <code>refute_fix</code> is its opposite. It is the way to add a specification to a minitest suite, and to keep the suite. For RSpec, there is <a href="/gems/rspec-fix/">rspec-fix</a>.</p>
+      <dl>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Ruby</dt>
+        <dd>3.3 or later</dd>
+        <dt>Dependencies</dt>
+        <dd><a href="/gems/fix/">fix</a></dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </dl>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#usage">Usage</a></li>
+          <li><a href="#process">The process of the test</a></li>
+          <li><a href="#documentation">Documentation</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="install">Install</h2>
+      <p>Add <code>gem "minitest-fix"</code> to the Gemfile of the suite, then <code>require "minitest/fix"</code>, which requires fix, and <code>include Minitest::Fix</code> in a test class, or in <code>Minitest::Test</code> itself for every test of the suite. The gem asks nothing of minitest but the <code>assert</code> and the <code>refute</code> of that class.</p>
+
+      <h2 id="usage">Usage</h2>
+      <p>The name is the one of a specification registered by <code>Fix :Name do … end</code>, and <code>KeyError</code> is raised when there is none. In a suite, <code>minitest/autorun</code> runs the tests; the file below runs each by hand, so that it writes the message of the assertion alone, without the seed and the times of a report.</p>
+      <pre data-example="examples/minitest-fix/usage.rb"><code>require <span class="string">"minitest"</span>
+require <span class="string">"minitest/fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Swoosh..."</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Quaaack!"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">Robot</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Glug glug..."</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">RubberDuck</span>
+  <span class="keyword">def</span> swim = <span class="string">"Swoosh..."</span>
+  <span class="keyword">def</span> speak = <span class="string">"Squeak!"</span>
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">DuckTest</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  include <span class="constant">Minitest</span>::<span class="constant">Fix</span>
+
+  <span class="keyword">def</span> test_duck = assert_fix(<span class="string">:Duck</span>, <span class="constant">Duck</span>.new)
+  <span class="keyword">def</span> test_robot = assert_fix(<span class="string">:Duck</span>, <span class="constant">Robot</span>.new)
+  <span class="keyword">def</span> test_rubber_duck = assert_fix(<span class="string">:Duck</span>, <span class="constant">RubberDuck</span>.new)
+<span class="keyword">end</span>
+
+<span class="comment"># minitest/autorun would run the tests and write its report, with a seed and</span>
+<span class="comment"># times; here each test is run by hand, so that the file writes the same lines</span>
+<span class="comment"># every time.</span>
+<span class="constant">DuckTest</span>.new(<span class="string">"test_duck"</span>).run.passed?  <span class="comment"># => true</span>
+<span class="constant">DuckTest</span>.new(<span class="string">"test_robot"</span>).run.passed? <span class="comment"># => true</span>
+
+puts <span class="constant">DuckTest</span>.new(<span class="string">"test_rubber_duck"</span>).run.failure.message
+</code></pre>
+      <pre data-directory="examples/minitest-fix"><kbd>ruby usage.rb</kbd>
+<samp>Expected the value to fix Duck:
+  usage.rb:6: Error: NoMethodError: undefined method 'walk' for an instance of RubberDuck
+  usage.rb:14: Failure: expected "Squeak!" to eq "Quaaack!"</samp></pre>
+      <p><code>assert_fix</code> passes when every expectation passes, a warning or an info included: the robot passes, though it swims its own way and does not speak, and minitest says nothing of it; <code>Fix[:Duck].test { Robot.new }</code> writes every line. Failed, it gives the lines of the failures and of the errors, each pointing at its expectation. <code>refute_fix :Name, value</code> passes when one expectation is not met, and each of the two counts as one assertion. They take a value, not a block; since the value is given once, a specification meant for an assertion is written without <code>with</code>.</p>
+
+      <h2 id="process">The process of the test</h2>
+      <p>The methods of the specification are sent to the value itself, in the process of the test, where its transaction, its mocks and its coverage tool are: a method that changes the value changes it for the contexts that follow, and for the rest of the test. <code>assert_fix :Name, value, fork: true</code> runs each context in a child process instead, as Fix does it: the methods are sent to a copy of the value, and the one the test holds is left as it was. It is for a value whose state is all in the process, since what lives outside is not copied: in a Rails application with transactional tests, a child does not see a row the test has created, and a row it writes is not rolled back; a mock does not see what a child received.</p>
+
+      <h2 id="documentation">Documentation</h2>
+      <ul role="list">
+        <li><a href="https://github.com/fixrb/minitest-fix/blob/v1.0.0/README.md">README</a></li>
+        <li><a href="https://gemdocs.org/gems/minitest-fix/1.0.0/">API reference</a></li>
+        <li><a href="https://rubygems.org/gems/minitest-fix/versions/1.0.0">RubyGems</a></li>
+        <li><a href="https://github.com/fixrb/minitest-fix/tree/v1.0.0">Source code</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/ja/gems/minitest-fix/" hreflang="ja" lang="ja">日本語</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
