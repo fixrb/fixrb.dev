@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Beside RSpec or minitest: a specification in the suite you have · Fix 1 guide · Fixrb</title>
+  <meta name="description" content="Add a specification of Fix to an RSpec or minitest suite and keep the suite: a matcher, two assertions, one command for both, and what a child process changes.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/beside-rspec-or-minitest/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Beside RSpec or minitest: a specification in the suite you have · Fix 1 guide">
+  <meta property="og:description" content="Add a specification of Fix to an RSpec or minitest suite and keep the suite: a matcher, two assertions, one command for both, and what a child process changes.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby glowing over a rock at night, beside the words: Fix, a Ruby testing framework: specifications in the words of RFC 2119.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fix guide","item":"https://fixrb.dev/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"Beside RSpec or minitest","item":"https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Beside RSpec or minitest</h1>
+          <p>A specification of Fix in the suite a project already has, and the suite kept.</p>
+        </hgroup>
+      </header>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#in-a-test">A specification in a test</a></li>
+          <li><a href="#one-command">One command</a></li>
+          <li><a href="#process">The process of the test</a></li>
+          <li><a href="#rails">In a Rails application</a></li>
+          <li><a href="#from-there">From there</a></li>
+        </ol>
+      </nav>
+      <p>A project that has its tests in RSpec or minitest does not replace them to use Fix. A specification is added to the suite as it is: first checked from a test of the suite, then, when there are more of them, in a directory of its own that the suite runs. Nothing of the suite changes, and taking Fix out again is removing a line of the Gemfile and a few files.</p>
+
+      <h2 id="in-a-test">A specification in a test</h2>
+      <p>The project below has a class, in <code>lib</code>:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/lib/duck.rb"><code><span class="keyword">class</span> <span class="constant">Duck</span>
+  <span class="keyword">def</span> walk = <span class="string">"Klop klop!"</span>
+  <span class="keyword">def</span> swim = <span class="string">"Splash!"</span>
+  <span class="keyword">def</span> speak = <span class="string">"Quaaack!"</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>Its specification is a document, in a file of its own that requires nothing but Fix. Here it is <code>fix/specs/duck.rb</code>, since <code>spec</code> is often the directory of RSpec:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/fix/specs/duck.rb"><code>require <span class="string">"fix"</span>
+
+<span class="constant">Fix</span> <span class="string">:Duck</span> <span class="keyword">do</span>
+  on <span class="string">:walk</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="string">"Klop klop!"</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:swim</span> <span class="keyword">do</span>
+    it <span class="constant">SHOULD</span> eq <span class="string">"Swoosh..."</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:speak</span> <span class="keyword">do</span>
+    it <span class="constant">MAY</span> eq <span class="string">"Quaaack!"</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>With <a href="/gems/minitest-fix/">minitest-fix</a>, a test of minitest checks it with one assertion:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/test/duck_test.rb"><code>require <span class="string">"minitest/autorun"</span>
+require <span class="string">"minitest/fix"</span>
+require_relative <span class="string">"../fix/specs/duck"</span>
+require_relative <span class="string">"../lib/duck"</span>
+
+<span class="keyword">class</span> <span class="constant">DuckTest</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  include <span class="constant">Minitest</span>::<span class="constant">Fix</span>
+
+  <span class="keyword">def</span> test_duck_meets_its_specification
+    assert_fix <span class="string">:Duck</span>, <span class="constant">Duck</span>.new
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>With <a href="/gems/rspec-fix/">rspec-fix</a>, an example of RSpec checks it with one matcher:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/spec/duck_spec.rb"><code>require <span class="string">"rspec/autorun"</span>
+require <span class="string">"rspec/fix"</span>
+require_relative <span class="string">"../fix/specs/duck"</span>
+require_relative <span class="string">"../lib/duck"</span>
+
+<span class="constant">RSpec</span>.configure { |config| config.include <span class="constant">RSpec</span>::<span class="constant">Fix</span> }
+
+<span class="constant">RSpec</span>.describe <span class="constant">Duck</span> <span class="keyword">do</span>
+  it { is_expected.to fix(<span class="string">:Duck</span>) }
+<span class="keyword">end</span>
+</code></pre>
+      <p>The first line of each, <code>minitest/autorun</code> and <code>rspec/autorun</code>, lets <code>ruby</code> run the file as it is; a suite has it in its helper, or leaves it to its command. Both pass: the duck walks as required. It does not swim as recommended, and neither says so: a <code>SHOULD</code> not met is a warning, which passes, and an assertion or a matcher has no line to write it on. When a <code>MUST</code> is not met, the message of the failure is made of the lines of Fix, one for each expectation not met, each pointing at its line of the specification. A specification checked this way is written without <code>with</code>: the test gives a value, once, and the contexts cannot build it anew.</p>
+
+      <h2 id="one-command">One command</h2>
+      <p>A test of Fix writes every line, the warning among them. It is a file of <code>fix</code>, which requires the same document and ends with the status of the test:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/fix/duck_fix.rb"><code>require_relative <span class="string">"specs/duck"</span>
+require_relative <span class="string">"../lib/duck"</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Duck</span>].test { <span class="constant">Duck</span>.new })
+</code></pre>
+      <pre data-directory="examples/fix/v1/beside-rspec-or-minitest"><kbd>fix</kbd>
+<samp>fix/specs/duck.rb:5: Success: expected "Klop klop!" to eq "Klop klop!"
+fix/specs/duck.rb:9: Warning: expected "Splash!" to eq "Swoosh..."
+fix/specs/duck.rb:13: Success: expected "Quaaack!" to eq "Quaaack!"
+1 file met</samp></pre>
+      <p><a href="/gems/fix/v1/running-specifications/">Running specifications</a> has the command. A project then has two commands, which a Rakefile runs one after the other: <a href="/gems/fix/v1/in-a-project/#other-tests">Next to other tests</a>. Or the suite runs the files of <code>fix</code> itself, each as one of its tests, and there is one command and one report again:</p>
+      <pre data-example="examples/fix/v1/beside-rspec-or-minitest/test/fix_test.rb"><code>require <span class="string">"minitest/autorun"</span>
+require <span class="string">"rbconfig"</span>
+
+<span class="comment"># Every file of fix/ is a test of this suite: passed when it exits with 0,</span>
+<span class="comment"># and what it wrote is the message when it does not.</span>
+<span class="keyword">class</span> <span class="constant">FixTest</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  <span class="constant">Dir</span>.glob(<span class="constant">File</span>.join(__dir__, <span class="string">".."</span>, <span class="string">"fix"</span>, <span class="string">"**"</span>, <span class="string">"*_fix.rb"</span>)).each <span class="keyword">do</span> |file|
+    define_method(<span class="string">"test_#{</span><span class="constant">File</span>.basename(file, <span class="string">".rb"</span>)<span class="string">}"</span>) <span class="keyword">do</span>
+      output, = capture_subprocess_io { system(<span class="constant">RbConfig</span>.ruby, file) }
+      assert_predicate $?, <span class="string">:success?</span>, output
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>Each file runs in a process of its own, as <code>fix</code> runs it, and what it wrote is the message of the test when its status is not 0.</p>
+
+      <h2 id="process">The process of the test</h2>
+      <p>In a test of Fix, the block of <code>test</code> builds the subject, and each context runs in a child process. Here the test of the suite has built the value, in its own process, where its transaction, its mocks and its coverage tool are: <code>assert_fix</code> and <code>fix</code> send the methods of the specification to that value, there. A method that changes the value changes it for the contexts that follow, and for the rest of the test.</p>
+      <p>Both take <code>fork: true</code>, as in <code>assert_fix :Duck, duck, fork: true</code> and <code>fix(:Duck, fork: true)</code>, to run each context in a child process, as Fix does: the methods are sent to a copy of the value, and the one the test holds is left as it was. It is for a value whose state is all in the process. A mock or a double does not see what a child received, a coverage tool does not count what ran there, and a method that calls <code>exit!</code> ends its child, not the suite: the test raises <code>Aw::ChildError</code>.</p>
+
+      <h2 id="rails">In a Rails application</h2>
+      <p>Add the gem to the test group of the Gemfile with <code>require: false</code>, as for Fix, and include <code>Minitest::Fix</code> in <code>ActiveSupport::TestCase</code>, or give <code>RSpec::Fix</code> to the examples in the helper of RSpec. A test of Rails runs in a transaction, rolled back when it ends, and that transaction belongs to the connection of its process: a child process gets a connection of its own. This is what a specification met there, in an application on Rails 8.1 and SQLite:</p>
+      <table>
+        <thead>
+          <tr><th scope="col">The specification</th><th scope="col">In the process of the test</th><th scope="col">With <code>fork: true</code></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>reads a row the test has created</td><td>finds it</td><td>does not find it, or counts none: a wrong value, without an error</td></tr>
+          <tr><td>writes, after the test has written</td><td>writes in the transaction</td><td>waits for the lock, five seconds here, then fails</td></tr>
+          <tr><td>writes, before the test has written</td><td>writes in the transaction</td><td>commits: the row is not rolled back, and stays after the test</td></tr>
+        </tbody>
+      </table>
+      <p>So a value that reads or writes the database is checked in the process of the test, which is what the two gems do unless told otherwise. <a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a> has the other way: tests of Fix, in <code>fix</code>, where each subject empties the database first.</p>
+
+      <h2 id="from-there">From there</h2>
+      <p>One specification in a test is where a project starts. The second is often a contract that several classes share, an interface and its implementations, which <a href="/gems/fix/v1/patterns/#implementations">Patterns</a> writes once and tests against each. From there a team may keep its suite as it is and write what is new as specifications, in <code>fix</code>: <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> and <a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a> tell what each idiom becomes.</p>
+      <p>To take Fix out, remove the gems from the Gemfile, the tests that check a specification, and the <code>fix</code> directory. The suite is as it was.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/patterns/" rel="prev">Previous: Patterns</a></li>
+          <li><a href="/gems/fix/v1/coming-from-rspec/" rel="next">Next: Coming from RSpec</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/" aria-current="page">Beside RSpec or minitest</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a></li>
+        <li><a href="/gems/fix/v1/questions/">Questions</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/ja/gems/fix/v1/beside-rspec-or-minitest/" hreflang="ja" lang="ja">日本語</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

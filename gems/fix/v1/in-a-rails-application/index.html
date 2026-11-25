@@ -249,6 +249,7 @@ exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].
       <h2 id="processes">What a process does not isolate</h2>
       <p><a href="/gems/fix/v1/in-a-project/#outside-the-process">In a project</a> listed what a child process leaves behind. In a Rails application, that is the database, hence <code>empty_database</code>, and the log, <code>log/test.log</code>, which the children write to as the parent would. What stays in the process ends with it: a mail that the test environment of Rails keeps in <code>ActionMailer::Base.deliveries</code> instead of sending, say, is read in the subject block, in the process that sent it, and given to the specification.</p>
       <p>To stop in a subject with a debugger, run its contexts in the process itself, <code>test(fork: false)</code>, as <a href="/gems/fix/v1/in-a-project/#debugging">In a project</a> says; each subject still empties the database first.</p>
+      <p>A test of Rails itself, in <code>test</code> or in <code>spec</code>, can check a specification too, in its own process and its own transaction: <a href="/gems/fix/v1/beside-rspec-or-minitest/#rails">Beside RSpec or minitest</a> tells what a child process would see of that transaction.</p>
 
       <nav aria-label="Pages">
         <ul>
@@ -270,7 +271,9 @@ exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].
         <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
         <li><a href="/gems/fix/v1/in-a-rails-application/" aria-current="page">In a Rails application</a></li>
         <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a></li>
         <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a></li>
         <li><a href="/gems/fix/v1/questions/">Questions</a></li>
       </ol>
     </nav>

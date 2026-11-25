@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Coming from minitest: minitest idioms in Fix · Fix 1 guide · Fixrb</title>
+  <meta name="description" content="What minitest’s test classes, setup, assertions and skip become in Fix, and what it leaves out on purpose: setup and teardown as such, mocks, shared state.">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="https://fixrb.dev/gems/fix/v1/coming-from-minitest/">
+  <link rel="alternate" hreflang="en" href="https://fixrb.dev/gems/fix/v1/coming-from-minitest/">
+  <link rel="alternate" hreflang="ja" href="https://fixrb.dev/ja/gems/fix/v1/coming-from-minitest/">
+  <link rel="alternate" hreflang="x-default" href="https://fixrb.dev/gems/fix/v1/coming-from-minitest/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fixrb">
+  <meta property="og:title" content="Coming from minitest: minitest idioms in Fix · Fix 1 guide">
+  <meta property="og:description" content="What minitest’s test classes, setup, assertions and skip become in Fix, and what it leaves out on purpose: setup and teardown as such, mocks, shared state.">
+  <meta property="og:url" content="https://fixrb.dev/gems/fix/v1/coming-from-minitest/">
+  <meta property="og:image" content="https://fixrb.dev/gems/fix/img/card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fixrb logo, a pixel-art ruby glowing over a rock at night, beside the words: Fix, a Ruby testing framework: specifications in the words of RFC 2119.">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fixrb","item":"https://fixrb.dev/"},{"@type":"ListItem","position":2,"name":"fix","item":"https://fixrb.dev/gems/fix/"},{"@type":"ListItem","position":3,"name":"Fix guide","item":"https://fixrb.dev/gems/fix/v1/"},{"@type":"ListItem","position":4,"name":"Coming from minitest","item":"https://fixrb.dev/gems/fix/v1/coming-from-minitest/"}]}]}</script>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="alternate" type="application/atom+xml" title="Fixrb blog" href="/feed.xml">
+  <link rel="preload" href="/fonts/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" rel="home"><img src="/logo.svg" alt="" width="48" height="48">Fixrb</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/fixrb">Code</a></li>
+        <li><a href="/gems/fix/v1/">Guide</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header>
+        <hgroup>
+          <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+          <h1>Coming from minitest</h1>
+          <p>The same ideas under other names, and a few left out on purpose.</p>
+        </hgroup>
+      </header>
+      <nav aria-label="On this page">
+        <ol>
+          <li><a href="#structure">Structure</a></li>
+          <li><a href="#assertions">Assertions</a></li>
+          <li><a href="#levels">Three levels instead of skip</a></li>
+          <li><a href="#left-out">Left out on purpose</a></li>
+        </ol>
+      </nav>
+      <p><a href="https://github.com/minitest/minitest">minitest</a> writes a test as a method that builds an object, acts on it and asserts what came out. Fix splits that in two. A specification says what must come out, in a document that names no class and holds no code that runs before or after an expectation; the test, on the last line, gives the subject, so that the same specification can test another one. The page speaks of test classes and assertions; for <code>minitest/spec</code>, with <code>describe</code> and <code>it</code>, <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> is closer.</p>
+
+      <h2 id="structure">Structure</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">minitest</th><th scope="col">Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>class CounterTest &lt; Minitest::Test … end</code></td><td><code>Fix :Counter do … end</code></td></tr>
+          <tr><td><code>def setup</code>, <code>@counter = Counter.new(0)</code></td><td>the block of the test: <code>Fix[:Counter].test { Counter.new(start) }</code></td></tr>
+          <tr><td><code>def test_count</code>, then <code>@counter.count</code> in it</td><td><code>on :count do … end</code></td></tr>
+          <tr><td>a value of <code>setup</code>, or a method of the test class</td><td><code>let(:start) { 0 }</code>, visible from the subject block and the other lets only</td></tr>
+          <tr><td>another test, or another class, built with another value</td><td><code>with start: 5 do … end</code></td></tr>
+          <tr><td><code>@counter.increment</code> at the head of a test</td><td><code>on :increment do … end</code>, around the expectations it prepares</td></tr>
+          <tr><td><code>assert_equal 0, @counter.count</code></td><td><code>it MUST eq 0</code></td></tr>
+          <tr><td><code>refute_equal 0, @counter.count</code></td><td><code>it MUST_NOT eq 0</code></td></tr>
+          <tr><td>a module of tests, included in several test classes</td><td>a specification of its own, required with <a href="/gems/fix/v1/composing-specifications/"><code>fix(:Name)</code></a>, or tested against <a href="/gems/fix/v1/patterns/#implementations">several subjects</a></td></tr>
+          <tr><td><code>ruby test/counter_test.rb</code>, <code>rake test</code></td><td><a href="/gems/fix/v1/running-specifications/"><code>ruby fix/counter_fix.rb</code>, <code>fix</code></a></td></tr>
+          <tr><td><code>--seed 1234</code></td><td><code>fix --random=1234</code>, for the order of files</td></tr>
+        </tbody>
+      </table>
+      <p>A test class of a counter, with a <code>setup</code>, a test that increments it and another that builds it from another value:</p>
+      <pre data-example="examples/fix/v1/coming-from-minitest/counter_test.rb"><code>require <span class="string">"minitest/autorun"</span>
+
+<span class="keyword">class</span> <span class="constant">Counter</span>
+  attr_reader <span class="string">:count</span>
+
+  <span class="keyword">def</span> initialize(start) = @count = start
+  <span class="keyword">def</span> increment = tap { @count += <span class="number">1</span> }
+<span class="keyword">end</span>
+
+<span class="keyword">class</span> <span class="constant">CounterTest</span> &lt; <span class="constant">Minitest</span>::<span class="constant">Test</span>
+  <span class="keyword">def</span> setup
+    @counter = <span class="constant">Counter</span>.new(<span class="number">0</span>)
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> test_count
+    assert_equal <span class="number">0</span>, @counter.count
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> test_count_after_an_increment
+    assert_equal <span class="number">1</span>, @counter.increment.count
+  <span class="keyword">end</span>
+
+  <span class="keyword">def</span> test_count_from_five
+    assert_equal <span class="number">5</span>, <span class="constant">Counter</span>.new(<span class="number">5</span>).count
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</code></pre>
+      <p>becomes:</p>
+      <pre data-example="examples/fix/v1/coming-from-minitest/counter_fix.rb"><code>require <span class="string">"fix"</span>
+
+<span class="keyword">class</span> <span class="constant">Counter</span>
+  attr_reader <span class="string">:count</span>
+
+  <span class="keyword">def</span> initialize(start) = @count = start
+  <span class="keyword">def</span> increment = tap { @count += <span class="number">1</span> }
+<span class="keyword">end</span>
+
+<span class="constant">Fix</span> <span class="string">:Counter</span> <span class="keyword">do</span>
+  let(<span class="string">:start</span>) { <span class="number">0</span> }
+
+  on <span class="string">:count</span> <span class="keyword">do</span>
+    it <span class="constant">MUST</span> eq <span class="number">0</span>
+  <span class="keyword">end</span>
+
+  on <span class="string">:increment</span> <span class="keyword">do</span>
+    on <span class="string">:count</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">1</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  with <span class="string">start:</span> <span class="number">5</span> <span class="keyword">do</span>
+    on <span class="string">:count</span> <span class="keyword">do</span>
+      it <span class="constant">MUST</span> eq <span class="number">5</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+exit(<span class="constant">Fix</span>[<span class="string">:Counter</span>].test { <span class="constant">Counter</span>.new(start) })
+</code></pre>
+      <pre data-directory="examples/fix/v1/coming-from-minitest"><kbd>ruby counter_fix.rb</kbd>
+<samp>counter_fix.rb:14: Success: expected 0 to eq 0
+counter_fix.rb:19: Success: expected 1 to eq 1
+counter_fix.rb:25: Success: expected 5 to eq 5</samp></pre>
+      <p>The <code>setup</code> became the block of the test, and the value it gave the counter a let, which a <code>with</code> changes for one context. The call that came before the assertion became a method of the chain: <code>increment</code> returns the counter, and <code>count</code> is sent to it.</p>
+
+      <h2 id="assertions">Assertions</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">minitest</th><th scope="col">Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>assert_equal x, v</code></td><td><a href="/gems/fix/v1/matchers/#eq"><code>eq(x)</code></a>, which wants the class of <code>x</code> and uses <code>eql?</code>, where <code>assert_equal</code> uses <code>==</code>: <code>1.0</code> is not <code>eq 1</code></td></tr>
+          <tr><td><code>assert_same x, v</code></td><td><a href="/gems/fix/v1/matchers/#be"><code>be(x)</code></a></td></tr>
+          <tr><td><code>assert_nil v</code>, <code>assert_equal true, v</code></td><td><a href="/gems/fix/v1/matchers/#be_true"><code>be_true</code></a>, <code>be_false</code>, <code>be_nil</code></td></tr>
+          <tr><td><code>assert v</code>, <code>refute v</code></td><td><code>satisfy { |value| !!value }</code>, <code>satisfy { |value| !value }</code></td></tr>
+          <tr><td><code>assert_kind_of K, v</code></td><td><a href="/gems/fix/v1/matchers/#be_a_kind_of"><code>be_a_kind_of(K)</code></a></td></tr>
+          <tr><td><code>assert_instance_of K, v</code></td><td><a href="/gems/fix/v1/matchers/#be_an_instance_of"><code>be_an_instance_of(K)</code></a></td></tr>
+          <tr><td><code>assert_in_delta x, v, d</code></td><td><a href="/gems/fix/v1/matchers/#be_within"><code>be_within(d).of(x)</code></a></td></tr>
+          <tr><td><code>assert_match regexp, v</code></td><td><a href="/gems/fix/v1/matchers/#match"><code>match(regexp)</code></a>, for a String or a Symbol</td></tr>
+          <tr><td><code>assert_operator v, :>=, 3</code></td><td><a href="/gems/fix/v1/matchers/#satisfy"><code>satisfy { |v| v >= 3 }</code></a>, answering true or false</td></tr>
+          <tr><td><code>assert_raises(K) { … }</code></td><td><a href="/gems/fix/v1/matchers/#raise_exception"><code>raise_exception(K)</code></a>, the method of the context being what raises</td></tr>
+          <tr><td><code>assert_difference</code>, of Rails</td><td><a href="/gems/fix/v1/matchers/#change"><code>change(o, :count).by(1)</code></a></td></tr>
+          <tr><td><code>assert_empty v</code>, <code>assert_predicate v, :empty?</code></td><td><code>on(:empty?) { it MUST be_true }</code></td></tr>
+          <tr><td><code>assert_includes v, x</code></td><td><code>on(:include?, x) { it MUST be_true }</code></td></tr>
+          <tr><td><code>assert_equal "Ada", v.name</code></td><td><code>on(:name) { it MUST eq "Ada" }</code>, or <a href="/gems/fix/v1/its/"><code>its(:name) { MUST eq "Ada" }</code></a></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="levels">Three levels instead of skip</h2>
+      <p>minitest skips a test with <code>skip</code>: it is counted apart, and its assertions do not run. Fix says it in the specification itself: <code>SHOULD</code> for what is recommended, a warning when it is not met; <code>MAY</code> for what is optional, an info when the method does not exist. Both pass, both run, and both are written in the lines, so nothing is hidden. <a href="/gems/fix/v1/writing-specifications/#it">Writing specifications</a> has the five outcomes.</p>
+
+      <h2 id="left-out">Left out on purpose</h2>
+      <ul>
+        <li><strong><code>setup</code> and <code>teardown</code></strong>: the subject block builds what a subject needs, for each expectation, and each context runs in a process of its own, so there is nothing to clean up in memory.</li>
+        <li><strong>Mocks and stubs</strong>, <code>Minitest::Mock</code>, <code>stub</code>: give the subject a real object, or a small object of the file that stands for a service, through a let. A specification says what a subject does, not which messages it sends.</li>
+        <li><strong>Shared state</strong> between tests, instance variables, class variables: a let lives with one subject, and a context cannot reach another; only a <code>with</code> shares its value, within its context.</li>
+        <li><strong>A random order</strong> of tests: minitest shuffles the tests to find those that depend on one another. The contexts of Fix run in the order written, each in its process, where the order cannot change a result; <code>fix --random</code> shuffles the files, which share what is outside the processes.</li>
+        <li><strong>Custom messages</strong>, the last argument of an assertion: every expectation gets its line, with what was expected and what came out.</li>
+      </ul>
+      <p>Both can live in one project, and a test of minitest can check a specification of Fix: <a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a> tells how.</p>
+
+      <nav aria-label="Pages">
+        <ul>
+          <li><a href="/gems/fix/v1/coming-from-rspec/" rel="prev">Previous: Coming from RSpec</a></li>
+          <li><a href="/gems/fix/v1/questions/" rel="next">Next: Questions</a></li>
+        </ul>
+      </nav>
+    </article>
+
+    <nav aria-label="Guide">
+      <p><a href="/gems/fix/v1/">Fix guide, version 1</a></p>
+      <ol>
+        <li><a href="/gems/fix/v1/getting-started/">Getting started</a></li>
+        <li><a href="/gems/fix/v1/writing-specifications/">Writing specifications</a></li>
+        <li><a href="/gems/fix/v1/matchers/">Matchers</a></li>
+        <li><a href="/gems/fix/v1/running-specifications/">Running specifications</a></li>
+        <li><a href="/gems/fix/v1/its/">The word its</a></li>
+        <li><a href="/gems/fix/v1/composing-specifications/">Composing specifications</a></li>
+        <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
+        <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
+        <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a></li>
+        <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/" aria-current="page">Coming from minitest</a></li>
+        <li><a href="/gems/fix/v1/questions/">Questions</a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer>
+    <p>Fixrb is made by <a href="https://cyril.email/">Cyril Kato</a> and sponsored by <a href="https://sashite.com/">Sashité</a>. The gems and this site are released under the MIT license.</p>
+    <ul role="list">
+      <li><a href="https://bsky.app/profile/fixrb.dev">Bluesky</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
+      <li><a href="https://github.com/fixrb">GitHub</a></li>
+      <li><a href="https://www.youtube.com/@fix_rb">YouTube</a></li>
+      <li><a href="https://x.com/fix_rb">X</a></li>
+      <li><a href="/ja/gems/fix/v1/coming-from-minitest/" hreflang="ja" lang="ja">日本語</a></li>
+    </ul>
+  </footer>
+</body>
+</html>

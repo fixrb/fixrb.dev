@@ -85,7 +85,7 @@ Ruby has long kept a few specifications apart from what implements them: [`Rack:
 
 One specification, three subjects. A row for each subject, a column for each expectation, a MUST, a SHOULD and a MAY: the first subject meets all three, the second gets a warning and an info, the third fails the MUST.
 
-Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings such a specification into that framework as a matcher. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) shows what each RSpec idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
+Fix does not replace the framework of a project. A suite that needs fixtures, doubles or an application framework keeps RSpec or minitest for them; Fix holds the behaviour the pieces agree on, an interface, the contract of a dependency, in a `fix` directory beside `spec` or `test`, run by its own command, and [rspec-fix](https://fixrb.dev/gems/rspec-fix/) and [minitest-fix](https://fixrb.dev/gems/minitest-fix/) bring such a specification into a test of that framework: [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) tells how. [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) and [Coming from minitest](https://fixrb.dev/gems/fix/v1/coming-from-minitest/) show what each idiom becomes, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) answers what comes up when the two live together. [A table](https://fixrb.dev/gems/fix/v1/questions/#compared) sets Fix beside RSpec and minitest, point by point.
 
 ## What Fix leaves out
 
@@ -467,7 +467,7 @@ One child per context, one after the other: each starts from the state the file 
 
 ## Extensions
 
-[fix-its](https://fixrb.dev/gems/fix-its/) adds the word `its`, a method and its expectation on one line. [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings a specification of Fix to any framework that takes a matcher of matchi. The block of `Fix` runs on an instance of `Fix::Dsl`, where a gem may add a word of its own.
+[fix-its](https://fixrb.dev/gems/fix-its/) adds the word `its`, a method and its expectation on one line. [matchi-fix](https://fixrb.dev/gems/matchi-fix/) brings a specification of Fix to any framework that takes a matcher of matchi, and [rspec-fix](https://fixrb.dev/gems/rspec-fix/) and [minitest-fix](https://fixrb.dev/gems/minitest-fix/) bring one to RSpec and to minitest. The block of `Fix` runs on an instance of `Fix::Dsl`, where a gem may add a word of its own.
 
 ## Documentation
 
@@ -484,7 +484,7 @@ Source: <https://fixrb.dev/gems/fix/v1/>
 
 Version 1: from a first specification to the tests of a project.
 
-This guide teaches version 1 of [Fix](https://fixrb.dev/gems/fix/), the Ruby testing framework, one step at a time, each page building on the one before. It assumes you know Ruby, not a test framework: [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) is for those who come from it, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) gives short answers to what comes up with a first specification.
+This guide teaches version 1 of [Fix](https://fixrb.dev/gems/fix/), the Ruby testing framework, one step at a time, each page building on the one before. It assumes you know Ruby, not a test framework: [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) and [Coming from minitest](https://fixrb.dev/gems/fix/v1/coming-from-minitest/) are for those who come from one of them, [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) for those who keep their suite, and [Questions](https://fixrb.dev/gems/fix/v1/questions/) gives short answers to what comes up with a first specification.
 
 Each page shows files, and what running them writes. Both come from the repository of this site, where every example is run before a page is published: what you read is what Fix 1 does. One page, [In a Rails application](https://fixrb.dev/gems/fix/v1/in-a-rails-application/), shows files of another repository, [fixrb/microblog](https://github.com/fixrb/microblog), which run there, inside an application this site does not have. The outputs are those of Ruby 4.0; a message of Ruby itself, in an error, may read otherwise under another version.
 
@@ -1411,7 +1411,7 @@ matcher.match? { [] } # => true
 Spectus.must(matcher).call { [nil] }.to_s # => "Failure: expected [nil] to fix Empty"
 ```
 
-The last line uses [Spectus](https://fixrb.dev/gems/spectus/), which Fix is built on. In minitest, `assert` takes its answer: `assert Matchi::Fix.new(:Empty).match? { [] }`. A project that has its tests in another framework can use the same specifications in those tests, without moving them.
+The last line uses [Spectus](https://fixrb.dev/gems/spectus/), which Fix is built on. A project that has its tests in RSpec or minitest checks the same specifications from those tests, without moving them, with [rspec-fix](https://fixrb.dev/gems/rspec-fix/) or [minitest-fix](https://fixrb.dev/gems/minitest-fix/), whose failures give the lines of Fix: [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) tells how.
 
 In a specification of Fix, `it MUST Matchi::Fix.new(:Empty)` and `it MUST fix(:Empty)` are the same: `fix` needs no other gem.
 
@@ -1517,7 +1517,7 @@ A file shared by several specification files, a helper or a specification that o
 
 ## Next to other tests
 
-Fix needs nothing from another test framework, and changes nothing in it: minitest in `test`, RSpec in `spec` and Fix in `fix` run side by side, each with its command. A Rakefile can run them all, `task default: %i[test spec fix]` with a task `fix` that runs `sh "fix"`. A specification of Fix can also be checked from a test of another framework, as a matcher, with [matchi-fix](https://fixrb.dev/gems/fix/v1/composing-specifications/#matchi-fix).
+Fix needs nothing from another test framework, and changes nothing in it: minitest in `test`, RSpec in `spec` and Fix in `fix` run side by side, each with its command. A Rakefile can run them all, `task default: %i[test spec fix]` with a task `fix` that runs `sh "fix"`. A specification of Fix can also be checked from a test of RSpec or of minitest: [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) tells how.
 
 ## What a process does not isolate
 
@@ -1756,6 +1756,8 @@ The files of `fix` are executable, with `#!/usr/bin/env ruby` on their first lin
 
 To stop in a subject with a debugger, run its contexts in the process itself, `test(fork: false)`, as [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#debugging) says; each subject still empties the database first.
 
+A test of Rails itself, in `test` or in `spec`, can check a specification too, in its own process and its own transaction: [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/#rails) tells what a child process would see of that transaction.
+
 # Patterns
 
 Source: <https://fixrb.dev/gems/fix/v1/patterns/>
@@ -1981,6 +1983,143 @@ kvstore/lib/kvstore/specification.rb:21: Info: NoMethodError: undefined method '
 
 The lines point into the gem, at the specification: an implementer reads what is asked where it is written. The store has no `size`, which the specification leaves optional: an info, and the store meets the contract.
 
+# Beside RSpec or minitest
+
+Source: <https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/>
+
+A specification of Fix in the suite a project already has, and the suite kept.
+
+A project that has its tests in RSpec or minitest does not replace them to use Fix. A specification is added to the suite as it is: first checked from a test of the suite, then, when there are more of them, in a directory of its own that the suite runs. Nothing of the suite changes, and taking Fix out again is removing a line of the Gemfile and a few files.
+
+## A specification in a test
+
+The project below has a class, in `lib`:
+
+```ruby
+class Duck
+  def walk = "Klop klop!"
+  def swim = "Splash!"
+  def speak = "Quaaack!"
+end
+```
+
+Its specification is a document, in a file of its own that requires nothing but Fix. Here it is `fix/specs/duck.rb`, since `spec` is often the directory of RSpec:
+
+```ruby
+require "fix"
+
+Fix :Duck do
+  on :walk do
+    it MUST eq "Klop klop!"
+  end
+
+  on :swim do
+    it SHOULD eq "Swoosh..."
+  end
+
+  on :speak do
+    it MAY eq "Quaaack!"
+  end
+end
+```
+
+With [minitest-fix](https://fixrb.dev/gems/minitest-fix/), a test of minitest checks it with one assertion:
+
+```ruby
+require "minitest/autorun"
+require "minitest/fix"
+require_relative "../fix/specs/duck"
+require_relative "../lib/duck"
+
+class DuckTest < Minitest::Test
+  include Minitest::Fix
+
+  def test_duck_meets_its_specification
+    assert_fix :Duck, Duck.new
+  end
+end
+```
+
+With [rspec-fix](https://fixrb.dev/gems/rspec-fix/), an example of RSpec checks it with one matcher:
+
+```ruby
+require "rspec/autorun"
+require "rspec/fix"
+require_relative "../fix/specs/duck"
+require_relative "../lib/duck"
+
+RSpec.configure { |config| config.include RSpec::Fix }
+
+RSpec.describe Duck do
+  it { is_expected.to fix(:Duck) }
+end
+```
+
+The first line of each, `minitest/autorun` and `rspec/autorun`, lets `ruby` run the file as it is; a suite has it in its helper, or leaves it to its command. Both pass: the duck walks as required. It does not swim as recommended, and neither says so: a `SHOULD` not met is a warning, which passes, and an assertion or a matcher has no line to write it on. When a `MUST` is not met, the message of the failure is made of the lines of Fix, one for each expectation not met, each pointing at its line of the specification. A specification checked this way is written without `with`: the test gives a value, once, and the contexts cannot build it anew.
+
+## One command
+
+A test of Fix writes every line, the warning among them. It is a file of `fix`, which requires the same document and ends with the status of the test:
+
+```ruby
+require_relative "specs/duck"
+require_relative "../lib/duck"
+
+exit(Fix[:Duck].test { Duck.new })
+```
+
+```console
+$ fix
+fix/specs/duck.rb:5: Success: expected "Klop klop!" to eq "Klop klop!"
+fix/specs/duck.rb:9: Warning: expected "Splash!" to eq "Swoosh..."
+fix/specs/duck.rb:13: Success: expected "Quaaack!" to eq "Quaaack!"
+1 file met
+```
+
+[Running specifications](https://fixrb.dev/gems/fix/v1/running-specifications/) has the command. A project then has two commands, which a Rakefile runs one after the other: [Next to other tests](https://fixrb.dev/gems/fix/v1/in-a-project/#other-tests). Or the suite runs the files of `fix` itself, each as one of its tests, and there is one command and one report again:
+
+```ruby
+require "minitest/autorun"
+require "rbconfig"
+
+# Every file of fix/ is a test of this suite: passed when it exits with 0,
+# and what it wrote is the message when it does not.
+class FixTest < Minitest::Test
+  Dir.glob(File.join(__dir__, "..", "fix", "**", "*_fix.rb")).each do |file|
+    define_method("test_#{File.basename(file, ".rb")}") do
+      output, = capture_subprocess_io { system(RbConfig.ruby, file) }
+      assert_predicate $?, :success?, output
+    end
+  end
+end
+```
+
+Each file runs in a process of its own, as `fix` runs it, and what it wrote is the message of the test when its status is not 0.
+
+## The process of the test
+
+In a test of Fix, the block of `test` builds the subject, and each context runs in a child process. Here the test of the suite has built the value, in its own process, where its transaction, its mocks and its coverage tool are: `assert_fix` and `fix` send the methods of the specification to that value, there. A method that changes the value changes it for the contexts that follow, and for the rest of the test.
+
+Both take `fork: true`, as in `assert_fix :Duck, duck, fork: true` and `fix(:Duck, fork: true)`, to run each context in a child process, as Fix does: the methods are sent to a copy of the value, and the one the test holds is left as it was. It is for a value whose state is all in the process. A mock or a double does not see what a child received, a coverage tool does not count what ran there, and a method that calls `exit!` ends its child, not the suite: the test raises `Aw::ChildError`.
+
+## In a Rails application
+
+Add the gem to the test group of the Gemfile with `require: false`, as for Fix, and include `Minitest::Fix` in `ActiveSupport::TestCase`, or give `RSpec::Fix` to the examples in the helper of RSpec. A test of Rails runs in a transaction, rolled back when it ends, and that transaction belongs to the connection of its process: a child process gets a connection of its own. This is what a specification met there, in an application on Rails 8.1 and SQLite:
+
+| The specification | In the process of the test | With `fork: true` |
+| --- | --- | --- |
+| reads a row the test has created | finds it | does not find it, or counts none: a wrong value, without an error |
+| writes, after the test has written | writes in the transaction | waits for the lock, five seconds here, then fails |
+| writes, before the test has written | writes in the transaction | commits: the row is not rolled back, and stays after the test |
+
+So a value that reads or writes the database is checked in the process of the test, which is what the two gems do unless told otherwise. [In a Rails application](https://fixrb.dev/gems/fix/v1/in-a-rails-application/) has the other way: tests of Fix, in `fix`, where each subject empties the database first.
+
+## From there
+
+One specification in a test is where a project starts. The second is often a contract that several classes share, an interface and its implementations, which [Patterns](https://fixrb.dev/gems/fix/v1/patterns/#implementations) writes once and tests against each. From there a team may keep its suite as it is and write what is new as specifications, in `fix`: [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) and [Coming from minitest](https://fixrb.dev/gems/fix/v1/coming-from-minitest/) tell what each idiom becomes.
+
+To take Fix out, remove the gems from the Gemfile, the tests that check a specification, and the `fix` directory. The suite is as it was.
+
 # Coming from RSpec
 
 Source: <https://fixrb.dev/gems/fix/v1/coming-from-rspec/>
@@ -2083,6 +2222,138 @@ RSpec skips an example, or marks it `pending` so that its failure does not fail 
 - **`aggregate_failures`**: every expectation gets its line, met or not.
 
 Both can live in one project, each in its directory: [In a project](https://fixrb.dev/gems/fix/v1/in-a-project/#other-tests) tells how.
+
+# Coming from minitest
+
+Source: <https://fixrb.dev/gems/fix/v1/coming-from-minitest/>
+
+The same ideas under other names, and a few left out on purpose.
+
+[minitest](https://github.com/minitest/minitest) writes a test as a method that builds an object, acts on it and asserts what came out. Fix splits that in two. A specification says what must come out, in a document that names no class and holds no code that runs before or after an expectation; the test, on the last line, gives the subject, so that the same specification can test another one. The page speaks of test classes and assertions; for `minitest/spec`, with `describe` and `it`, [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) is closer.
+
+## Structure
+
+| minitest | Fix |
+| --- | --- |
+| `class CounterTest < Minitest::Test … end` | `Fix :Counter do … end` |
+| `def setup`, `@counter = Counter.new(0)` | the block of the test: `Fix[:Counter].test { Counter.new(start) }` |
+| `def test_count`, then `@counter.count` in it | `on :count do … end` |
+| a value of `setup`, or a method of the test class | `let(:start) { 0 }`, visible from the subject block and the other lets only |
+| another test, or another class, built with another value | `with start: 5 do … end` |
+| `@counter.increment` at the head of a test | `on :increment do … end`, around the expectations it prepares |
+| `assert_equal 0, @counter.count` | `it MUST eq 0` |
+| `refute_equal 0, @counter.count` | `it MUST_NOT eq 0` |
+| a module of tests, included in several test classes | a specification of its own, required with [`fix(:Name)`](https://fixrb.dev/gems/fix/v1/composing-specifications/), or tested against [several subjects](https://fixrb.dev/gems/fix/v1/patterns/#implementations) |
+| `ruby test/counter_test.rb`, `rake test` | [`ruby fix/counter_fix.rb`, `fix`](https://fixrb.dev/gems/fix/v1/running-specifications/) |
+| `--seed 1234` | `fix --random=1234`, for the order of files |
+
+A test class of a counter, with a `setup`, a test that increments it and another that builds it from another value:
+
+```ruby
+require "minitest/autorun"
+
+class Counter
+  attr_reader :count
+
+  def initialize(start) = @count = start
+  def increment = tap { @count += 1 }
+end
+
+class CounterTest < Minitest::Test
+  def setup
+    @counter = Counter.new(0)
+  end
+
+  def test_count
+    assert_equal 0, @counter.count
+  end
+
+  def test_count_after_an_increment
+    assert_equal 1, @counter.increment.count
+  end
+
+  def test_count_from_five
+    assert_equal 5, Counter.new(5).count
+  end
+end
+```
+
+becomes:
+
+```ruby
+require "fix"
+
+class Counter
+  attr_reader :count
+
+  def initialize(start) = @count = start
+  def increment = tap { @count += 1 }
+end
+
+Fix :Counter do
+  let(:start) { 0 }
+
+  on :count do
+    it MUST eq 0
+  end
+
+  on :increment do
+    on :count do
+      it MUST eq 1
+    end
+  end
+
+  with start: 5 do
+    on :count do
+      it MUST eq 5
+    end
+  end
+end
+
+exit(Fix[:Counter].test { Counter.new(start) })
+```
+
+```console
+$ ruby counter_fix.rb
+counter_fix.rb:14: Success: expected 0 to eq 0
+counter_fix.rb:19: Success: expected 1 to eq 1
+counter_fix.rb:25: Success: expected 5 to eq 5
+```
+
+The `setup` became the block of the test, and the value it gave the counter a let, which a `with` changes for one context. The call that came before the assertion became a method of the chain: `increment` returns the counter, and `count` is sent to it.
+
+## Assertions
+
+| minitest | Fix |
+| --- | --- |
+| `assert_equal x, v` | [`eq(x)`](https://fixrb.dev/gems/fix/v1/matchers/#eq), which wants the class of `x` and uses `eql?`, where `assert_equal` uses `==`: `1.0` is not `eq 1` |
+| `assert_same x, v` | [`be(x)`](https://fixrb.dev/gems/fix/v1/matchers/#be) |
+| `assert_nil v`, `assert_equal true, v` | [`be_true`](https://fixrb.dev/gems/fix/v1/matchers/#be_true), `be_false`, `be_nil` |
+| `assert v`, `refute v` | `satisfy { \|value\| !!value }`, `satisfy { \|value\| !value }` |
+| `assert_kind_of K, v` | [`be_a_kind_of(K)`](https://fixrb.dev/gems/fix/v1/matchers/#be_a_kind_of) |
+| `assert_instance_of K, v` | [`be_an_instance_of(K)`](https://fixrb.dev/gems/fix/v1/matchers/#be_an_instance_of) |
+| `assert_in_delta x, v, d` | [`be_within(d).of(x)`](https://fixrb.dev/gems/fix/v1/matchers/#be_within) |
+| `assert_match regexp, v` | [`match(regexp)`](https://fixrb.dev/gems/fix/v1/matchers/#match), for a String or a Symbol |
+| `assert_operator v, :>=, 3` | [`satisfy { \|v\| v >= 3 }`](https://fixrb.dev/gems/fix/v1/matchers/#satisfy), answering true or false |
+| `assert_raises(K) { … }` | [`raise_exception(K)`](https://fixrb.dev/gems/fix/v1/matchers/#raise_exception), the method of the context being what raises |
+| `assert_difference`, of Rails | [`change(o, :count).by(1)`](https://fixrb.dev/gems/fix/v1/matchers/#change) |
+| `assert_empty v`, `assert_predicate v, :empty?` | `on(:empty?) { it MUST be_true }` |
+| `assert_includes v, x` | `on(:include?, x) { it MUST be_true }` |
+| `assert_equal "Ada", v.name` | `on(:name) { it MUST eq "Ada" }`, or [`its(:name) { MUST eq "Ada" }`](https://fixrb.dev/gems/fix/v1/its/) |
+
+## Three levels instead of skip
+
+minitest skips a test with `skip`: it is counted apart, and its assertions do not run. Fix says it in the specification itself: `SHOULD` for what is recommended, a warning when it is not met; `MAY` for what is optional, an info when the method does not exist. Both pass, both run, and both are written in the lines, so nothing is hidden. [Writing specifications](https://fixrb.dev/gems/fix/v1/writing-specifications/#it) has the five outcomes.
+
+## Left out on purpose
+
+- **`setup` and `teardown`**: the subject block builds what a subject needs, for each expectation, and each context runs in a process of its own, so there is nothing to clean up in memory.
+- **Mocks and stubs**, `Minitest::Mock`, `stub`: give the subject a real object, or a small object of the file that stands for a service, through a let. A specification says what a subject does, not which messages it sends.
+- **Shared state** between tests, instance variables, class variables: a let lives with one subject, and a context cannot reach another; only a `with` shares its value, within its context.
+- **A random order** of tests: minitest shuffles the tests to find those that depend on one another. The contexts of Fix run in the order written, each in its process, where the order cannot change a result; `fix --random` shuffles the files, which share what is outside the processes.
+- **Custom messages**, the last argument of an assertion: every expectation gets its line, with what was expected and what came out.
+
+Both can live in one project, and a test of minitest can check a specification of Fix: [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) tells how.
 
 # Questions
 
@@ -2217,11 +2488,11 @@ No. Fix forks a child per context and needs `fork(2)`: a context with expectatio
 
 ### Do I have to replace my test suite?
 
-No. Fix needs nothing from another framework and changes nothing in it: a `fix` directory beside `spec` or `test`, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. [Next to other tests](https://fixrb.dev/gems/fix/v1/in-a-project/#other-tests) says how, and [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) what each idiom becomes.
+No. Fix needs nothing from another framework and changes nothing in it: a `fix` directory beside `spec` or `test`, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) says how, and [Coming from RSpec](https://fixrb.dev/gems/fix/v1/coming-from-rspec/) and [Coming from minitest](https://fixrb.dev/gems/fix/v1/coming-from-minitest/) what each idiom becomes.
 
 ### Can I check a specification of Fix from RSpec or minitest?
 
-As a matcher of matchi: `Matchi::Fix.new(:Duck).match? { Duck.new }`, from the [matchi-fix](https://fixrb.dev/gems/matchi-fix/) gem, answers `true` or `false`, forking the contexts as Fix does. In RSpec, `expect(Matchi::Fix.new(:Duck).match? { duck }).to be true`; in minitest, `assert Matchi::Fix.new(:Duck).match? { duck }`. The message of a failure then says `false`, no more: `Fix[:Duck].test { duck }` gives the lines. A specification meant for a matcher is written without `with`, since the value is given once and the contexts cannot build it anew.
+With a matcher, or an assertion, made for it: `expect(duck).to fix(:Duck)` in RSpec, from the [rspec-fix](https://fixrb.dev/gems/rspec-fix/) gem, and `assert_fix :Duck, duck` in minitest, from [minitest-fix](https://fixrb.dev/gems/minitest-fix/). The message of a failure is made of the lines of Fix, one for each expectation not met. A specification meant for them is written without `with`, since the value is given once and the contexts cannot build it anew. [Beside RSpec or minitest](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/) has a project that does both.
 
 ### A failed `fix(:Other)` does not say which expectation failed.
 

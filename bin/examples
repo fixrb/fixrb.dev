@@ -49,15 +49,20 @@ RUNNER = <<~'RUBY'
     abort "line #{line}: expected #{expected}, got #{actual}" unless actual == expected
   end
 
-  at_exit do
-    ARGV.drop(1).each do |name|
-      loaded = $LOADED_FEATURES.find { |feature| feature.end_with?("/#{name}.rb") }
-      puts "required #{name} from #{loaded || "nowhere: install the gem for this Ruby, or put its lib on RUBYLIB"}"
+  # The example gets no argument, as `ruby FILE` gives it none: a test
+  # framework that runs at exit reads ARGV, and would take these for its own.
+  lambda do |path, *names|
+    ARGV.clear
+    at_exit do
+      names.each do |name|
+        loaded = $LOADED_FEATURES.find { |feature| feature.end_with?("/#{name}.rb") }
+        puts "required #{name} from #{loaded || "nowhere: install the gem for this Ruby, or put its lib on RUBYLIB"}"
+      end
     end
-  end
 
-  # The example is UTF-8, as a Ruby file is, whatever the locale.
-  eval($stdin.read.force_encoding(Encoding::UTF_8), TOPLEVEL_BINDING, ARGV.fetch(0), 1)
+    # The example is UTF-8, as a Ruby file is, whatever the locale.
+    eval($stdin.read.force_encoding(Encoding::UTF_8), TOPLEVEL_BINDING, path, 1)
+  end.call(*ARGV)
 RUBY
 
 def instrument(source)

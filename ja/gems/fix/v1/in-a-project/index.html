@@ -141,7 +141,7 @@ fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
       <p>複数の仕様ファイルが共有するファイル、つまりヘルパーや、ほかの仕様が求める仕様は、<code>fix</code>の中に<code>_fix.rb</code>で終わらない名前で置きます。そうすれば<code>fix</code>がそれを単独で実行することはありません。<a href="/ja/gems/fix/v1/patterns/#implementations">パターン</a>に例があります。</p>
 
       <h2 id="other-tests">ほかのテストと並べる</h2>
-      <p>Fixはほかのテストフレームワークに何も求めず、何も変えません。<code>test</code>のminitest、<code>spec</code>のRSpec、<code>fix</code>のFixは、それぞれのコマンドで並んで動きます。Rakefileですべてを実行することもできます（<code>task default: %i[test spec fix]</code>と、<code>sh "fix"</code>を実行するタスク<code>fix</code>）。Fixの仕様は、<a href="/ja/gems/fix/v1/composing-specifications/#matchi-fix">matchi-fix</a>を使えば、ほかのフレームワークのテストからマッチャーとして確かめることもできます。</p>
+      <p>Fixはほかのテストフレームワークに何も求めず、何も変えません。<code>test</code>のminitest、<code>spec</code>のRSpec、<code>fix</code>のFixは、それぞれのコマンドで並んで動きます。Rakefileですべてを実行することもできます（<code>task default: %i[test spec fix]</code>と、<code>sh "fix"</code>を実行するタスク<code>fix</code>）。Fixの仕様は、RSpecやminitestのテストから確かめることもできます。その方法は<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a>にあります。</p>
 
       <h2 id="outside-the-process">プロセスが隔離しないもの</h2>
       <p>各コンテキストは子プロセスで実行されます。サブジェクトがプロセスの中で変えたもの、つまりグローバル変数、定数、カレントディレクトリ、<code>ENV</code>は子プロセスとともに消えます。プロセスの外で変えたものは残ります。書いたファイル、挿入した行、送ったメッセージです。</p>
@@ -175,7 +175,9 @@ fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
         <li><a href="/ja/gems/fix/v1/in-a-project/" aria-current="page">プロジェクトで使う</a></li>
         <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
         <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a></li>
         <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a></li>
         <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
       </ol>
     </nav>

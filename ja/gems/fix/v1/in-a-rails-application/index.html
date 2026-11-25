@@ -250,6 +250,7 @@ exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].
       <h2 id="processes">プロセスが隔離しないもの</h2>
       <p><a href="/ja/gems/fix/v1/in-a-project/#outside-the-process">プロジェクトで使う</a>では、子プロセスが残していくものを挙げました。Railsアプリケーションでは、それはデータベース（そのための<code>empty_database</code>）と、子プロセスが親と同じように書き込むログ<code>log/test.log</code>です。プロセスの中にとどまるものはプロセスとともに消えます。たとえばRailsのテスト環境が送信する代わりに<code>ActionMailer::Base.deliveries</code>に保持するメールは、それを送ったプロセスの中、つまりサブジェクトブロックの中で読み、仕様に与えます。</p>
       <p>デバッガーでサブジェクトの中で止めるには、<a href="/ja/gems/fix/v1/in-a-project/#debugging">プロジェクトで使う</a>にあるとおり、そのコンテキストをプロセス自身の中で実行します（<code>test(fork: false)</code>）。それでも各サブジェクトは、まずデータベースを空にします。</p>
+      <p>Rails自身のテスト（<code>test</code>や<code>spec</code>）からも、そのテストのプロセスとトランザクションの中で仕様を確かめられます。子プロセスからそのトランザクションがどう見えるかは、<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/#rails">RSpecやminitestと並べて使う</a>にあります。</p>
 
       <nav aria-label="前後のページ">
         <ul>
@@ -271,7 +272,9 @@ exit(<span class="constant">Fix</span>[<span class="string">:CreatePost</span>].
         <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
         <li><a href="/ja/gems/fix/v1/in-a-rails-application/" aria-current="page">Railsアプリケーションで使う</a></li>
         <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a></li>
         <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a></li>
         <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
       </ol>
     </nav>

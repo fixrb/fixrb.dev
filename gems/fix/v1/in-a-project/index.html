@@ -140,7 +140,7 @@ fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
       <p>A file shared by several specification files, a helper or a specification that others require, goes in <code>fix</code> under a name that does not end with <code>_fix.rb</code>, so that <code>fix</code> does not run it on its own: <a href="/gems/fix/v1/patterns/#implementations">Patterns</a> has one.</p>
 
       <h2 id="other-tests">Next to other tests</h2>
-      <p>Fix needs nothing from another test framework, and changes nothing in it: minitest in <code>test</code>, RSpec in <code>spec</code> and Fix in <code>fix</code> run side by side, each with its command. A Rakefile can run them all, <code>task default: %i[test spec fix]</code> with a task <code>fix</code> that runs <code>sh "fix"</code>. A specification of Fix can also be checked from a test of another framework, as a matcher, with <a href="/gems/fix/v1/composing-specifications/#matchi-fix">matchi-fix</a>.</p>
+      <p>Fix needs nothing from another test framework, and changes nothing in it: minitest in <code>test</code>, RSpec in <code>spec</code> and Fix in <code>fix</code> run side by side, each with its command. A Rakefile can run them all, <code>task default: %i[test spec fix]</code> with a task <code>fix</code> that runs <code>sh "fix"</code>. A specification of Fix can also be checked from a test of RSpec or of minitest: <a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a> tells how.</p>
 
       <h2 id="outside-the-process">What a process does not isolate</h2>
       <p>Each context runs in a child process: what a subject changes in its process, a global, a constant, the current directory, <code>ENV</code>, ends with the child. What it changes outside its process stays: a file it writes, a row it inserts, a message it sends.</p>
@@ -174,7 +174,9 @@ fix/product_fix.rb:10: Success: expected 4 to be a kind of Numeric
         <li><a href="/gems/fix/v1/in-a-project/" aria-current="page">In a project</a></li>
         <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
         <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a></li>
         <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a></li>
         <li><a href="/gems/fix/v1/questions/">Questions</a></li>
       </ol>
     </nav>

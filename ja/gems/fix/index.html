@@ -141,7 +141,7 @@ duck.rb:14: Info: NoMethodError: undefined method 'speak' for an instance of Rob
         <img src="/gems/fix/img/subjects.svg" alt="ひとつの仕様、3行の紙を、カットの異なる3つのルビーに対してテストする図。" width="408" height="208">
         <figcaption>ひとつの仕様と3つのサブジェクト。行はサブジェクトごと、列は期待ごと（MUST、SHOULD、MAY）です。1つ目のサブジェクトは3つすべてを満たし、2つ目はWarningとInfoを受け、3つ目はMUSTを満たしません。</figcaption>
       </figure>
-      <p>Fixはプロジェクトのフレームワークを置き換えるものではありません。フィクスチャーやテストダブル、アプリケーションフレームワークが必要なテストスイートは、そのためにRSpecやminitestを使い続けます。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリの契約で、それを<code>spec</code>や<code>test</code>の隣の<code>fix</code>ディレクトリに置き、専用のコマンドで実行します。そして<a href="/ja/gems/matchi-fix/">matchi-fix</a>が、そうした仕様をマッチャーとしてそのフレームワークに持ち込みます。<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>はRSpecの各イディオムが何になるかを示し、<a href="/ja/gems/fix/v1/questions/">よくある質問</a>は両者を併用するときの疑問に答えます。<a href="/ja/gems/fix/v1/questions/#compared">表</a>では、FixをRSpecやminitestと項目ごとに比べています。</p>
+      <p>Fixはプロジェクトのフレームワークを置き換えるものではありません。フィクスチャーやテストダブル、アプリケーションフレームワークが必要なテストスイートは、そのためにRSpecやminitestを使い続けます。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリの契約で、それを<code>spec</code>や<code>test</code>の隣の<code>fix</code>ディレクトリに置き、専用のコマンドで実行します。そして<a href="/ja/gems/rspec-fix/">rspec-fix</a>と<a href="/ja/gems/minitest-fix/">minitest-fix</a>が、そうした仕様をそのフレームワークのテストに持ち込みます。その方法は<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a>にあります。<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>と<a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a>は各イディオムが何になるかを示し、<a href="/ja/gems/fix/v1/questions/">よくある質問</a>は両者を併用するときの疑問に答えます。<a href="/ja/gems/fix/v1/questions/#compared">表</a>では、FixをRSpecやminitestと項目ごとに比べています。</p>
 
       <h2 id="scope">Fixが省いたもの</h2>
       <p>モックも、<code>before</code>と<code>after</code>も、共有exampleも、ランダムな順序もありません。仕様がもつのは期待だけで、テストに必要な準備は、letのあるサブジェクトブロックで行います。同じ仕様で、クラスも、モジュールも、インスタンスも、ライブラリもテストでき、毎回同じ結果が出ます。Fixには<code>fork</code>が必要です。LinuxとmacOSでテストされており、WindowsやJRubyでは動きません。</p>
@@ -476,7 +476,7 @@ result.result.class <span class="comment"># => Spectus::Result</span>
       </figure>
 
       <h2 id="extensions">拡張</h2>
-      <p><a href="/ja/gems/fix-its/">fix-its</a>は<code>its</code>という語を加え、メソッドとその期待を1行にします。<a href="/ja/gems/matchi-fix/">matchi-fix</a>は、matchiのマッチャーを受け付けるどのフレームワークにも、Fixの仕様を持ち込みます。<code>Fix</code>のブロックは<code>Fix::Dsl</code>のインスタンスの上で実行され、gemはそこに独自の語を加えられます。</p>
+      <p><a href="/ja/gems/fix-its/">fix-its</a>は<code>its</code>という語を加え、メソッドとその期待を1行にします。<a href="/ja/gems/matchi-fix/">matchi-fix</a>は、matchiのマッチャーを受け付けるどのフレームワークにも、Fixの仕様を持ち込みます。<a href="/ja/gems/rspec-fix/">rspec-fix</a>と<a href="/ja/gems/minitest-fix/">minitest-fix</a>は、RSpecとminitestに仕様を持ち込みます。<code>Fix</code>のブロックは<code>Fix::Dsl</code>のインスタンスの上で実行され、gemはそこに独自の語を加えられます。</p>
 
       <h2 id="documentation">ドキュメント</h2>
       <ul role="list">

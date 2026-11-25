@@ -19,16 +19,18 @@
 - [Fix in a Ruby project · Fix 1 guide](https://fixrb.dev/gems/fix/v1/in-a-project/): Where specifications of Fix live in a project, how they load its code, how they sit next to other tests, what a process does not isolate, and how to debug one.
 - [Testing a Rails application with Fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/in-a-rails-application/): What a Rails application needs for Fix to test its models and controllers: a helper to load it, a database each subject empties, Rack::Test, where files go.
 - [Patterns: contracts in Ruby · Fix 1 guide](https://fixrb.dev/gems/fix/v1/patterns/): Four uses of a Fix specification: one interface, several implementations; the contract of a dependency; three levels; a specification shipped with a gem.
+- [Beside RSpec or minitest: a specification in the suite you have · Fix 1 guide](https://fixrb.dev/gems/fix/v1/beside-rspec-or-minitest/): Add a specification of Fix to an RSpec or minitest suite and keep the suite: a matcher, two assertions, one command for both, and what a child process changes.
 - [Coming from RSpec: RSpec idioms in Fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/coming-from-rspec/): What RSpec’s describe, context, subject, let, before and matchers become in Fix, and what it leaves out on purpose: hooks as such, doubles, shared state.
+- [Coming from minitest: minitest idioms in Fix · Fix 1 guide](https://fixrb.dev/gems/fix/v1/coming-from-minitest/): What minitest’s test classes, setup, assertions and skip become in Fix, and what it leaves out on purpose: setup and teardown as such, mocks, shared state.
 - [Questions about Fix: short answers · Fix 1 guide](https://fixrb.dev/gems/fix/v1/questions/): Questions on Fix, answered in short: eq and eql?, lets in expectations, outcomes, exit status, random order, SimpleCov, Windows, RSpec or minitest beside it.
 
 ## Gems
 
 - [fix-its: one-line expectations with its, for Fix](https://fixrb.dev/gems/fix-its/): Fix::Its adds the word its to the language of Fix: a method of the subject and one expectation about what it returns, on one line, its result pointing there.
-- [matchi-fix: test a value against a Fix specification](https://fixrb.dev/gems/matchi-fix/): Matchi::Fix tests a value against a specification of Fix, named or written in a block, and brings Fix specifications wherever a matcher of matchi goes.
+- [fix-command: the fix command, one process per file](https://fixrb.dev/gems/fix-command/): The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.
 - [rspec-fix: a Fix specification in an RSpec example](https://fixrb.dev/gems/rspec-fix/): RSpec::Fix adds the matcher fix to RSpec: expect(value).to fix(:Name) is met when the value meets a specification of Fix, and tells which expectations it does not.
 - [minitest-fix: a Fix specification in a minitest test](https://fixrb.dev/gems/minitest-fix/): Minitest::Fix adds assert\_fix and refute\_fix to minitest: assert\_fix :Name, value passes when the value meets a specification of Fix, and tells what it does not.
-- [fix-command: the fix command, one process per file](https://fixrb.dev/gems/fix-command/): The fix command runs each specification file of Fix in a process of its own and tells how many were met: its status is 0 when every file is.
+- [matchi-fix: test a value against a Fix specification](https://fixrb.dev/gems/matchi-fix/): Matchi::Fix tests a value against a specification of Fix, named or written in a block, and brings Fix specifications wherever a matcher of matchi goes.
 - [matchi: Ruby matchers for any test framework](https://fixrb.dev/gems/matchi/): Matchi: Ruby matchers for any test framework, Minitest included, in which the expected value makes the comparison, not the object under test.
 - [spectus: Ruby expectations with MUST, SHOULD and MAY](https://fixrb.dev/gems/spectus/): Spectus expresses Ruby expectations with the MUST, SHOULD and MAY of RFC 2119, and gives a result that says how each one went, without raising.
 - [aw: run a Ruby block in a forked process](https://fixrb.dev/gems/aw/): Aw runs a Ruby block in a forked process and brings back what it returned, or raises again what it raised; its side effects on the process stay in the child.
@@ -66,13 +68,15 @@
 - [RubyのプロジェクトでFixを使う · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/in-a-project/): プロジェクトの中でFixの仕様をどこに置き、どうコードを読み込み、ほかのテストとどう並べるか。プロセスが隔離しないもの、そしてデバッグの方法。
 - [FixでRailsアプリケーションをテストする · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/in-a-rails-application/): RailsアプリケーションのモデルとコントローラーをFixでテストするために必要なもの。読み込み用のヘルパー、サブジェクトごとに空にするデータベース、Rack::Test、ファイルの置き場所。
 - [パターン：Rubyで契約を書く · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/patterns/): Fixの仕様の4つの使い方。ひとつのインターフェースと複数の実装、依存ライブラリの契約、3つのレベル、gemに同梱する仕様。
+- [RSpecやminitestと並べて使う：いまのテストスイートにFixの仕様を加える · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/beside-rspec-or-minitest/): RSpecやminitestのテストスイートを残したまま、Fixの仕様を加える方法。マッチャー、ふたつのアサーション、両方を実行するひとつのコマンド、そして子プロセスが変えること。
 - [RSpecからの移行：RSpecのイディオムをFixで · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/coming-from-rspec/): RSpecのdescribe、context、subject、let、before、マッチャーがFixで何になるか。そして、フックそのもの、テストダブル、共有状態など、意図して省いたもの。
+- [minitestからの移行：minitestのイディオムをFixで · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/coming-from-minitest/): minitestのテストクラス、setup、アサーション、skipがFixで何になるか。そして、setupやteardownそのもの、モック、共有状態など、意図して省いたもの。
 - [Fixのよくある質問：短い答え · Fix 1ガイド](https://fixrb.dev/ja/gems/fix/v1/questions/): Fixについての疑問に短く答えます。eqとeql?、期待の中のlet、判定、終了ステータス、ランダムな順序、SimpleCov、Windows、RSpecやminitestとの併用。
 - [fix-its：itsでFixの期待を1行に書く](https://fixrb.dev/ja/gems/fix-its/): Fix::Itsは、Fixの言語にitsという語を加えます。サブジェクトのメソッドとその戻り値についての期待を1行で書け、結果はその行を指します。
-- [matchi-fix：Fixの仕様で値をテストする](https://fixrb.dev/ja/gems/matchi-fix/): Matchi::Fixは、名前で登録した、またはブロックで書いたFixの仕様で値をテストし、matchiのマッチャーが使えるところならどこへでもFixの仕様を持ち込みます。
+- [fix-command：ファイルごとにひとつのプロセスで動くfixコマンド](https://fixrb.dev/ja/gems/fix-command/): fixコマンドは、Fixの仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。すべてのファイルが満たされれば終了ステータスは0です。
 - [rspec-fix：RSpecのexampleでFixの仕様を使う](https://fixrb.dev/ja/gems/rspec-fix/): RSpec::FixはRSpecにfixマッチャーを加えます。expect(value).to fix(:Name)は値がFixの仕様を満たすときに成功し、満たさない期待を伝えます。
 - [minitest-fix：minitestのテストでFixの仕様を使う](https://fixrb.dev/ja/gems/minitest-fix/): Minitest::Fixはminitestにassert\_fixとrefute\_fixを加えます。assert\_fix :Name, valueは値がFixの仕様を満たすときに成功し、満たさない期待を伝えます。
-- [fix-command：ファイルごとにひとつのプロセスで動くfixコマンド](https://fixrb.dev/ja/gems/fix-command/): fixコマンドは、Fixの仕様ファイルをそれぞれ専用のプロセスで実行し、満たされたファイルの数を伝えます。すべてのファイルが満たされれば終了ステータスは0です。
+- [matchi-fix：Fixの仕様で値をテストする](https://fixrb.dev/ja/gems/matchi-fix/): Matchi::Fixは、名前で登録した、またはブロックで書いたFixの仕様で値をテストし、matchiのマッチャーが使えるところならどこへでもFixの仕様を持ち込みます。
 - [matchi：どのテストフレームワークでも使えるRubyのマッチャー](https://fixrb.dev/ja/gems/matchi/): Matchi：Minitestを含むどのテストフレームワークでも使えるRubyのマッチャー。比較を行うのはテスト対象のオブジェクトではなく、期待値です。
 - [spectus：MUST、SHOULD、MAYで書くRubyの期待](https://fixrb.dev/ja/gems/spectus/): Spectusは、RFC 2119のMUST、SHOULD、MAYでRubyの期待を表し、例外を発生させずに、それぞれがどうだったかを伝える結果を返します。
 - [aw：Rubyのブロックをforkしたプロセスで実行する](https://fixrb.dev/ja/gems/aw/): Awは、Rubyのブロックをforkしたプロセスで実行し、戻り値を持ち帰るか、発生した例外を再び発生させます。プロセスへの副作用は子プロセスの中にとどまります。

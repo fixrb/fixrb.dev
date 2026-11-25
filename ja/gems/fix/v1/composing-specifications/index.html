@@ -139,7 +139,7 @@ matcher.match? { [] } <span class="comment"># => true</span>
 
 <span class="constant">Spectus</span>.must(matcher).call { [<span class="keyword">nil</span>] }.to_s <span class="comment"># => "Failure: expected [nil] to fix Empty"</span>
 </code></pre>
-      <p>最後の行は、Fixの土台である<a href="/ja/gems/spectus/">Spectus</a>を使っています。minitestでは、<code>assert</code>がその答えを受け取ります（<code>assert Matchi::Fix.new(:Empty).match? { [] }</code>）。ほかのフレームワークでテストを書いているプロジェクトも、テストを移さずに、同じ仕様をそのテストの中で使えます。</p>
+      <p>最後の行は、Fixの土台である<a href="/ja/gems/spectus/">Spectus</a>を使っています。RSpecやminitestでテストを書いているプロジェクトは、テストを移さずに、<a href="/ja/gems/rspec-fix/">rspec-fix</a>か<a href="/ja/gems/minitest-fix/">minitest-fix</a>で、同じ仕様をそのテストから確かめられます。失敗のメッセージにはFixの行が示されます。その方法は<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a>にあります。</p>
       <p>Fixの仕様の中では、<code>it MUST Matchi::Fix.new(:Empty)</code>と<code>it MUST fix(:Empty)</code>は同じです。<code>fix</code>にはほかのgemは要りません。</p>
 
       <nav aria-label="前後のページ">
@@ -162,7 +162,9 @@ matcher.match? { [] } <span class="comment"># => true</span>
         <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
         <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
         <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a></li>
         <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a></li>
         <li><a href="/ja/gems/fix/v1/questions/">よくある質問</a></li>
       </ol>
     </nav>

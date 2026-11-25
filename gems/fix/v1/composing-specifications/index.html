@@ -138,7 +138,7 @@ matcher.match? { [] } <span class="comment"># => true</span>
 
 <span class="constant">Spectus</span>.must(matcher).call { [<span class="keyword">nil</span>] }.to_s <span class="comment"># => "Failure: expected [nil] to fix Empty"</span>
 </code></pre>
-      <p>The last line uses <a href="/gems/spectus/">Spectus</a>, which Fix is built on. In minitest, <code>assert</code> takes its answer: <code>assert Matchi::Fix.new(:Empty).match? { [] }</code>. A project that has its tests in another framework can use the same specifications in those tests, without moving them.</p>
+      <p>The last line uses <a href="/gems/spectus/">Spectus</a>, which Fix is built on. A project that has its tests in RSpec or minitest checks the same specifications from those tests, without moving them, with <a href="/gems/rspec-fix/">rspec-fix</a> or <a href="/gems/minitest-fix/">minitest-fix</a>, whose failures give the lines of Fix: <a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a> tells how.</p>
       <p>In a specification of Fix, <code>it MUST Matchi::Fix.new(:Empty)</code> and <code>it MUST fix(:Empty)</code> are the same: <code>fix</code> needs no other gem.</p>
 
       <nav aria-label="Pages">
@@ -161,7 +161,9 @@ matcher.match? { [] } <span class="comment"># => true</span>
         <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
         <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
         <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a></li>
         <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a></li>
         <li><a href="/gems/fix/v1/questions/">Questions</a></li>
       </ol>
     </nav>

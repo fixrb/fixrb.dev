@@ -163,10 +163,10 @@
       <h2 id="beside">RSpecやminitestと並べて</h2>
 
       <h3 id="replace">テストスイートを置き換えなければなりませんか？</h3>
-      <p>いいえ。Fixはほかのフレームワークに何も求めず、何も変えません。<code>spec</code>や<code>test</code>の隣に<code>fix</code>ディレクトリを置いて専用のコマンドで実行し、Rakefileですべてを実行すればよいのです。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリとの契約です。テストスイートは、そのフィクスチャー、テストダブル、フレームワークをそのまま保ちます。その方法は<a href="/ja/gems/fix/v1/in-a-project/#other-tests">ほかのテストと並べる</a>に、各イディオムが何になるかは<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>にあります。</p>
+      <p>いいえ。Fixはほかのフレームワークに何も求めず、何も変えません。<code>spec</code>や<code>test</code>の隣に<code>fix</code>ディレクトリを置いて専用のコマンドで実行し、Rakefileですべてを実行すればよいのです。Fixが担うのは、部品どうしが合意する振る舞い、つまりインターフェースや依存ライブラリとの契約です。テストスイートは、そのフィクスチャー、テストダブル、フレームワークをそのまま保ちます。その方法は<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a>に、各イディオムが何になるかは<a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a>と<a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a>にあります。</p>
 
       <h3 id="matcher">RSpecやminitestからFixの仕様を確かめられますか？</h3>
-      <p>matchiのマッチャーとして確かめられます。<a href="/ja/gems/matchi-fix/">matchi-fix</a> gemの<code>Matchi::Fix.new(:Duck).match? { Duck.new }</code>は、Fixと同じようにコンテキストをforkして、<code>true</code>か<code>false</code>を答えます。RSpecでは<code>expect(Matchi::Fix.new(:Duck).match? { duck }).to be true</code>、minitestでは<code>assert Matchi::Fix.new(:Duck).match? { duck }</code>です。このとき失敗のメッセージは<code>false</code>と言うだけなので、行を見るには<code>Fix[:Duck].test { duck }</code>を使います。マッチャーのための仕様は<code>with</code>なしで書きます。値は一度だけ与えられ、コンテキストがそれを作り直すことはできないからです。</p>
+      <p>そのためのマッチャーやアサーションで確かめられます。RSpecでは<a href="/ja/gems/rspec-fix/">rspec-fix</a> gemの<code>expect(duck).to fix(:Duck)</code>、minitestでは<a href="/ja/gems/minitest-fix/">minitest-fix</a>の<code>assert_fix :Duck, duck</code>です。失敗のメッセージはFixの行でできていて、満たされなかった期待ごとに1行です。これらのための仕様は<code>with</code>なしで書きます。値は一度だけ与えられ、コンテキストがそれを作り直すことはできないからです。両方を使うプロジェクトは<a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a>にあります。</p>
 
       <h3 id="which-failed">失敗した<code>fix(:Other)</code>は、どの期待が失敗したかを教えてくれません。</h3>
       <p>そういう設計です。マッチャーは<code>true</code>か<code>false</code>を答えるものです。行を見るには、内側の仕様を単独でテストしてください（<code>Fix[:Other].test { … }</code>）。</p>
@@ -197,7 +197,7 @@
 
       <nav aria-label="前後のページ">
         <ul>
-          <li><a href="/ja/gems/fix/v1/coming-from-rspec/" rel="prev">前へ：RSpecからの移行</a></li>
+          <li><a href="/ja/gems/fix/v1/coming-from-minitest/" rel="prev">前へ：minitestからの移行</a></li>
         </ul>
       </nav>
     </article>
@@ -214,7 +214,9 @@
         <li><a href="/ja/gems/fix/v1/in-a-project/">プロジェクトで使う</a></li>
         <li><a href="/ja/gems/fix/v1/in-a-rails-application/">Railsアプリケーションで使う</a></li>
         <li><a href="/ja/gems/fix/v1/patterns/">パターン</a></li>
+        <li><a href="/ja/gems/fix/v1/beside-rspec-or-minitest/">RSpecやminitestと並べて使う</a></li>
         <li><a href="/ja/gems/fix/v1/coming-from-rspec/">RSpecからの移行</a></li>
+        <li><a href="/ja/gems/fix/v1/coming-from-minitest/">minitestからの移行</a></li>
         <li><a href="/ja/gems/fix/v1/questions/" aria-current="page">よくある質問</a></li>
       </ol>
     </nav>

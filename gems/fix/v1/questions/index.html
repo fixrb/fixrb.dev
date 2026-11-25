@@ -162,10 +162,10 @@
       <h2 id="beside">Beside RSpec and minitest</h2>
 
       <h3 id="replace">Do I have to replace my test suite?</h3>
-      <p>No. Fix needs nothing from another framework and changes nothing in it: a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. <a href="/gems/fix/v1/in-a-project/#other-tests">Next to other tests</a> says how, and <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> what each idiom becomes.</p>
+      <p>No. Fix needs nothing from another framework and changes nothing in it: a <code>fix</code> directory beside <code>spec</code> or <code>test</code>, run by its own command, and a Rakefile that runs them all. Fix holds the behaviour the pieces agree on, an interface, a contract with a dependency; the suite keeps its fixtures, its doubles and its framework. <a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a> says how, and <a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> and <a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a> what each idiom becomes.</p>
 
       <h3 id="matcher">Can I check a specification of Fix from RSpec or minitest?</h3>
-      <p>As a matcher of matchi: <code>Matchi::Fix.new(:Duck).match? { Duck.new }</code>, from the <a href="/gems/matchi-fix/">matchi-fix</a> gem, answers <code>true</code> or <code>false</code>, forking the contexts as Fix does. In RSpec, <code>expect(Matchi::Fix.new(:Duck).match? { duck }).to be true</code>; in minitest, <code>assert Matchi::Fix.new(:Duck).match? { duck }</code>. The message of a failure then says <code>false</code>, no more: <code>Fix[:Duck].test { duck }</code> gives the lines. A specification meant for a matcher is written without <code>with</code>, since the value is given once and the contexts cannot build it anew.</p>
+      <p>With a matcher, or an assertion, made for it: <code>expect(duck).to fix(:Duck)</code> in RSpec, from the <a href="/gems/rspec-fix/">rspec-fix</a> gem, and <code>assert_fix :Duck, duck</code> in minitest, from <a href="/gems/minitest-fix/">minitest-fix</a>. The message of a failure is made of the lines of Fix, one for each expectation not met. A specification meant for them is written without <code>with</code>, since the value is given once and the contexts cannot build it anew. <a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a> has a project that does both.</p>
 
       <h3 id="which-failed">A failed <code>fix(:Other)</code> does not say which expectation failed.</h3>
       <p>By design: a matcher answers <code>true</code> or <code>false</code>. Test the inner specification on its own, <code>Fix[:Other].test { … }</code>, for the lines.</p>
@@ -196,7 +196,7 @@
 
       <nav aria-label="Pages">
         <ul>
-          <li><a href="/gems/fix/v1/coming-from-rspec/" rel="prev">Previous: Coming from RSpec</a></li>
+          <li><a href="/gems/fix/v1/coming-from-minitest/" rel="prev">Previous: Coming from minitest</a></li>
         </ul>
       </nav>
     </article>
@@ -213,7 +213,9 @@
         <li><a href="/gems/fix/v1/in-a-project/">In a project</a></li>
         <li><a href="/gems/fix/v1/in-a-rails-application/">In a Rails application</a></li>
         <li><a href="/gems/fix/v1/patterns/">Patterns</a></li>
+        <li><a href="/gems/fix/v1/beside-rspec-or-minitest/">Beside RSpec or minitest</a></li>
         <li><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a></li>
+        <li><a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a></li>
         <li><a href="/gems/fix/v1/questions/" aria-current="page">Questions</a></li>
       </ol>
     </nav>

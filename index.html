@@ -49,7 +49,7 @@
         <h1 id="fix-title">Fix</h1>
         <p>Write once what a Ruby object must do; test every implementation against it.</p>
       </hgroup>
-      <p>Fix is a Ruby testing framework. A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them, beside <a href="/gems/fix/v1/questions/#compared">the RSpec or minitest suite you already have</a>.</p>
+      <p>Fix is a Ruby testing framework. A specification says what a subject <strong>MUST</strong>, <strong>SHOULD</strong> or <strong>MAY</strong> do, in the words of <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a>, and nothing about how it is made. Write it once, then test an Array against it today, your own class tomorrow, a library you depend on, or the next version of any of them, beside <a href="/gems/fix/v1/beside-rspec-or-minitest/">the RSpec or minitest suite you already have</a>.</p>
       <ul role="list">
         <li><a href="/gems/fix/v1/getting-started/">Start the guide</a></li>
         <li><a href="/gems/fix/">Read about Fix</a></li>
@@ -61,8 +61,8 @@
         <dd>1.0.1, for Ruby 3.3 or later</dd>
         <dt>Source</dt>
         <dd><a href="https://github.com/fixrb/fix">github.com/fixrb/fix</a>, MIT license</dd>
-        <dt>From RSpec</dt>
-        <dd><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a>: what each idiom becomes, and what is left out</dd>
+        <dt>From RSpec or minitest</dt>
+        <dd><a href="/gems/fix/v1/coming-from-rspec/">Coming from RSpec</a> and <a href="/gems/fix/v1/coming-from-minitest/">Coming from minitest</a>: what each idiom becomes, and what is left out</dd>
       </dl>
       <figure>
         <pre data-example="examples/home/stack.rb"><code>require <span class="string">"fix"</span>
@@ -124,7 +124,7 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
 
       <section id="extensions">
         <h3>Around Fix</h3>
-        <p>Gems that extend Fix, or bring its specifications to other test frameworks.</p>
+        <p>Gems that extend Fix itself: a word for its language, a command for its files.</p>
         <ul role="list">
           <li>
             <h4><img src="/gems/fix-its/img/icon.svg" alt="" width="64" height="64"><a href="/gems/fix-its/">fix-its</a></h4>
@@ -132,10 +132,17 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
             <p><small>Version 1.0</small></p>
           </li>
           <li>
-            <h4><img src="/gems/matchi-fix/img/icon.svg" alt="" width="64" height="64"><a href="/gems/matchi-fix/">matchi-fix</a></h4>
-            <p>A matcher of matchi that tests a value against a specification of Fix, from any test framework.</p>
-            <p><small>Version 4.0</small></p>
+            <h4><img src="/gems/fix-command/img/icon.svg" alt="" width="64" height="64"><a href="/gems/fix-command/">fix-command</a></h4>
+            <p>The <code>fix</code> command: runs each specification file in a process of its own, and tells how many files were met.</p>
+            <p><small>Version 1.0</small></p>
           </li>
+        </ul>
+      </section>
+
+      <section id="frameworks">
+        <h3>In other frameworks</h3>
+        <p>Gems that bring a specification of Fix where other tests are written: into RSpec, into minitest, and into the matchers of matchi. Each extends what it is named after, and depends on Fix.</p>
+        <ul role="list">
           <li>
             <h4><img src="/gems/rspec-fix/img/icon.svg" alt="" width="64" height="64"><a href="/gems/rspec-fix/">rspec-fix</a></h4>
             <p>A matcher of RSpec that tests a value against a specification of Fix: <code>expect(value).to fix(:Name)</code>.</p>
@@ -147,9 +154,9 @@ stack.rb:16: Info: NoMethodError: undefined method 'peek' for an instance of Arr
             <p><small>Version 1.0</small></p>
           </li>
           <li>
-            <h4><img src="/gems/fix-command/img/icon.svg" alt="" width="64" height="64"><a href="/gems/fix-command/">fix-command</a></h4>
-            <p>The <code>fix</code> command: runs each specification file in a process of its own, and tells how many files were met.</p>
-            <p><small>Version 1.0</small></p>
+            <h4><img src="/gems/matchi-fix/img/icon.svg" alt="" width="64" height="64"><a href="/gems/matchi-fix/">matchi-fix</a></h4>
+            <p>A matcher of matchi that tests a value against a specification of Fix, wherever a matcher of matchi goes.</p>
+            <p><small>Version 4.0</small></p>
           </li>
         </ul>
       </section>
